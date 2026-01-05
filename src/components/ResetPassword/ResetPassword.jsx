@@ -1,16 +1,26 @@
-'use client'
-import React, { useState } from "react";
-import { api } from "api";
-import { validateEmail } from "@/helpers";
+import { useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
+import { api } from "@/api";
+import { useRouter } from "expo-router";
+import { useThemeStyles } from "../../hooks/useThemeStyles";
+import { validateEmail } from "../../helpers";
+import { BodyText, FormLabel, Input , Card} from "../ThemeProvider/components";
 
 const ResetPassword = () => {
+  const { globalStyles } = useThemeStyles();
+  const router = useRouter()
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setError("");
     setSuccess("");
 
@@ -22,8 +32,9 @@ const ResetPassword = () => {
 
     try {
       setLoading(true);
-      const response = await api.post("/accounts/password-reset/", {email: email.trim().toLowerCase()});
-      setSuccess("If that email exists, a reset link has been sent.");
+      const response = await api.post("/accounts/password-reset/", { email:email.trim().toLowerCase() });
+      console.log("Reset email sent:", response.data);
+      setSuccess("Password reset link sent to your email.");
       setEmail("");
     } catch (err) {
       console.error(err);
@@ -37,36 +48,88 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className={"form-container"}>
-      <form className={"form"} onSubmit={handleSubmit}>
-        <h2>Reset Your Password</h2>
+    <Card style={{...styles.container}}>
+      <BodyText style={globalStyles.title}>Reset Your Password</BodyText>
 
-        {error && <p className={"error"}>{error}</p>}
-        {success && <p className={"success"}>{success}</p>}
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {success ? <Text style={styles.success}>{success}</Text> : null}
 
-        <div className={"formGroup"}>
-          <label>Email Address</label>
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
+      <View style={styles.formGroup}>
+        <FormLabel >Email Address</FormLabel>
+        <Input
+          placeholder="Enter your email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+      </View>
 
-        <button type="submit" className={"btn"} disabled={loading}>
-          {loading ? "Sending..." : "Send Reset Link"}
-        </button>
+      <TouchableOpacity
+        style={[styles.button, loading && styles.buttonDisabled]}
+        onPress={handleSubmit}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Send Reset Link</Text>
+        )}
+      </TouchableOpacity>
 
-        <p className={"hint"}>
-          Remember your password?{" "}
-          <a href="/login" className={"link"}>
-            Back to Login
-          </a>
-        </p>
-      </form>
-    </div>
+      <BodyText style={styles.hint}>
+        Remember your password?{" "}
+        <Text
+          style={styles.link}
+          onPress={() => router.push("/login")}
+        >
+          Back to Login
+        </Text>
+      </BodyText>
+    </Card>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    justifyContent: "center",
+  },
+  formGroup: {
+    marginBottom: 15,
+  },
+  button: {
+    backgroundColor: "#FF6B6B",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  buttonDisabled: {
+    backgroundColor: "#999",
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  error: {
+    color: "red",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  success: {
+    color: "green",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  hint: {
+    textAlign: "center",
+    marginTop: 10,
+  },
+  link: {
+    color: "#2E8B8B",
+    textDecorationLine: "underline",
+  },
+});
 
 export default ResetPassword;

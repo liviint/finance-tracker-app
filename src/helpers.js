@@ -1,22 +1,3 @@
-export let dateFormat = (date) => {
-    return new Date(date).toLocaleDateString("en-KE", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-            })
-}
-
-export const longDateFormat = (dateString) => {
-    if (!dateString) return "";
-    return new Date(dateString).toLocaleString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-    });
-};
-
 export const validateEmail = (email) => {
     let errorMessage = "";
 
@@ -29,4 +10,19 @@ export const validateEmail = (email) => {
     const isValid = errorMessage === "";
 
     return { isValid, errorMessage };
+};
+
+export const htmlToPlainText = (html) => {
+    if (!html) return '';
+
+    return html
+        // replace <br> and <div> with new lines
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/div>/gi, '\n')
+        .replace(/<div>/gi, '')
+        // remove any remaining HTML tags
+        .replace(/<\/?[^>]+(>|$)/g, '')
+        // clean extra newlines
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
 };

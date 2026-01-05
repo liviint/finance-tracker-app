@@ -1,14 +1,21 @@
-'use client'
 import React, { useState } from "react";
-import { useSearchParams } from 'next/navigation';
-import { api } from "api";
-import { useRouter } from "next/navigation";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
+import { api } from "@/api";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { useThemeStyles } from "../../hooks/useThemeStyles";
+import { BodyText, Card, FormLabel, Input } from "../ThemeProvider/components";
 
 const ResetPasswordConfirm = () => {
+  const { globalStyles } = useThemeStyles();
   const router = useRouter()
-  const searchParams = useSearchParams();
-  const uid = searchParams.get('uid');
-  const token = searchParams.get('token');
+  const { uid, token } = useLocalSearchParams(); 
 
   const [formData, setFormData] = useState({
     new_password: "",
@@ -20,117 +27,160 @@ const ResetPasswordConfirm = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleChange = (name, value) => {
+    setFormData({ ...formData, [name]: value });
     setError("");
     setSuccess("");
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setError("");
     setSuccess("");
 
-    if (!formData.new_password || !formData.confirm_password) {
+    const { new_password, confirm_password } = formData;
+
+    if (!new_password || !confirm_password) {
       setError("All fields are required.");
       return;
     }
 
-    if (formData.new_password !== formData.confirm_password) {
+    if (new_password !== confirm_password) {
       setError("Passwords do not match.");
       return;
     }
 
-    if (formData.new_password.length < 6) {
+    if (new_password.length < 6) {
       setError("Password must be at least 6 characters long.");
       return;
     }
-
       setLoading(true);
       await api.post("/accounts/password-reset-confirm/", {
         uid,
         token,
-        new_password: formData.new_password,
-        confirm_password: formData.confirm_password,
-      }).then(() => {
+        new_password,
+      })
+      .then(() => {
         setSuccess("Your password has been successfully reset!");
         setFormData({ new_password: "", confirm_password: "" });
         setTimeout(() => router.push("login"),3000)
       })
-      .catch ((err) => {
-      console.error(err);
-      setError(
-        err.response?.data?.message ||
+      .catch(err => {
+        console.error(err);
+        setError(
+          err.response?.data?.detail ||
+          err.response?.data?.message ||
           "Failed to reset password. Please try again."
-      )
-    }) 
-    .finally( () =>{
-      setLoading(false);
-    })
+        );
+      })
+      .finally(() => setLoading(false) )
   }
 
   return (
-    <div className={"form-container"}>
-      <form className={"form"} onSubmit={handleSubmit}>
-        <h2>Set a New Password</h2>
+    <Card >
+      <BodyText style={globalStyles.title}>Set a New Password</BodyText>
 
-        {error && <p className={"error"}>{error}</p>}
-        {success && <p className={"success"}>{success}</p>}
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {success ? <Text style={styles.success}>{success}</Text> : null}
 
-        <div className={"formGroup"}>
-          <label>New Password</label>
-          <div className="passwordWrapper">
-            <input
-              type={showPassword ? "text" : "password"}
-              name="new_password"
-              placeholder="Enter new password"
-              value={formData.new_password}
-              onChange={handleChange}
-            />
-            <button
-                type="button"
-                className="togglePassword"
-                onClick={() => setShowPassword((prev) => !prev)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-            >
-                {showPassword ? "🙈" : "👁️"}
-            </button>
-          </div>
-        </div>
+      <View style={styles.formGroup}>
+        <FormLabel >New Password</FormLabel>
+        <View style={globalStyles.passwordWrapper}>
+          <Input
+            placeholder="Enter new password"
+            secureTextEntry={!showPassword}
+            value={formData.new_password}
+            onChangeText={(value) => handleChange("new_password", value)}
+          />
+          <TouchableOpacity
+                style={globalStyles.togglePassword}
+                onPress={() => setShowPassword((prev) => !prev)}
+              >
+                <Text style={globalStyles.togglePasswordText}>{showPassword ? "🙈" : "👁️"}</Text>
+            </TouchableOpacity>
+        </View>
+      </View>
 
-        <div className={"formGroup"}>
-          <label>Confirm Password</label>
-          <div className="passwordWrapper">
-            <input
-              type={showPassword ? "text" : "password"}
-              name="confirm_password"
-              placeholder="Confirm new password"
-              value={formData.confirm_password}
-              onChange={handleChange}
-            />
-            <button
-                type="button"
-                className="togglePassword"
-                onClick={() => setShowPassword((prev) => !prev)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-            >
-                {showPassword ? "🙈" : "👁️"}
-            </button>
-          </div>
-        </div>
+      <View style={styles.formGroup}>
+        <FormLabel >Confirm Password</FormLabel>
+        <View style={globalStyles.passwordWrapper}>
+          <Input
+            placeholder="Confirm new password"
+            secureTextEntry={!showPassword}
+            value={formData.confirm_password}
+            onChangeText={(value) => handleChange("confirm_password", value)}
+          />
+          <TouchableOpacity
+                style={globalStyles.togglePassword}
+                onPress={() => setShowPassword((prev) => !prev)}
+              >
+                <Text style={globalStyles.togglePasswordText}>{showPassword ? "🙈" : "👁️"}</Text>
+            </TouchableOpacity>
+        </View>
+      </View>
 
-        <button type="submit" disabled={loading} className={"btn"}>
-          {loading ? "Resetting..." : "Reset Password"}
-        </button>
+      <TouchableOpacity
+        style={[styles.button, loading && styles.buttonDisabled]}
+        onPress={handleSubmit}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Reset Password</Text>
+        )}
+      </TouchableOpacity>
 
-        <p className={"hint"}>
-          <a href="/login" className={"link"}>
-            Back to Login
-          </a>
-        </p>
-      </form>
-    </div>
+      <Text style={styles.hint}>
+        <Text
+          style={styles.link}
+          onPress={() => router.push("/login")}
+        >
+          Back to Login
+        </Text>
+      </Text>
+    </Card>
   );
 };
+
+const styles = StyleSheet.create({
+  
+  formGroup: {
+    marginBottom: 15,
+  },
+  button: {
+    backgroundColor: "#FF6B6B",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  buttonDisabled: {
+    backgroundColor: "#999",
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  error: {
+    color: "red",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  success: {
+    color: "green",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  hint: {
+    textAlign: "center",
+    marginTop: 10,
+  },
+  link: {
+    color: "#2E8B8B",
+    textDecorationLine: "underline",
+  },
+});
 
 export default ResetPasswordConfirm;

@@ -1,16 +1,13 @@
 import axios from "axios";
+import {safeLocalStorage} from './utils/storage'
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL
+const baseURL = process.env.EXPO_PUBLIC_API_URL
 
-export let api = axios.create(
-    {
-        baseURL
-    }
-)
+export let api = axios.create({baseURL})
 
 api.interceptors.request.use(
-  config => {
-      let token = localStorage.getItem("token")
+  async(config) => {
+      const token = await safeLocalStorage.getItem("token")
       if(token) config.headers.Authorization = `Bearer ${token}`;
       return config;
   },
