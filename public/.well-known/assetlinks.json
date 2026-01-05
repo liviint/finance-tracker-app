@@ -1,0 +1,11 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.zeniahub.app",
+      "sha256_cert_fingerprints":
+        ["A7:85:F3:72:1A:74:F1:1B:19:57:78:EB:2C:83:67:F1:51:F2:C6:39:F0:3E:24:3A:11:36:CC:72:95:C3:F7:7D"]
+    }
+  }
+]
