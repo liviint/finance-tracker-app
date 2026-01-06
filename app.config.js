@@ -2,9 +2,9 @@ import 'dotenv/config';
 
 export default {
   expo: {
-    scheme: "zeniahub",
-    name: "ZeniaHub",
-    slug: "zeniahub",
+    scheme: "zeniamoney",
+    name: "ZeniaMoney",
+    slug: "zeniamoney",
     version: "1.0.16",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
@@ -13,13 +13,12 @@ export default {
 
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.zeniahub.app",
+      bundleIdentifier: "com.zeniahub.zeniamoney",
       associatedDomains: ["applinks:zeniahub.com"],
     },
 
     android: {
-      package: "com.zeniahub.app",
-
+      package: "com.zeniahub.zeniamoney",
       adaptiveIcon: {
         foregroundImage: "./assets/images/android-icon-foreground.png",
         backgroundColor: "#E6F4FE",
@@ -37,7 +36,7 @@ export default {
             "action": "VIEW",
             "category": ["BROWSABLE", "DEFAULT"],
             "data": [
-              { "scheme": "zeniahub" }
+              { scheme: "zeniamoney" }
             ]
           },
           // 2. Universal App Link (https://zeniahub.com)
@@ -76,7 +75,7 @@ export default {
       "@sentry/react-native/expo",
         {
           "url": "https://sentry.io/",
-          "project": "zeniahub",
+          "project": "zeniamoney",
           "organization": "zeniahub"
         }
       ]
