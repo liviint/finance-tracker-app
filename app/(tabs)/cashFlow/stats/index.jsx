@@ -2,7 +2,6 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Card } from "../../../../src/components/ThemeProvider/components";
 
-// Dummy stats data
 const stats = {
   balance: 41250,
   income: 45000,
