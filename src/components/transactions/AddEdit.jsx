@@ -1,11 +1,14 @@
-import { useState } from "react";
-import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, TextInput, StyleSheet, Pressable, TouchableOpacity } from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { Card } from "../ThemeProvider/components";
 import { useSQLiteContext } from "expo-sqlite";
-import { createTransaction } from "../../db/transactionsDb";
+import { createTransaction, getTransactionByUuid } from "../../db/transactionsDb";
 
-export default function AddEdit({id}) {
+export default function AddEdit() {
+  const {id:uuid} = useLocalSearchParams()
   const db = useSQLiteContext()
+  const router = useRouter()
   const [form, setForm] = useState({
     title: "",
     amount: "",
@@ -18,24 +21,31 @@ export default function AddEdit({id}) {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSave = async (e) => {
-    e.stopPropagation()
+  const handleSave = async () => {
     try {
-      createTransaction(db,form)
+      await createTransaction(db,form)
+      router.push("/cashFlow")
     } catch (error) {
       console.log(error,"hello error creating a transaction")
     }
   }
+  useEffect(() => {
+    let getTransaction = async() => {
+      let transaction = await getTransactionByUuid(db,uuid)
+      console.log(transaction,"hello transaction")
+      setForm(transaction)
+    }
+    getTransaction()
+  },[])
 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>
-        {id ? "Edit Transaction" : "Add Transaction"}
+        {uuid ? "Edit Transaction" : "Add Transaction"}
       </Text>
       <Text style={styles.subHeader}>Track your income or expenses</Text>
 
       <Card style={styles.card}>
-        {/* Title */}
         <View style={styles.formGroup}>
           <Text style={styles.label}>Title</Text>
           <TextInput
@@ -48,11 +58,11 @@ export default function AddEdit({id}) {
 
         {/* Amount */}
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Amount (KES)</Text>
+          <Text style={styles.label}>Amount</Text>
           <TextInput
             placeholder="0"
             keyboardType="numeric"
-            value={form.amount}
+            value={String(form.amount)}
             onChangeText={(v) => handleChange("amount", v)}
             style={styles.input}
           />
@@ -98,11 +108,11 @@ export default function AddEdit({id}) {
           />
         </View>
 
-        <Pressable style={styles.saveButton} onPress={handleSave}>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
           <Text style={styles.saveText}>
-            {id ? "Update Transaction" : "Save Transaction"}
+            {uuid ? "Update Transaction" : "Save Transaction"}
           </Text>
-        </Pressable>
+        </TouchableOpacity>
 
       </Card>
     </View>

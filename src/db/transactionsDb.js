@@ -1,4 +1,4 @@
-import { v4 as uuidV4 } from "react-native-uuid";
+import uuid from "react-native-uuid";
 
 export async function createTransaction(db, {
     title,
@@ -8,31 +8,34 @@ export async function createTransaction(db, {
     note = null,
     source = 'manual',
 }) {
-    const now = new Date().toISOString();
-    const uuid = uuidV4();
+    try {
+        const now = new Date().toISOString();
+        const localUuid = uuid.v4();
 
-    // store amount in cents
-    const amountInCents = Math.round(Number(amount) * 100);
+        // store amount in cents
+        const amountInCents = Math.round(Number(amount) * 100);
 
-    await db.runAsync(
-        `INSERT INTO finance_transactions (
-        uuid, title, amount, type, category, note, source,
-        created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-        , [
-        uuid,
-        title,
-        amountInCents,
-        type,
-        category,
-        note,
-        source,
-        now,
-        now,
-        ]
-    );
-
-    return uuid;
+        await db.runAsync(
+            `INSERT INTO finance_transactions (
+            uuid, title, amount, type, category, note, source,
+            created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            , [
+            localUuid,
+            title,
+            amountInCents,
+            type,
+            category,
+            note,
+            source,
+            now,
+            now,
+            ]
+        );
+        return uuid;
+    } catch (error) {
+        console.log(error,"hello error creating a transaction")
+    }
 }
 
 export async function getTransactions(db) {

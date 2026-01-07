@@ -1,20 +1,27 @@
-import React from "react";
+import {useState,useEffect} from "react"
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { Card } from "../../../../src/components/ThemeProvider/components";
-
-// Dummy single transaction
-const transaction = {
-  id: "1",
-  title: "Groceries",
-  category: "Food",
-  amount: -1200,
-  date: "2026-01-05",
-  note: "Weekly shopping at the local market",
-  type: "expense", // income | expense
-};
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
+import { getTransactionByUuid } from "../../../../src/db/transactionsDb";
+import { dateFormat } from "../../../../utils/dateFormat";
 
 export default function FinanceEntryViewPage() {
-  const isExpense = transaction.amount < 0;
+  const db = useSQLiteContext()
+  const router = useRouter()
+  const {id:uuid} = useLocalSearchParams()
+  const [transaction,setTransaction] = useState(0)
+  const [isExpense,setIsExpense] = useState(transaction.amount < 0)
+
+  useEffect(() => {
+    console.log(uuid,"hello uuid")
+    let getTransaction = async() => {
+      let transaction = await getTransactionByUuid(db,uuid)
+      setTransaction(transaction)
+      setIsExpense(transaction.amount < 0)
+    }
+    getTransaction()
+  },[])
 
   return (
     <View style={styles.container}>
@@ -33,7 +40,7 @@ export default function FinanceEntryViewPage() {
       <Card style={styles.detailsCard}>
         <DetailRow label="Title" value={transaction.title} />
         <DetailRow label="Category" value={transaction.category} />
-        <DetailRow label="Date" value={transaction.date} />
+        <DetailRow label="Date" value={dateFormat(transaction.created_at)} />
 
         {transaction.note ? (
           <View style={styles.noteBox}>
@@ -45,7 +52,7 @@ export default function FinanceEntryViewPage() {
 
       {/* Actions */}
       <View style={styles.actionsRow}>
-        <Pressable style={styles.editButton}>
+        <Pressable style={styles.editButton} onPress={() => router.push(`cashFlow/${uuid}/edit`)}>
           <Text style={styles.actionText}>Edit</Text>
         </Pressable>
         <Pressable style={styles.deleteButton}>

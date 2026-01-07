@@ -1,8 +1,13 @@
+import { useEffect, useState } from "react";
+import { useIsFocused } from "@react-navigation/native";
 import { View, Text, FlatList, StyleSheet, Pressable } from "react-native";
 import { Card } from "../../../src/components/ThemeProvider/components";
-import { useRouter } from "expo-router";
+import { useRouter, Link } from "expo-router";
+import { getTransactions } from "../../../src/db/transactionsDb";
+import { useSQLiteContext } from "expo-sqlite";
+import { dateFormat } from "../../../utils/dateFormat";
 
-const transactions = [
+const transactions1 = [
   { id: "1", title: "Groceries", category: "Food", amount: -1200, date: "2026-01-05" },
   { id: "2", title: "Salary", category: "Income", amount: 45000, date: "2026-01-01" },
   { id: "3", title: "Transport", category: "Travel", amount: -300, date: "2026-01-04" },
@@ -10,20 +15,33 @@ const transactions = [
 ];
 
 export default function FinanceListPage() {
-  const router = useRouter();
+    const db = useSQLiteContext()
+    const router = useRouter();
+    const [transactions,setTransactions] = useState([])
+
+    useEffect(() => {
+        let fetchTransactions = async() => {
+            let transactions = await getTransactions(db)
+            console.log(transactions,"hello transactions")
+            setTransactions(transactions)
+        }
+        fetchTransactions()
+    },[useIsFocused])
 
   const renderItem = ({ item }) => (
-    <Card style={styles.card}>
-      <View style={styles.row}>
-        <View>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.meta}>{item.category} • {item.date}</Text>
-        </View>
-        <Text style={[styles.amount, item.amount < 0 ? styles.expense : styles.income]}>
-          {item.amount < 0 ? "-" : "+"}KES {Math.abs(item.amount).toLocaleString()}
-        </Text>
-      </View>
-    </Card>
+    <Pressable href={``} onPress={() => router.push(`/cashFlow/${item.uuid}`)}>
+        <Card style={styles.card}>
+            <View style={styles.row}>
+                <View>
+                <Text style={styles.title}>{item.title}</Text>
+                <Text style={styles.meta}>{item.category} • {dateFormat(item.created_at)}</Text>
+                </View>
+                <Text style={[styles.amount, item.amount < 0 ? styles.expense : styles.income]}>
+                {item.amount < 0 ? "-" : "+"}KES {Math.abs(item.amount).toLocaleString()}
+                </Text>
+            </View>
+        </Card>
+    </Pressable>
   );
 
   return (
