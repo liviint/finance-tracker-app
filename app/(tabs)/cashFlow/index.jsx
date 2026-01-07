@@ -1,5 +1,6 @@
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import { View, Text, FlatList, StyleSheet, Pressable } from "react-native";
 import { Card } from "../../../src/components/ThemeProvider/components";
+import { useRouter } from "expo-router";
 
 const transactions = [
   { id: "1", title: "Groceries", category: "Food", amount: -1200, date: "2026-01-05" },
@@ -9,6 +10,8 @@ const transactions = [
 ];
 
 export default function FinanceListPage() {
+  const router = useRouter();
+
   const renderItem = ({ item }) => (
     <Card style={styles.card}>
       <View style={styles.row}>
@@ -25,15 +28,35 @@ export default function FinanceListPage() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Finance Tracker</Text>
-      <Text style={styles.subHeader}>Your recent transactions</Text>
+      {/* Header row */}
+      <View style={styles.headerRow}>
+        <View>
+          <Text style={styles.header}>Finance Tracker</Text>
+          <Text style={styles.subHeader}>Your recent transactions</Text>
+        </View>
+
+        <Pressable
+          onPress={() => router.push("/finance/stats")}
+          style={styles.statsButton}
+        >
+          <Text style={styles.statsText}>Stats</Text>
+        </Pressable>
+      </View>
 
       <FlatList
         data={transactions}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={{ paddingBottom: 96 }}
       />
+
+      {/* Floating Add Button */}
+      <Pressable
+        onPress={() => router.push("/cashFlow/add")}
+        style={styles.addButton}
+      >
+        <Text style={styles.addText}>＋</Text>
+      </Pressable>
     </View>
   );
 }
@@ -41,19 +64,35 @@ export default function FinanceListPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FAF9F7", // ZeniaHub background
+    backgroundColor: "#FAF9F7",
     padding: 16,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
   },
   header: {
     fontSize: 24,
     fontWeight: "700",
     color: "#333333",
-    marginBottom: 4,
   },
   subHeader: {
     fontSize: 14,
     color: "#666",
-    marginBottom: 16,
+    marginTop: 2,
+  },
+  statsButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+  },
+  statsText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#2E8B8B",
   },
   card: {
     marginBottom: 12,
@@ -81,9 +120,26 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   income: {
-    color: "#2E8B8B", 
+    color: "#2E8B8B",
   },
   expense: {
     color: "#FF6B6B",
+  },
+  addButton: {
+    position: "absolute",
+    right: 20,
+    bottom: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#333333",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addText: {
+    color: "#FFFFFF",
+    fontSize: 28,
+    fontWeight: "700",
+    marginTop: -2,
   },
 });

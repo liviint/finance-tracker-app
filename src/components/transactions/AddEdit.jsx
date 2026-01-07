@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
 import { Card } from "../ThemeProvider/components";
+import { useSQLiteContext } from "expo-sqlite";
+import { createTransaction } from "../../db/transactionsDb";
 
 export default function AddEdit({id}) {
+  const db = useSQLiteContext()
   const [form, setForm] = useState({
     title: "",
     amount: "",
@@ -15,9 +18,20 @@ export default function AddEdit({id}) {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleSave = async (e) => {
+    e.stopPropagation()
+    try {
+      createTransaction(db,form)
+    } catch (error) {
+      console.log(error,"hello error creating a transaction")
+    }
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Add Transaction</Text>
+      <Text style={styles.header}>
+        {id ? "Edit Transaction" : "Add Transaction"}
+      </Text>
       <Text style={styles.subHeader}>Track your income or expenses</Text>
 
       <Card style={styles.card}>
@@ -84,10 +98,12 @@ export default function AddEdit({id}) {
           />
         </View>
 
-        {/* Save button */}
-        <Pressable style={styles.saveButton}>
-          <Text style={styles.saveText}>Save Transaction</Text>
+        <Pressable style={styles.saveButton} onPress={handleSave}>
+          <Text style={styles.saveText}>
+            {id ? "Update Transaction" : "Save Transaction"}
+          </Text>
         </Pressable>
+
       </Card>
     </View>
   );
