@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, Text, TextInput, StyleSheet, Pressable, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, StyleSheet, Pressable, TouchableOpacity, Alert } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Card } from "../ThemeProvider/components";
 import { useSQLiteContext } from "expo-sqlite";
@@ -25,8 +25,12 @@ export default function AddEdit() {
     try {
       if(uuid){
         updateTransaction(db,uuid,form)
+        Alert.alert("Updated", "Your changes have been saved.");
       }
-      else await createTransaction(db,form)
+      else {
+        await createTransaction(db,form)
+        Alert.alert("Saved", "Your transaction was created.");
+      }
       router.push("/transactions")
     } catch (error) {
       console.log(error,"hello error creating a transaction")

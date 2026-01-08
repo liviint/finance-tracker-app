@@ -1,5 +1,5 @@
 import {useState,useEffect} from "react"
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
 import { Card } from "../../../../src/components/ThemeProvider/components";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
@@ -17,6 +17,7 @@ export default function FinanceEntryViewPage() {
   const handleDelete = async() => {
     try {
       await deleteTransaction(db,uuid)
+      Alert.alert("Removed", "This transaction has been deleted.");
       router.push("/transactions")
     } catch (error) {
       console.log(error,"hello error")
