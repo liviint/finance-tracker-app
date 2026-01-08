@@ -48,16 +48,6 @@ export default function FinanceStatsPage() {
           </Text>
         </Card>
       </View>
-
-      {/* Insight */}
-      <Card style={styles.insightCard}>
-        <Text style={styles.insightTitle}>Insight</Text>
-        <Text style={styles.insightText}>
-          Your highest spending category this month is
-          <Text style={styles.insightHighlight}> {stats.topCategory}</Text>.
-          Awareness is the first step toward balance.
-        </Text>
-      </Card>
     </View>
   );
 }
