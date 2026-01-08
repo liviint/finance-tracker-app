@@ -11,6 +11,7 @@ export default function FinanceListPage() {
     const db = useSQLiteContext()
     const router = useRouter();
     const [transactions,setTransactions] = useState([])
+    const isFocused = useIsFocused()
 
     useEffect(() => {
         let fetchTransactions = async() => {
@@ -18,7 +19,7 @@ export default function FinanceListPage() {
             setTransactions(transactions)
         }
         fetchTransactions()
-    },[useIsFocused])
+    },[isFocused])
 
   const renderItem = ({ item }) => (
     <Pressable onPress={() => router.push(`/transactions/${item.uuid}`)}>

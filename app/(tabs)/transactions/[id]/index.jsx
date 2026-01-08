@@ -3,8 +3,9 @@ import { View, Text, StyleSheet, Pressable } from "react-native";
 import { Card } from "../../../../src/components/ThemeProvider/components";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { getTransactionByUuid } from "../../../../src/db/transactionsDb";
+import { getTransactionByUuid, deleteTransaction } from "../../../../src/db/transactionsDb";
 import { dateFormat } from "../../../../utils/dateFormat";
+import DeleteButton from "../../../../src/components/common/DeleteButton";
 
 export default function FinanceEntryViewPage() {
   const db = useSQLiteContext()
@@ -12,6 +13,15 @@ export default function FinanceEntryViewPage() {
   const {id:uuid} = useLocalSearchParams()
   const [transaction,setTransaction] = useState(0)
   const [isExpense,setIsExpense] = useState(transaction.amount < 0)
+
+  const handleDelete = async() => {
+    try {
+      await deleteTransaction(db,uuid)
+      router.push("/transactions")
+    } catch (error) {
+      console.log(error,"hello error")
+    }
+  }
 
   useEffect(() => {
     if(!uuid) return
@@ -55,9 +65,10 @@ export default function FinanceEntryViewPage() {
         <Pressable style={styles.editButton} onPress={() => router.push(`transactions/${uuid}/edit`)}>
           <Text style={styles.actionText}>Edit</Text>
         </Pressable>
-        <Pressable style={styles.deleteButton}>
-          <Text style={styles.deleteText}>Delete</Text>
-        </Pressable>
+        <DeleteButton 
+            handleOk={handleDelete}
+            item={"transaction"}
+        />
       </View>
     </View>
   );
