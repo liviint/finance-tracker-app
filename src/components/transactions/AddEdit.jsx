@@ -3,7 +3,7 @@ import { View, Text, TextInput, StyleSheet, Pressable, TouchableOpacity } from "
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Card } from "../ThemeProvider/components";
 import { useSQLiteContext } from "expo-sqlite";
-import { createTransaction, getTransactionByUuid } from "../../db/transactionsDb";
+import { createTransaction, getTransactionByUuid, updateTransaction } from "../../db/transactionsDb";
 
 export default function AddEdit() {
   const {id:uuid} = useLocalSearchParams()
@@ -23,7 +23,10 @@ export default function AddEdit() {
 
   const handleSave = async () => {
     try {
-      await createTransaction(db,form)
+      if(uuid){
+        updateTransaction(db,uuid,form)
+      }
+      else await createTransaction(db,form)
       router.push("/transactions")
     } catch (error) {
       console.log(error,"hello error creating a transaction")
