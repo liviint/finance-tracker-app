@@ -30,13 +30,14 @@ export default function AddEdit() {
     }
   }
   useEffect(() => {
+    if(!uuid) return
     let getTransaction = async() => {
       let transaction = await getTransactionByUuid(db,uuid)
       console.log(transaction,"hello transaction")
       setForm(transaction)
     }
     getTransaction()
-  },[])
+  },[uuid])
 
   return (
     <View style={styles.container}>
