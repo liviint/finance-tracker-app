@@ -24,7 +24,7 @@ export default function AddEdit() {
   const handleSave = async () => {
     try {
       await createTransaction(db,form)
-      router.push("/cashFlow")
+      router.push("/transactions")
     } catch (error) {
       console.log(error,"hello error creating a transaction")
     }
@@ -68,7 +68,6 @@ export default function AddEdit() {
           />
         </View>
 
-        {/* Type selector */}
         <View style={styles.typeRow}>
           <Pressable
             onPress={() => handleChange("type", "expense")}

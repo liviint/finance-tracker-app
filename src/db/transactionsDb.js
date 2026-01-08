@@ -12,9 +12,6 @@ export async function createTransaction(db, {
         const now = new Date().toISOString();
         const localUuid = uuid.v4();
 
-        // store amount in cents
-        const amountInCents = Math.round(Number(amount) * 100);
-
         await db.runAsync(
             `INSERT INTO finance_transactions (
             uuid, title, amount, type, category, note, source,
@@ -23,7 +20,7 @@ export async function createTransaction(db, {
             , [
             localUuid,
             title,
-            amountInCents,
+            amount,
             type,
             category,
             note,
@@ -65,7 +62,7 @@ export async function updateTransaction(db, uuid, updates = {}) {
 
     if (updates.amount !== undefined) {
         fields.push("amount = ?");
-        values.push(Math.round(Number(updates.amount) * 100));
+        values.push(updates.amount);
     }
 
     if (updates.type !== undefined) {

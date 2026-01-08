@@ -14,7 +14,7 @@ export default function FinanceEntryViewPage() {
   const [isExpense,setIsExpense] = useState(transaction.amount < 0)
 
   useEffect(() => {
-    console.log(uuid,"hello uuid")
+    if(!uuid) return
     let getTransaction = async() => {
       let transaction = await getTransactionByUuid(db,uuid)
       setTransaction(transaction)
@@ -52,7 +52,7 @@ export default function FinanceEntryViewPage() {
 
       {/* Actions */}
       <View style={styles.actionsRow}>
-        <Pressable style={styles.editButton} onPress={() => router.push(`cashFlow/${uuid}/edit`)}>
+        <Pressable style={styles.editButton} onPress={() => router.push(`transactions/${uuid}/edit`)}>
           <Text style={styles.actionText}>Edit</Text>
         </Pressable>
         <Pressable style={styles.deleteButton}>

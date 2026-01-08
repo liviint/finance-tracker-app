@@ -30,24 +30,41 @@ export default function TabLayout() {
       >
 
       <Tabs.Screen
-        name="journal"
+        name="transactions"
         options={{
-          title: 'Journal',
+          title: 'Transactions',
           tabBarIcon: ({ color }) => <IconSymbol size={24} name="book.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="index"
+        options={{
+          href: null,
         }}
       />
 
       <Tabs.Screen
-        name="habits"
+        name="transactions/[id]/index"
         options={{
-          title: 'Habits',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="checkmark.seal.fill" color={color} />,
+          href: null,
         }}
       />
       
 
       <Tabs.Screen
-        name="index"
+        name="transactions/[id]/edit/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="transactions/add/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="transactions/stats/index"
         options={{
           href: null,
         }}
