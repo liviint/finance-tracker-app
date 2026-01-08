@@ -108,7 +108,7 @@ export async function deleteTransaction(db, uuid) {
     );
 }
 
-export async function getFinanceStats(db) {
+export async function getTransactionStats(db) {
     const result = await db.getFirstAsync(`
         SELECT
         SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) AS income,

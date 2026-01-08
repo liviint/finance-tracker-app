@@ -46,7 +46,7 @@ export default function FinanceListPage() {
         </View>
 
         <Pressable
-          onPress={() => router.push("/finance/stats")}
+          onPress={() => router.push("/transactions/stats")}
           style={styles.statsButton}
         >
           <Text style={styles.statsText}>Stats</Text>

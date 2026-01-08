@@ -1,16 +1,26 @@
-import React from "react";
+import {useState, useEffect} from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { useIsFocused } from "@react-navigation/native";
 import { Card } from "../../../../src/components/ThemeProvider/components";
-
-const stats = {
-  balance: 41250,
-  income: 45000,
-  expenses: 3750,
-  topCategory: "Food",
-  month: "January 2026",
-};
+import { useSQLiteContext } from "expo-sqlite";
+import { getTransactionStats } from "../../../../src/db/transactionsDb";
 
 export default function FinanceStatsPage() {
+  const [stats,setStats] = useState({})
+  const db = useSQLiteContext()
+
+  useEffect(() => {
+    let fetchStats = async () => {
+      try {
+        let stats = await getTransactionStats(db)
+        setStats(stats)
+      } catch (error) {
+        console.log(error,"hello fetch stats error")
+      }
+    }
+    fetchStats()
+  },[useIsFocused])
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Financial Overview</Text>
@@ -19,7 +29,7 @@ export default function FinanceStatsPage() {
       {/* Balance */}
       <Card style={styles.balanceCard}>
         <Text style={styles.balanceLabel}>Current Balance</Text>
-        <Text style={styles.balanceAmount}>KES {stats.balance.toLocaleString()}</Text>
+        <Text style={styles.balanceAmount}>KES {stats?.balance?.toLocaleString() ?? 0}</Text>
       </Card>
 
       {/* Income & Expense */}
@@ -27,14 +37,14 @@ export default function FinanceStatsPage() {
         <Card style={styles.statCard}>
           <Text style={styles.statLabel}>Income</Text>
           <Text style={[styles.statAmount, styles.income]}>
-            +KES {stats.income.toLocaleString()}
+            +KES {stats?.income?.toLocaleString() ?? 0}
           </Text>
         </Card>
 
         <Card style={styles.statCard}>
           <Text style={styles.statLabel}>Expenses</Text>
           <Text style={[styles.statAmount, styles.expense]}>
-            -KES {stats.expenses.toLocaleString()}
+            -KES {stats?.expenses?.toLocaleString() ?? 0}
           </Text>
         </Card>
       </View>
