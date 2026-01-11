@@ -5,7 +5,7 @@ export default {
     scheme: "zeniamoney",
     name: "ZeniaMoney",
     slug: "zeniamoney",
-    version: "1.0.16",
+    version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     userInterfaceStyle: "automatic",
@@ -90,7 +90,7 @@ export default {
       router: {},
       apiUrl: process.env.EXPO_PUBLIC_API_URL || "https://api.zeniahub.com/api",
       eas: {
-        projectId: process.env.EXPO_PROJECT_ID || "09a5d041-42bc-48f7-b77a-e92ed86feb89",
+        projectId: process.env.EXPO_PROJECT_ID || "f2a2cdc0-3be6-4482-9fea-ef4528851e01",
       },
     },
 
