@@ -1,11 +1,13 @@
 import {useState, useEffect} from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
-import { Card } from "../../../../src/components/ThemeProvider/components";
+import { Card, BodyText , SecondaryText} from "../../../../src/components/ThemeProvider/components";
 import { useSQLiteContext } from "expo-sqlite";
 import { getTransactionStats } from "../../../../src/db/transactionsDb";
+import { useThemeStyles } from "../../../../src/hooks/useThemeStyles";
 
 export default function FinanceStatsPage() {
+  const {globalStyles} = useThemeStyles()
   const [stats,setStats] = useState({})
   const db = useSQLiteContext()
 
@@ -22,30 +24,30 @@ export default function FinanceStatsPage() {
   },[useIsFocused])
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Financial Overview</Text>
-      <Text style={styles.subHeader}>{stats.month}</Text>
+    <View style={globalStyles.container}>
+      <BodyText style={globalStyles.title}>Financial Overview</BodyText>
+      <SecondaryText style={globalStyles.subTitle}>{stats.month}</SecondaryText>
 
       {/* Balance */}
-      <Card style={styles.balanceCard}>
-        <Text style={styles.balanceLabel}>Current Balance</Text>
-        <Text style={styles.balanceAmount}>KES {stats?.balance?.toLocaleString() ?? 0}</Text>
+      <Card >
+        <SecondaryText style={styles.balanceLabel}>Current Balance</SecondaryText>
+        <BodyText style={styles.balanceAmount}>KES {stats?.balance?.toLocaleString() ?? 0}</BodyText>
       </Card>
 
       {/* Income & Expense */}
       <View style={styles.row}>
         <Card style={styles.statCard}>
-          <Text style={styles.statLabel}>Income</Text>
-          <Text style={[styles.statAmount, styles.income]}>
+          <SecondaryText style={styles.statLabel}>Income</SecondaryText>
+          <BodyText style={[styles.statAmount, styles.income]}>
             +KES {stats?.income?.toLocaleString() ?? 0}
-          </Text>
+          </BodyText>
         </Card>
 
         <Card style={styles.statCard}>
-          <Text style={styles.statLabel}>Expenses</Text>
-          <Text style={[styles.statAmount, styles.expense]}>
+          <SecondaryText style={styles.statLabel}>Expenses</SecondaryText>
+          <BodyText style={[styles.statAmount, styles.expense]}>
             -KES {stats?.expenses?.toLocaleString() ?? 0}
-          </Text>
+          </BodyText>
         </Card>
       </View>
     </View>
@@ -78,13 +80,11 @@ const styles = StyleSheet.create({
   },
   balanceLabel: {
     fontSize: 13,
-    color: "#888",
     marginBottom: 6,
   },
   balanceAmount: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#333333",
   },
   row: {
     flexDirection: "row",
@@ -93,13 +93,9 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: "#FFFFFF",
   },
   statLabel: {
     fontSize: 12,
-    color: "#888",
     marginBottom: 8,
   },
   statAmount: {

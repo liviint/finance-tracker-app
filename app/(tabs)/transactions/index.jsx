@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import { useIsFocused } from "@react-navigation/native";
 import { View, Text, FlatList, StyleSheet, Pressable } from "react-native";
-import { Card } from "../../../src/components/ThemeProvider/components";
+import { Card, BodyText, SecondaryText } from "../../../src/components/ThemeProvider/components";
 import { useRouter } from "expo-router";
 import { getTransactions } from "../../../src/db/transactionsDb";
 import { useSQLiteContext } from "expo-sqlite";
 import { dateFormat } from "../../../utils/dateFormat";
+import { useThemeStyles } from "../../../src/hooks/useThemeStyles"
 
 export default function FinanceListPage() {
     const db = useSQLiteContext()
     const router = useRouter();
     const [transactions,setTransactions] = useState([])
     const isFocused = useIsFocused()
+    const {globalStyles} = useThemeStyles()
 
     useEffect(() => {
         let fetchTransactions = async() => {
@@ -23,27 +25,27 @@ export default function FinanceListPage() {
 
   const renderItem = ({ item }) => (
     <Pressable onPress={() => router.push(`/transactions/${item.uuid}`)}>
-        <Card style={styles.card}>
+        <Card >
             <View style={styles.row}>
                 <View>
-                <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.meta}>{item.category} • {dateFormat(item.created_at)}</Text>
+                <BodyText style={styles.title}>{item.title}</BodyText>
+                <SecondaryText style={styles.meta}>{item.category} • {dateFormat(item.created_at)}</SecondaryText>
                 </View>
-                <Text style={[styles.amount, item.type === "expense"  ? styles.expense : styles.income]}>
+                <BodyText style={[styles.amount, item.type === "expense"  ? styles.expense : styles.income]}>
                   {item.type === "expense" ? "-" : "+"}KES {Math.abs(item.amount).toLocaleString()}
-                </Text>
+                </BodyText>
             </View>
         </Card>
     </Pressable>
   );
 
   return (
-    <View style={styles.container}>
+    <View style={globalStyles.container}>
       {/* Header row */}
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.header}>Finance Tracker</Text>
-          <Text style={styles.subHeader}>Your recent transactions</Text>
+          <BodyText style={globalStyles.title}>Finance Tracker</BodyText>
+          <SecondaryText style={globalStyles.subTitle}>Your recent transactions</SecondaryText>
         </View>
 
         <Pressable
@@ -73,11 +75,6 @@ export default function FinanceListPage() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FAF9F7",
-    padding: 16,
-  },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -87,11 +84,9 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#333333",
   },
   subHeader: {
     fontSize: 14,
-    color: "#666",
     marginTop: 2,
   },
   statsButton: {
@@ -117,13 +112,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   title: {
-    fontSize: 16,
     fontWeight: "600",
-    color: "#333333",
   },
   meta: {
     fontSize: 12,
-    color: "#999999",
     marginTop: 2,
   },
   amount: {

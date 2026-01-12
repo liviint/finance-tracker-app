@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { View, Text, TextInput, StyleSheet, Pressable, TouchableOpacity, Alert } from "react-native";
+import { View, Text, StyleSheet, Pressable, TouchableOpacity, Alert } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { Card } from "../ThemeProvider/components";
+import { Card, BodyText,Input,TextArea , FormLabel} from "../ThemeProvider/components";
 import { useSQLiteContext } from "expo-sqlite";
 import { createTransaction, getTransactionByUuid, updateTransaction } from "../../db/transactionsDb";
+import { useThemeStyles } from "../../hooks/useThemeStyles";
 
 export default function AddEdit() {
   const {id:uuid} = useLocalSearchParams()
+  const {globalStyles} = useThemeStyles()
   const db = useSQLiteContext()
   const router = useRouter()
   const [form, setForm] = useState({
@@ -47,16 +49,15 @@ export default function AddEdit() {
   },[uuid])
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>
+    <View style={globalStyles.container}>
+      <BodyText style={globalStyles.title}>
         {uuid ? "Edit Transaction" : "Add Transaction"}
-      </Text>
-      <Text style={styles.subHeader}>Track your income or expenses</Text>
+      </BodyText>
 
-      <Card style={styles.card}>
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Title</Text>
-          <TextInput
+      <Card >
+        <View style={globalStyles.formGroup}>
+          <FormLabel style={styles.label}>Title</FormLabel>
+          <Input
             placeholder="e.g. Groceries, Salary"
             value={form.title}
             onChangeText={(v) => handleChange("title", v)}
@@ -65,14 +66,13 @@ export default function AddEdit() {
         </View>
 
         {/* Amount */}
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Amount</Text>
-          <TextInput
+        <View style={globalStyles.formGroup}>
+          <FormLabel >Amount</FormLabel>
+          <Input
             placeholder="0"
             keyboardType="numeric"
             value={String(form.amount)}
             onChangeText={(v) => handleChange("amount", v)}
-            style={styles.input}
           />
         </View>
 
@@ -93,9 +93,9 @@ export default function AddEdit() {
         </View>
 
         {/* Category */}
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Category</Text>
-          <TextInput
+        <View style={globalStyles.formGroup}>
+          <FormLabel >Category</FormLabel>
+          <Input
             placeholder="e.g. Food, Transport"
             value={form.category}
             onChangeText={(v) => handleChange("category", v)}
@@ -104,13 +104,12 @@ export default function AddEdit() {
         </View>
 
         {/* Note */}
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Note (optional)</Text>
-          <TextInput
+        <View style={globalStyles.formGroup}>
+          <FormLabel >Note (optional)</FormLabel>
+          <TextArea
             placeholder="Any extra details"
             value={form.note}
             onChangeText={(v) => handleChange("note", v)}
-            style={[styles.input, styles.textArea]}
             multiline
           />
         </View>
@@ -127,11 +126,6 @@ export default function AddEdit() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FAF9F7",
-    padding: 16,
-  },
   header: {
     fontSize: 24,
     fontWeight: "700",
@@ -143,30 +137,7 @@ const styles = StyleSheet.create({
     color: "#666",
     marginBottom: 16,
   },
-  card: {
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: "#FFFFFF",
-  },
-  formGroup: {
-    marginBottom: 14,
-  },
-  label: {
-    fontSize: 13,
-    color: "#555",
-    marginBottom: 6,
-  },
-  input: {
-    backgroundColor: "#FAF9F7",
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 14,
-    color: "#333",
-  },
-  textArea: {
-    height: 80,
-    textAlignVertical: "top",
-  },
+  
   typeRow: {
     flexDirection: "row",
     gap: 12,
