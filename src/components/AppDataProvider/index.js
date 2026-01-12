@@ -17,6 +17,7 @@ const migrateDbIfNeeded = async (db) => {
       amount REAL NOT NULL, 
       type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
       category TEXT,
+      category_id INTEGER,
       note TEXT,
 
       source TEXT DEFAULT 'manual',
@@ -33,13 +34,23 @@ const migrateDbIfNeeded = async (db) => {
     ON finance_transactions(type);
 
     CREATE TABLE IF NOT EXISTS finance_categories (
-      id INTEGER ,
+      id INTEGER,
       uuid TEXT UNIQUE PRIMARY KEY,
+
       name TEXT NOT NULL,
-      type TEXT CHECK (type IN ('income', 'expense')),
+      type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
+
       color TEXT,
-      icon TEXT
+      icon TEXT,
+
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      deleted_at TEXT
     );
+
+CREATE INDEX IF NOT EXISTS idx_categories_type
+ON finance_categories(type);
+
 
   `);
 };

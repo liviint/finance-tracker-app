@@ -1,4 +1,5 @@
 import uuid from "react-native-uuid";
+import { DEFAULT_CATEGORIES } from "../../utils/categoriesSeeder";
 
 export async function createTransaction(db, {
     title,
@@ -139,3 +140,27 @@ export async function getTopCategory(db) {
         LIMIT 1
     `);
 }
+
+const seedCategoriesIfEmpty = async (db) => {
+  const rows = await db.getAllAsync(
+    "SELECT COUNT(*) as count FROM finance_categories"
+  );
+
+  if (rows[0].count > 0) return;
+
+  for (const cat of DEFAULT_CATEGORIES) {
+    await db.runAsync(
+      `INSERT INTO finance_categories 
+      (uuid, name, type, color, icon)
+      VALUES (?, ?, ?, ?, ?)`,
+      [
+        uuid.v4(),
+        cat.name,
+        cat.type,
+        cat.color,
+        cat.icon,
+      ]
+    );
+  }
+};
+
