@@ -141,26 +141,69 @@ export async function getTopCategory(db) {
     `);
 }
 
-const seedCategoriesIfEmpty = async (db) => {
-  const rows = await db.getAllAsync(
-    "SELECT COUNT(*) as count FROM finance_categories"
-  );
-
-  if (rows[0].count > 0) return;
-
-  for (const cat of DEFAULT_CATEGORIES) {
-    await db.runAsync(
-      `INSERT INTO finance_categories 
-      (uuid, name, type, color, icon)
-      VALUES (?, ?, ?, ?, ?)`,
-      [
-        uuid.v4(),
-        cat.name,
-        cat.type,
-        cat.color,
-        cat.icon,
-      ]
+export const seedCategoriesIfEmpty = async (db) => {
+    const rows = await db.getAllAsync(
+        "SELECT COUNT(*) as count FROM finance_categories"
     );
-  }
+
+    if (rows[0].count > 0) return;
+
+    for (const cat of DEFAULT_CATEGORIES) {
+        await db.runAsync(
+        `INSERT INTO finance_categories 
+        (uuid, name, type, color, icon)
+        VALUES (?, ?, ?, ?, ?)`,
+        [
+            uuid.v4(),
+            cat.name,
+            cat.type,
+            cat.color,
+            cat.icon,
+        ]
+        );
+    }
 };
 
+export const createCategory = async (db, data) => {
+    const { name, type, color, icon } = data;
+
+    await db.runAsync(
+        `INSERT INTO finance_categories
+        (uuid, name, type, color, icon)
+        VALUES (?, ?, ?, ?, ?)`,
+        [crypto.randomUUID(), name, type, color, icon]
+    );
+};
+
+
+export const updateCategory = async (db, uuid, data) => {
+    await db.runAsync(
+        `UPDATE finance_categories
+        SET name = ?, color = ?, icon = ?, updated_at = datetime('now')
+        WHERE uuid = ?`,
+        [data.name, data.color, data.icon, uuid]
+    );
+};
+
+
+export const deleteCategory = async (db, uuid) => {
+    await db.runAsync(
+        `UPDATE finance_categories
+        SET deleted_at = datetime('now')
+        WHERE uuid = ?`,
+        [uuid]
+    );
+};
+
+
+export const getCategoriesByType = async (db, type) => {
+    return db.getAllAsync(
+        `
+        SELECT *
+        FROM finance_categories
+        WHERE type = ? AND deleted_at IS NULL
+        ORDER BY name
+        `,
+        [type]
+    );
+};
