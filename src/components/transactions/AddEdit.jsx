@@ -4,10 +4,9 @@ import { Picker } from "@react-native-picker/picker";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Card, BodyText,Input,TextArea , FormLabel} from "../ThemeProvider/components";
 import { useSQLiteContext } from "expo-sqlite";
-import { createTransaction, 
-        getTransactionByUuid, 
-        updateTransaction,
+import { getTransactionByUuid,
         getCategories,
+        upsertTransaction,
       } from "../../db/transactionsDb";
 import { useThemeStyles } from "../../hooks/useThemeStyles";
 
@@ -23,6 +22,7 @@ export default function AddEdit() {
     category_uuid:"",
     type: "expense", 
     note: "",
+    uuid:"",
   });
   const [categories,setCategories] = useState([])
 
@@ -30,16 +30,48 @@ export default function AddEdit() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleCategoryChange = (selected) => {
+    console.log(selected,"hello selected")
+    setForm((prev) => ({ ...prev, category_uuid: selected.uuid, category:selected.name, type:selected.type }))
+  } 
+
+const isFormValid = () => {
+  if (!form.title.trim()) {
+    Alert.alert("Missing title", "Please enter a title for the transaction.");
+    return false;
+  }
+
+  const amount = Number(form.amount);
+  if (!form.amount || isNaN(amount) || amount <= 0) {
+    Alert.alert(
+      "Invalid amount",
+      "Please enter a valid amount greater than 0."
+    );
+    return false;
+  }
+
+  if (!form.category_uuid) {
+    Alert.alert(
+      "Category required",
+      "Please select a category for this transaction."
+    );
+    return false;
+  }
+
+
+  if (!["income", "expense"].includes(form.type)) {
+    Alert.alert("Invalid type", "Transaction type is invalid.");
+    return false;
+  }
+
+  return true;
+};
+
+
   const handleSave = async () => {
+    if(!isFormValid()) return
     try {
-      if(uuid){
-        updateTransaction(db,uuid,form)
-        Alert.alert("Updated", "Your changes have been saved.");
-      }
-      else {
-        await createTransaction(db,form)
-        Alert.alert("Saved", "Your transaction was created.");
-      }
+      await upsertTransaction(db,form)
       router.push("/transactions")
     } catch (error) {
       console.log(error,"hello error creating a transaction")
@@ -60,7 +92,6 @@ export default function AddEdit() {
     let fetchCategories = async () => {
       try {
         let categories = await getCategories(db)
-        console.log(categories,"hello categories")
         setCategories(categories)
       } catch (error) {
         console.log(error,"hello error")
@@ -85,6 +116,35 @@ export default function AddEdit() {
             style={styles.input}
           />
         </View>
+
+        {/* Category */}
+      <View style={globalStyles.formGroup}>
+        <FormLabel>Category</FormLabel>
+
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: "#DDD",
+            borderRadius: 8,
+            overflow: "hidden",
+          }}
+        >
+          <Picker
+            selectedValue={categories.find(cate => cate.uuid === form.category_uuid)}
+            onValueChange={(value) => handleCategoryChange(value)}
+          >
+            <Picker.Item label="Select category" value={null} />
+
+            {categories.map((cat) => (
+              <Picker.Item
+                key={cat.uuid}
+                label={`${cat.icon} ${cat.name}`}
+                value={cat}
+              />
+            ))}
+          </Picker>
+        </View>
+      </View>
 
         {/* Amount */}
         <View style={globalStyles.formGroup}>
@@ -112,39 +172,6 @@ export default function AddEdit() {
             <Text style={[styles.typeText, form.type === "income" && styles.activeText]}>Income</Text>
           </Pressable>
         </View>
-
-
-      {/* Category */}
-      <View style={globalStyles.formGroup}>
-        <FormLabel>Category</FormLabel>
-
-        <View
-          style={{
-            borderWidth: 1,
-            borderColor: "#DDD",
-            borderRadius: 8,
-            overflow: "hidden",
-          }}
-        >
-          <Picker
-            selectedValue={form.category_uuid}
-            onValueChange={(value) =>
-              setForm((prev) => ({ ...prev, category_uuid: value.uuid, category:value.name }))
-            }
-          >
-            <Picker.Item label="Select category" value={null} />
-
-            {categories.map((cat) => (
-              <Picker.Item
-                key={cat.uuid}
-                label={`${cat.icon} ${cat.name}`}
-                value={cat}
-              />
-            ))}
-          </Picker>
-        </View>
-      </View>
-
 
         {/* Note */}
         <View style={globalStyles.formGroup}>

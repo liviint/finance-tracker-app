@@ -29,7 +29,7 @@ export default function FinanceEntryViewPage() {
     let getTransaction = async() => {
       let transaction = await getTransactionByUuid(db,uuid)
       setTransaction(transaction)
-      setIsExpense(transaction.amount < 0)
+      setIsExpense(transaction.type === "expense")
     }
     getTransaction()
   },[])

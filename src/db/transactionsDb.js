@@ -1,40 +1,60 @@
 import uuid from "react-native-uuid";
 import { DEFAULT_CATEGORIES } from "../../utils/categoriesSeeder";
 
-export async function createTransaction(db, {
+let newUuid = uuid.v4
+export async function upsertTransaction(db, {
+    uuid,
     title,
-    amount, 
-    type, 
-    category = null,
+    amount,
+    type,
+    category,
+    category_uuid,
     note = null,
-    source = 'manual',
+    source = "manual",
 }) {
-    try {
-        const now = new Date().toISOString();
-        const localUuid = uuid.v4();
+  const now = new Date().toISOString();
 
-        await db.runAsync(
-            `INSERT INTO finance_transactions (
-            uuid, title, amount, type, category, note, source,
-            created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-            , [
-            localUuid,
-            title,
-            amount,
-            type,
-            category,
-            note,
-            source,
-            now,
-            now,
-            ]
-        );
-        return uuid;
-    } catch (error) {
-        console.log(error,"hello error creating a transaction")
-    }
+  try {
+    const localUuid = uuid ? uuid :  newUuid()
+    console.log(localUuid,"hello uuid")
+
+    await db.runAsync(
+      `
+      INSERT INTO finance_transactions (
+        uuid, title, amount, type, category,category_uuid, note, source,
+        created_at, updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)
+      ON CONFLICT(uuid) DO UPDATE SET
+        title = excluded.title,
+        amount = excluded.amount,
+        type = excluded.type,
+        category = excluded.category,
+        category_uuid = excluded.category_uuid,
+        note = excluded.note,
+        updated_at = excluded.updated_at
+      `,
+      [
+        localUuid,
+        title,
+        amount,
+        type,
+        category,
+        category_uuid,
+        note,
+        source,
+        now,
+        now,
+      ]
+    );
+
+    return localUuid; 
+  } catch (error) {
+    console.error("❌ Failed to upsert transaction:", error);
+    throw error;
+  }
 }
+
 
 export async function getTransactions(db) {
     return await db.getAllAsync(`
@@ -52,40 +72,10 @@ export async function getTransactionByUuid(db, uuid) {
     `, [uuid]);
 }
 
-export async function updateTransaction(db, uuid, updates = {}) {
-    const fields = [];
-    const values = [];
-
-    if (updates.title !== undefined) {
-        fields.push("title = ?");
-        values.push(updates.title);
-    }
-
-    if (updates.amount !== undefined) {
-        fields.push("amount = ?");
-        values.push(updates.amount);
-    }
-
-    if (updates.type !== undefined) {
-        fields.push("type = ?");
-        values.push(updates.type);
-    }
-
-    if (updates.category !== undefined) {
-        fields.push("category = ?");
-        values.push(updates.category);
-    }
-
-    if (updates.note !== undefined) {
-        fields.push("note = ?");
-        values.push(updates.note);
-    }
-
-    if (!fields.length) return;
-
-    fields.push("updated_at = ?");
-    values.push(new Date().toISOString());
-
+export async function updateTransaction(db, uuid, updates) {
+    let {title,amount,type,category,note} = updates
+    const fields = ['title','amount','type','category','note','updated_at = ?'];
+    const values = [title,amount,type,category,note,new Date().toISOString()];
     values.push(uuid);
 
     await db.runAsync(

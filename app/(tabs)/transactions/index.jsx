@@ -18,6 +18,7 @@ export default function FinanceListPage() {
     useEffect(() => {
         let fetchTransactions = async() => {
             let transactions = await getTransactions(db)
+            console.log(transactions,"hello transactions")
             setTransactions(transactions)
         }
         fetchTransactions()
@@ -58,7 +59,7 @@ export default function FinanceListPage() {
 
       <FlatList
         data={transactions}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.uuid}
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 96 }}
       />
