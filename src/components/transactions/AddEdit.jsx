@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Pressable, TouchableOpacity, Alert } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { Card, BodyText,Input,TextArea , FormLabel} from "../ThemeProvider/components";
+import { Card, BodyText,Input,TextArea , FormLabel, CustomPicker} from "../ThemeProvider/components";
 import { useSQLiteContext } from "expo-sqlite";
 import { getTransactionByUuid,
         getCategories,
@@ -117,19 +117,12 @@ const isFormValid = () => {
           />
         </View>
 
-        {/* Category */}
       <View style={globalStyles.formGroup}>
         <FormLabel>Category</FormLabel>
 
         <View
-          style={{
-            borderWidth: 1,
-            borderColor: "#DDD",
-            borderRadius: 8,
-            overflow: "hidden",
-          }}
         >
-          <Picker
+          <CustomPicker
             selectedValue={categories.find(cate => cate.uuid === form.category_uuid)}
             onValueChange={(value) => handleCategoryChange(value)}
           >
@@ -142,7 +135,7 @@ const isFormValid = () => {
                 value={cat}
               />
             ))}
-          </Picker>
+          </CustomPicker>
         </View>
       </View>
 
@@ -184,8 +177,8 @@ const isFormValid = () => {
           />
         </View>
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveText}>
+        <TouchableOpacity style={globalStyles.primaryBtn} onPress={handleSave}>
+          <Text style={globalStyles.primaryBtnText}>
             {uuid ? "Update Transaction" : "Save Transaction"}
           </Text>
         </TouchableOpacity>
@@ -233,17 +226,5 @@ const styles = StyleSheet.create({
   },
   activeText: {
     color: "#FFFFFF",
-  },
-  saveButton: {
-    marginTop: 8,
-    paddingVertical: 14,
-    borderRadius: 16,
-    backgroundColor: "#333333",
-    alignItems: "center",
-  },
-  saveText: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "700",
   },
 });

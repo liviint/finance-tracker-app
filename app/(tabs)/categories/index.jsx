@@ -9,7 +9,7 @@ import {
 import { useSQLiteContext } from "expo-sqlite";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
-import { SecondaryText } from "../../../src/components/ThemeProvider/components";
+import { SecondaryText , BodyText} from "../../../src/components/ThemeProvider/components";
 
 export default function CategoriesListScreen({ navigation }) {
   const db = useSQLiteContext();
@@ -66,9 +66,7 @@ export default function CategoriesListScreen({ navigation }) {
 
   const renderCategory = ({ item }) => (
     <TouchableOpacity
-      onPress={() =>
-        navigation.navigate("edit-category", { categoryId: item.id })
-      }
+      onPress={() => router.push(`/categories/${item.uuid}/edit`, { categoryId: item.id })}
       onLongPress={() => deleteCategory(item)}
       style={{
         flexDirection: "row",
@@ -90,14 +88,14 @@ export default function CategoriesListScreen({ navigation }) {
         <Text style={{ fontSize: 16 }}>{item.icon || "📁"}</Text>
       </View>
 
-      <Text style={{ fontSize: 16 }}>{item.name}</Text>
+      <BodyText >{item.name}</BodyText>
     </TouchableOpacity>
   );
 
   const Section = ({ title, data }) => (
     <View style={{ marginBottom: 24 }}>
       <SecondaryText
-        style={globalStyles.subTitle}
+        style={{...globalStyles.subTitle,textAlign:'left'}}
       >
         {title}
       </SecondaryText>
