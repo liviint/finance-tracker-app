@@ -1,9 +1,14 @@
 import { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Pressable, TouchableOpacity, Alert } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Card, BodyText,Input,TextArea , FormLabel} from "../ThemeProvider/components";
 import { useSQLiteContext } from "expo-sqlite";
-import { createTransaction, getTransactionByUuid, updateTransaction } from "../../db/transactionsDb";
+import { createTransaction, 
+        getTransactionByUuid, 
+        updateTransaction,
+        getCategories,
+      } from "../../db/transactionsDb";
 import { useThemeStyles } from "../../hooks/useThemeStyles";
 
 export default function AddEdit() {
@@ -15,9 +20,11 @@ export default function AddEdit() {
     title: "",
     amount: "",
     category: "",
+    category_uuid:"",
     type: "expense", 
     note: "",
   });
+  const [categories,setCategories] = useState([])
 
   const handleChange = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -38,6 +45,7 @@ export default function AddEdit() {
       console.log(error,"hello error creating a transaction")
     }
   }
+
   useEffect(() => {
     if(!uuid) return
     let getTransaction = async() => {
@@ -47,6 +55,19 @@ export default function AddEdit() {
     }
     getTransaction()
   },[uuid])
+
+  useEffect(() => {
+    let fetchCategories = async () => {
+      try {
+        let categories = await getCategories(db)
+        console.log(categories,"hello categories")
+        setCategories(categories)
+      } catch (error) {
+        console.log(error,"hello error")
+      }
+    }
+    fetchCategories()
+  },[])
 
   return (
     <View style={globalStyles.container}>
@@ -92,16 +113,38 @@ export default function AddEdit() {
           </Pressable>
         </View>
 
-        {/* Category */}
-        <View style={globalStyles.formGroup}>
-          <FormLabel >Category</FormLabel>
-          <Input
-            placeholder="e.g. Food, Transport"
-            value={form.category}
-            onChangeText={(v) => handleChange("category", v)}
-            style={styles.input}
-          />
+
+      {/* Category */}
+      <View style={globalStyles.formGroup}>
+        <FormLabel>Category</FormLabel>
+
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: "#DDD",
+            borderRadius: 8,
+            overflow: "hidden",
+          }}
+        >
+          <Picker
+            selectedValue={form.category_uuid}
+            onValueChange={(value) =>
+              setForm((prev) => ({ ...prev, category_uuid: value.uuid, category:value.name }))
+            }
+          >
+            <Picker.Item label="Select category" value={null} />
+
+            {categories.map((cat) => (
+              <Picker.Item
+                key={cat.uuid}
+                label={`${cat.icon} ${cat.name}`}
+                value={cat}
+              />
+            ))}
+          </Picker>
         </View>
+      </View>
+
 
         {/* Note */}
         <View style={globalStyles.formGroup}>

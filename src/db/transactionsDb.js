@@ -164,26 +164,78 @@ export const seedCategoriesIfEmpty = async (db) => {
     }
 };
 
-export const createCategory = async (db, data) => {
-    const { name, type, color, icon } = data;
+export const getCategories = async (db, uuid = null) => {
+    if (uuid) {
+        const rows = await db.getAllAsync(
+        `
+        SELECT *
+        FROM finance_categories
+        WHERE uuid = ?
+            AND deleted_at IS NULL
+        LIMIT 1
+        `,
+        [uuid]
+        );
 
-    await db.runAsync(
-        `INSERT INTO finance_categories
-        (uuid, name, type, color, icon)
-        VALUES (?, ?, ?, ?, ?)`,
-        [crypto.randomUUID(), name, type, color, icon]
+        return rows[0] || null;
+    }
+
+    return db.getAllAsync(
+        `
+        SELECT *
+        FROM finance_categories
+        WHERE deleted_at IS NULL
+        ORDER BY name
+        `
     );
 };
 
 
-export const updateCategory = async (db, uuid, data) => {
+
+export const upsertCategory = async (
+  db,
+  { id = null, uuid, name, type, color, icon }
+) => {
+  const now = new Date().toISOString();
+
+  try {
     await db.runAsync(
-        `UPDATE finance_categories
-        SET name = ?, color = ?, icon = ?, updated_at = datetime('now')
-        WHERE uuid = ?`,
-        [data.name, data.color, data.icon, uuid]
+      `
+      INSERT INTO finance_categories (
+        id,
+        uuid,
+        name,
+        type,
+        color,
+        icon,
+        created_at,
+        updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(uuid) DO UPDATE SET
+        name = excluded.name,
+        color = excluded.color,
+        icon = excluded.icon,
+        updated_at = excluded.updated_at
+      `,
+      [
+        id,
+        uuid,
+        name,
+        type,
+        color,
+        icon,
+        now,
+        now,
+      ]
     );
+
+    console.log("✅ Category upserted locally");
+  } catch (error) {
+    console.error("❌ Failed to upsert category:", error);
+  }
 };
+
 
 
 export const deleteCategory = async (db, uuid) => {

@@ -1,11 +1,12 @@
 import React from "react";
 import { SQLiteProvider } from "expo-sqlite";
+import TransactionsProvider from "./TransactionsProvider"
 
 // Migration / initialization function
 // Migration / initialization function
 const migrateDbIfNeeded = async (db) => {
-  //await db.execAsync(`DROP TABLE IF EXISTS finance_transactions;`);
-  //await db.execAsync(`DROP TABLE IF EXISTS finance_categories;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS finance_transactions;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS finance_categories;`);
   await db.execAsync(`
     PRAGMA journal_mode = WAL;
 
@@ -17,7 +18,7 @@ const migrateDbIfNeeded = async (db) => {
       amount REAL NOT NULL, 
       type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
       category TEXT,
-      category_id INTEGER,
+      category_uuid TEXT,
       note TEXT,
 
       source TEXT DEFAULT 'manual',
@@ -59,6 +60,7 @@ ON finance_categories(type);
 export default function AppDataProvider({ children }) {
   return (
     <SQLiteProvider databaseName="zeniahub.db" onInit={migrateDbIfNeeded}>
+      <TransactionsProvider />
       {children}
     </SQLiteProvider>
   );

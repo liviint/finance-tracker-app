@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {  useState } from "react";
 import {
   View,
   Text,
@@ -7,11 +7,14 @@ import {
   Alert,
 } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
+import { SecondaryText } from "../../../src/components/ThemeProvider/components";
 
 export default function CategoriesListScreen({ navigation }) {
   const db = useSQLiteContext();
-
+  const router = useRouter()
+  const {globalStyles} = useThemeStyles()
   const [incomeCategories, setIncomeCategories] = useState([]);
   const [expenseCategories, setExpenseCategories] = useState([]);
 
@@ -93,22 +96,18 @@ export default function CategoriesListScreen({ navigation }) {
 
   const Section = ({ title, data }) => (
     <View style={{ marginBottom: 24 }}>
-      <Text
-        style={{
-          fontSize: 18,
-          fontWeight: "600",
-          marginBottom: 8,
-        }}
+      <SecondaryText
+        style={globalStyles.subTitle}
       >
         {title}
-      </Text>
+      </SecondaryText>
 
       {data.length === 0 ? (
         <Text style={{ color: "#888" }}>No categories</Text>
       ) : (
         <FlatList
           data={data}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item?.uuid}
           renderItem={renderCategory}
         />
       )}
@@ -116,12 +115,12 @@ export default function CategoriesListScreen({ navigation }) {
   );
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
+    <View style={globalStyles.container}>
       <Section title="Income" data={incomeCategories} />
       <Section title="Expenses" data={expenseCategories} />
 
       <TouchableOpacity
-        onPress={() => navigation.navigate("add-category")}
+        onPress={() => router.push("/categories/add")}
         style={{
           backgroundColor: "#2E8B8B",
           padding: 14,

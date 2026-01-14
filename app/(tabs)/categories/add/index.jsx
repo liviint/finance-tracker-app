@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,86 +7,81 @@ import {
   Alert,
 } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
+import { useThemeStyles } from "../../../../src/hooks/useThemeStyles";
+import { BodyText } from "../../../../src/components/ThemeProvider/components";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { getCategories, upsertCategory } from "../../../../src/db/transactionsDb";
+import uuid from 'react-native-uuid';
 
 const COLORS = [
   "#FF6B6B",
+  "#F06595",
+  "#845EC2",
   "#4D96FF",
+  "#2E8B8B",
   "#6BCB77",
   "#FFD93D",
-  "#845EC2",
-  "#2E8B8B",
+  "#FF9F45",
+  "#A0A0A0",
 ];
 
-const ICONS = ["🍔", "🚗", "🏠", "🛒", "🎓", "💼", "🎁", "💊", "📁"];
 
 export default function AddEditCategoryScreen({ route, navigation }) {
+  const router = useRouter()
+  const {globalStyles} = useThemeStyles()
   const db = useSQLiteContext();
-  const categoryId = route?.params?.categoryId;
+  const {id:categoryUuid} = useLocalSearchParams()
+  let initialForm = {
+    name:"",
+    type:"expense",
+    color:COLORS[0],
+    icon:"🛒",
+    uuid:"",
+  }
+  const [form,setForm] = useState(initialForm)
 
-  const isEdit = Boolean(categoryId);
-
-  const [name, setName] = useState("");
-  const [type, setType] = useState("expense");
-  const [color, setColor] = useState(COLORS[0]);
-  const [icon, setIcon] = useState(ICONS[0]);
+  const handleFormChange = (key,value) => {
+    setForm(prev => ({
+      ...prev,
+      [key]:value
+    }))
+  }
 
   useEffect(() => {
-    if (!isEdit) return;
-
-    const loadCategory = async () => {
-      const rows = await db.getAllAsync(
-        `SELECT * FROM finance_categories WHERE id = ?`,
-        [categoryId]
-      );
-
-      if (rows.length) {
-        const cat = rows[0];
-        setName(cat.name);
-        setType(cat.type);
-        setColor(cat.color);
-        setIcon(cat.icon);
-      }
-    };
-
-    loadCategory();
-  }, [categoryId]);
+    if (!categoryUuid) return;
+    let fetchCategory = async() => {
+      let category = getCategories(db,categoryUuid)
+      setForm(category)
+    }
+    fetchCategory()
+  }, [categoryUuid]);
 
   const saveCategory = async () => {
-    if (!name.trim()) {
+    if (!form.name.trim()) {
       Alert.alert("Validation", "Category name is required");
       return;
     }
-
-    if (isEdit) {
-      await db.runAsync(
-        `UPDATE finance_categories
-         SET name = ?, color = ?, icon = ?, updated_at = datetime('now')
-         WHERE id = ?`,
-        [name.trim(), color, icon, categoryId]
-      );
-    } else {
-      await db.runAsync(
-        `INSERT INTO finance_categories
-         (uuid, name, type, color, icon)
-         VALUES (?, ?, ?, ?, ?)`,
-        [crypto.randomUUID(), name.trim(), type, color, icon]
-      );
+    try {
+      const cateUuid = form.uuid || uuid.v4();
+      await upsertCategory(db,{...form,uuid:cateUuid})
+      router.back();
+      setForm(initialForm)
+    } catch (error) {
+      console.log(error,"hello error")
     }
-
-    navigation.goBack();
   };
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
-      <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
-        {isEdit ? "Edit Category" : "Add Category"}
-      </Text>
+    <View style={globalStyles.container}>
 
-      {/* Name */}
+      <BodyText style={globalStyles.title}>
+        {categoryUuid ? "Edit Category" : "Add Category"}
+      </BodyText>
+
       <Text style={{ marginBottom: 4 }}>Name</Text>
       <TextInput
-        value={name}
-        onChangeText={setName}
+        value={form.name}
+        onChangeText={(value) => handleFormChange("name",value)}
         placeholder="e.g. Food"
         style={{
           borderWidth: 1,
@@ -98,27 +93,27 @@ export default function AddEditCategoryScreen({ route, navigation }) {
       />
 
       {/* Type (only when adding) */}
-      {!isEdit && (
+      {!categoryUuid && (
         <>
           <Text style={{ marginBottom: 8 }}>Type</Text>
           <View style={{ flexDirection: "row", marginBottom: 16 }}>
             {["expense", "income"].map((t) => (
               <TouchableOpacity
                 key={t}
-                onPress={() => setType(t)}
+                onPress={(value) => handleFormChange("type",value)}
                 style={{
                   flex: 1,
                   padding: 12,
                   borderRadius: 10,
                   backgroundColor:
-                    type === t ? "#2E8B8B" : "#EEE",
+                    form.type === t ? "#2E8B8B" : "#EEE",
                   marginRight: t === "expense" ? 8 : 0,
                 }}
               >
                 <Text
                   style={{
                     textAlign: "center",
-                    color: type === t ? "#FFF" : "#333",
+                    color: form.type === t ? "#FFF" : "#333",
                     fontWeight: "600",
                   }}
                 >
@@ -132,44 +127,50 @@ export default function AddEditCategoryScreen({ route, navigation }) {
 
       {/* Icon picker */}
       <Text style={{ marginBottom: 8 }}>Icon</Text>
-      <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-        {ICONS.map((i) => (
-          <TouchableOpacity
-            key={i}
-            onPress={() => setIcon(i)}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              alignItems: "center",
-              justifyContent: "center",
-              margin: 6,
-              backgroundColor: icon === i ? "#EEE" : "transparent",
-            }}
-          >
-            <Text style={{ fontSize: 18 }}>{i}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <TextInput
+        value={form.icon}
+        onChangeText={(text) => {
+          handleFormChange("icon",text.slice(0, 2))
+        }}
+        placeholder="e.g. 🍔"
+        style={{
+          borderWidth: 1,
+          borderColor: "#DDD",
+          borderRadius: 10,
+          padding: 12,
+          fontSize: 18,
+          marginBottom: 16,
+        }}
+        maxLength={2}
+      />
 
-      {/* Color picker */}
       <Text style={{ marginVertical: 8 }}>Color</Text>
-      <View style={{ flexDirection: "row" }}>
-        {COLORS.map((c) => (
-          <TouchableOpacity
-            key={c}
-            onPress={() => setColor(c)}
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 16,
-              backgroundColor: c,
-              marginRight: 12,
-              borderWidth: color === c ? 3 : 0,
-              borderColor: "#000",
-            }}
-          />
-        ))}
+      <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+        {COLORS.map((c) => {
+          const isSelected = form.color === c;
+
+          return (
+            <TouchableOpacity
+              key={c}
+              onPress={() => handleFormChange("color",c)}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                backgroundColor: c,
+                margin: 8,
+                borderWidth: isSelected ? 3 : 1,
+                borderColor: isSelected ? "#333" : "#DDD",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {isSelected && (
+                <Text style={{ color: "#FFF", fontWeight: "700" }}>✓</Text>
+              )}
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       {/* Save button */}
