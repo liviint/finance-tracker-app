@@ -19,7 +19,7 @@ export default function Header() {
   return (
     <View style={styles.headerContainer}>
       <Pressable onPress={() => router.push("/transactions")}>
-        <Text style={styles.logoText}>ZeniaHub</Text>
+        <Text style={styles.logoText}>ZeniaMoney</Text>
       </Pressable>
     <TouchableOpacity 
       onPress={() => setMenuOpen(!menuOpen)} 

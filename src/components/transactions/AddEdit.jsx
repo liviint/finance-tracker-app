@@ -31,7 +31,6 @@ export default function AddEdit() {
   };
 
   const handleCategoryChange = (selected) => {
-    console.log(selected,"hello selected")
     setForm((prev) => ({ ...prev, category_uuid: selected.uuid, category:selected.name, type:selected.type }))
   } 
 
@@ -70,6 +69,7 @@ const isFormValid = () => {
 
   const handleSave = async () => {
     if(!isFormValid()) return
+    console.log(form,"hello form")
     try {
       await upsertTransaction(db,form)
       router.push("/transactions")

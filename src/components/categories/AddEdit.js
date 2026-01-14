@@ -93,7 +93,7 @@ export default function AddEdit() {
                 {["expense", "income"].map((t) => (
                 <TouchableOpacity
                     key={t}
-                    onPress={(value) => handleFormChange("type",value)}
+                    onPress={() => handleFormChange("type",t)}
                     style={{
                     flex: 1,
                     padding: 12,
