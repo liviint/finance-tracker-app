@@ -36,39 +36,21 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={24} name="book.fill" color={color} />,
         }}
       />
+
+      <Tabs.Screen
+        name="categories"
+        options={{
+          title: 'Categories',
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="category" color={color} />,
+        }}
+      />
       <Tabs.Screen
         name="index"
         options={{
           href: null,
         }}
       />
-
-      <Tabs.Screen
-        name="transactions/[id]/index"
-        options={{
-          href: null,
-        }}
-      />
       
-
-      <Tabs.Screen
-        name="transactions/[id]/edit/index"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="transactions/add/index"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="transactions/stats/index"
-        options={{
-          href: null,
-        }}
-      />
       <Tabs.Screen
         name="appearance/index"
         options={{
