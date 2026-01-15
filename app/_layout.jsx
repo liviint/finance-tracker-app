@@ -2,15 +2,13 @@ import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import ReduxProvider from '@/store/ReduxProvider';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Header from '@/src/components/header';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BackHandler } from 'react-native';
 import ThemeProvider from "../src/components/ThemeProvider"
 import AppDataProvider from "../src/components/AppDataProvider/index"
-
-
-
+import {authenticateUser} from "../utils/localAuthentication"
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -18,6 +16,7 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const router = useRouter();
+  const [unlocked, setUnlocked] = useState(false);
 
   // Handle Android hardware back button
   useEffect(() => {
@@ -30,6 +29,16 @@ export default function RootLayout() {
     });
     return () => sub.remove();
   }, [router]);
+
+  useEffect(() => {
+    const unlock = async () => {
+      const ok = await authenticateUser();
+      setUnlocked(ok);
+    };
+    unlock();
+}, []);
+
+  if (!unlocked) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
