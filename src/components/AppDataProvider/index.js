@@ -49,10 +49,13 @@ const migrateDbIfNeeded = async (db) => {
       deleted_at TEXT
     );
 
-CREATE INDEX IF NOT EXISTS idx_categories_type
-ON finance_categories(type);
+    CREATE INDEX IF NOT EXISTS idx_categories_type
+    ON finance_categories(type);
 
-
+    CREATE TABLE IF NOT EXISTS app_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT
+    );
   `);
 };
 
