@@ -33,23 +33,14 @@ export default function SavingsDetail() {
 
   if (!goal) return null;
 
-  const handleDelete = () => {
-    Alert.alert(
-      "Delete savings goal",
-      "This action cannot be undone. Are you sure?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
+    const handleDelete = async() => {
+        try {
             await deleteSavingsGoal(db, savingsUuid);
             router.replace("/savings");
-          },
-        },
-      ]
-    );
-  };
+        } catch (error) {
+            console.log(error,"hello error")
+        }
+    };
 
   return (
     <View style={globalStyles.container}>
