@@ -1,5 +1,5 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
+import { SymbolWeight } from 'expo-symbols';
 import { ComponentProps } from 'react';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
@@ -14,7 +14,8 @@ const MAPPING = {
     'chevron.right': 'chevron-right' as MaterialIconName,
     'text.bubble.fill': 'forum' as MaterialIconName,
     'book.fill': 'book' as MaterialIconName,
-    'category':'category' as MaterialIconName
+    'category':'category' as MaterialIconName,
+    'savings':'trending-up' as MaterialIconName
 };
 
 // 2. Define IconSymbolName using the *inferred* keys of MAPPING.
