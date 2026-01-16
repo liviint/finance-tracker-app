@@ -48,7 +48,7 @@ export const createGlobalStyles = (colors) =>
     },
 
     primaryBtn: {
-      backgroundColor: colors.secondary,
+      backgroundColor: colors.primary,
       paddingVertical: 12,
       paddingHorizontal: 16,
       borderRadius: 12,

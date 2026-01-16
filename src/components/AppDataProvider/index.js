@@ -56,6 +56,19 @@ const migrateDbIfNeeded = async (db) => {
       key TEXT PRIMARY KEY,
       value TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS savings_goals (
+      uuid TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      target_amount REAL NOT NULL,
+      current_amount REAL DEFAULT 0,
+      color TEXT,
+      icon TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      deleted_at TEXT
+    );
+
   `);
 };
 
