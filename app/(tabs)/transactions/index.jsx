@@ -42,11 +42,10 @@ export default function FinanceListPage() {
 
   return (
     <View style={globalStyles.container}>
-      {/* Header row */}
+
       <View style={styles.headerRow}>
         <View>
-          <BodyText style={globalStyles.title}>Finance Tracker</BodyText>
-          <SecondaryText style={globalStyles.subTitle}>Your recent transactions</SecondaryText>
+          <SecondaryText style={globalStyles.title}>My transactions</SecondaryText>
         </View>
 
         <Pressable
@@ -64,7 +63,6 @@ export default function FinanceListPage() {
         contentContainerStyle={{ paddingBottom: 96 }}
       />
 
-      {/* Floating Add Button */}
       <Pressable
         onPress={() => router.push("/transactions/add")}
         style={styles.addButton}

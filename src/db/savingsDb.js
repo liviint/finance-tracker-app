@@ -1,4 +1,5 @@
-import { v4 as newUuid } from "react-native-uuid";
+import uuid from "react-native-uuid";
+let newUuid = uuid.v4
 
 export const getSavingsGoals = async (db) => {
     return db.getAllAsync(`
@@ -26,6 +27,7 @@ export const upsertSavingsGoal = async (
         uuid,
         name,
         target_amount,
+        current_amount,
         color = "#2E8B8B",
         icon = "💰",
     }
@@ -39,15 +41,17 @@ export const upsertSavingsGoal = async (
         uuid,
         name,
         target_amount,
+        current_amount,
         color,
         icon,
         created_at,
         updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(uuid) DO UPDATE SET
         name = excluded.name,
         target_amount = excluded.target_amount,
+        current_amount = excluded.current_amount,
         color = excluded.color,
         icon = excluded.icon,
         updated_at = excluded.updated_at
@@ -56,6 +60,7 @@ export const upsertSavingsGoal = async (
         goalUuid,
         name,
         target_amount,
+        current_amount,
         color,
         icon,
         now,

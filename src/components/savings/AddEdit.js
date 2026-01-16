@@ -11,13 +11,13 @@ export default function AddEditSavings() {
   const { globalStyles } = useThemeStyles();
   const db = useSQLiteContext();
   const router = useRouter();
-  const { uuid: savingsUuid } = useLocalSearchParams();
+  const { id: savingsUuid } = useLocalSearchParams();
 
   const [form, setForm] = useState({
     name: "",
     target_amount: "",
     current_amount: "",
-    color: "#2E8B8B",
+    color: COLORS[0],
     icon: "💰",
   });
 
@@ -47,44 +47,44 @@ export default function AddEditSavings() {
         }))
     }
 
-  const handleSave = async () => {
-    if (!form.name.trim()) {
-      Alert.alert("Validation", "Please enter a savings goal name.");
-      return;
-    }
+    const handleSave = async () => {
+        if (!form.name.trim()) {
+        Alert.alert("Validation", "Please enter a savings goal name.");
+        return;
+        }
 
-    const target = Number(form.target_amount);
-    const current = Number(form.current_amount || 0);
+        const target = Number(form.target_amount);
+        const current = Number(form.current_amount || 0);
 
-    if (isNaN(target) || target <= 0) {
-      Alert.alert("Validation", "Target amount must be greater than 0.");
-      return;
-    }
+        if (isNaN(target) || target <= 0) {
+        Alert.alert("Validation", "Target amount must be greater than 0.");
+        return;
+        }
 
-    if (isNaN(current) || current < 0) {
-      Alert.alert("Validation", "Current amount cannot be negative.");
-      return;
-    }
+        if (isNaN(current) || current < 0) {
+        Alert.alert("Validation", "Current amount cannot be negative.");
+        return;
+        }
 
-    if (current > target) {
-      Alert.alert(
-        "Validation",
-        "Current amount cannot be greater than target amount."
-      );
-      return;
-    }
+        if (current > target) {
+        Alert.alert(
+            "Validation",
+            "Current amount cannot be greater than target amount."
+        );
+        return;
+        }
 
-    await upsertSavingsGoal(db, {
-      uuid: savingsUuid,
-      name: form.name.trim(),
-      target_amount: target,
-      current_amount: current,
-      color: form.color,
-      icon: form.icon,
-    });
+        await upsertSavingsGoal(db, {
+            uuid: savingsUuid,
+            name: form.name.trim(),
+            target_amount: target,
+            current_amount: current,
+            color: form.color,
+            icon: form.icon,
+        });
 
-    router.back();
-  };
+        router.back();
+    };
 
   return (
     <ScrollView style={globalStyles.container}>
@@ -99,7 +99,7 @@ export default function AddEditSavings() {
           <Input
             placeholder="e.g. Emergency Fund"
             value={form.name}
-            onChangeText={(v) => setForm({ ...form, name: v })}
+            onChangeText={(value) => handleFormChange("name",value)}
           />
         </View>
 
@@ -110,8 +110,8 @@ export default function AddEditSavings() {
             placeholder="0"
             keyboardType="numeric"
             value={form.target_amount}
-            onChangeText={(v) =>
-              setForm({ ...form, target_amount: v.replace(/[^0-9.]/g, "") })
+            onChangeText={(value) =>
+                handleFormChange("target_amount",value.replace(/[^0-9.]/g, ""))
             }
           />
         </View>
@@ -123,8 +123,8 @@ export default function AddEditSavings() {
             placeholder="0"
             keyboardType="numeric"
             value={form.current_amount}
-            onChangeText={(v) =>
-              setForm({ ...form, current_amount: v.replace(/[^0-9.]/g, "") })
+            onChangeText={(value) =>
+                handleFormChange("current_amount",value.replace(/[^0-9.]/g, ""))
             }
           />
         </View>
@@ -135,7 +135,7 @@ export default function AddEditSavings() {
           <Input
             placeholder="💰"
             value={form.icon}
-            onChangeText={(v) => setForm({ ...form, icon: v })}
+            onChangeText={(value) => handleFormChange("icon",value)}
           />
         </View>
 
