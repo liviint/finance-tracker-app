@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { Modal, View, Text, Pressable, StyleSheet } from "react-native";
+import { BodyText } from "../ThemeProvider/components";
+import { useThemeStyles } from "../../hooks/useThemeStyles";
 
 const DeleteButton = ({ handleOk, item}) => {
+    const {globalStyles} = useThemeStyles()
     const [visible, setVisible] = useState(false)
 
     const confirmDelete = async () => {
@@ -12,8 +15,8 @@ const DeleteButton = ({ handleOk, item}) => {
     return (
         <>
         {/* Delete Button */}
-        <Pressable style={styles.deleteBtn} onPress={() => setVisible(true)}>
-            <Text style={styles.deleteBtnText}>Delete</Text>
+        <Pressable style={{...globalStyles.primaryBtn,...styles.deleteBtn}} onPress={() => setVisible(true)}>
+            <BodyText style={styles.deleteBtnText}>Delete</BodyText>
         </Pressable>
 
         {/* Modal */}
@@ -54,16 +57,16 @@ const DeleteButton = ({ handleOk, item}) => {
 };
 
 export default DeleteButton;
-
-// ------------------------
-// STYLES
-// ------------------------
 const styles = StyleSheet.create({
   deleteBtn: {
-    backgroundColor: "#ff4d4d",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+      borderRadius: 12,
+      marginRight: 8,
+      alignItems: "center",
+      backgroundColor: "#FF6B6B",
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      borderColor:"#FF6B6B",
+      borderWidth: 2,
   },
   deleteBtnText: {
     color: "#fff",

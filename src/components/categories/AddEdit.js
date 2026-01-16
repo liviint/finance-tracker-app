@@ -22,7 +22,7 @@ export default function AddEdit() {
   let initialForm = {
     name:"",
     type:"expense",
-    color:COLORS[0],
+    color:COLORS[1],
     icon:"🛒",
     uuid:"",
   }

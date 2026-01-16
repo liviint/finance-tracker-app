@@ -63,7 +63,7 @@ export const createGlobalStyles = (colors) =>
     },
 
     secondaryBtn: {
-      borderRadius: 8,
+      borderRadius: 12,
       paddingVertical: 12,
       paddingHorizontal: 16,
       borderColor: colors.secondary,

@@ -1,5 +1,5 @@
 import { View, FlatList, TouchableOpacity } from "react-native";
-import { useEffect, useState, useCallback } from "react";
+import {  useState, useCallback } from "react";
 import { useSQLiteContext } from "expo-sqlite";
 import { useRouter, useFocusEffect } from "expo-router";
 import { Card, BodyText } from "../../../src/components/ThemeProvider/components";

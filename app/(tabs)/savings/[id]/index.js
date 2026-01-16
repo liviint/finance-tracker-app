@@ -1,14 +1,22 @@
-import { View, TouchableOpacity, Alert } from "react-native";
+import { View, TouchableOpacity, Alert, Pressable, } from "react-native";
+import { useIsFocused } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import { useSQLiteContext } from "expo-sqlite";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { BodyText, Card, Input } from "@/src/components/ThemeProvider/components";
-import { getSavingsGoal, addToSavings } from "@/src/db/savingsDb";
+import {
+  getSavingsGoal,
+  addToSavings,
+  deleteSavingsGoal,
+} from "@/src/db/savingsDb";
 import { useThemeStyles } from "@/src/hooks/useThemeStyles";
+import Delete from "../../../../src/components/common/DeleteButton"
 
 export default function SavingsDetail() {
   const { globalStyles } = useThemeStyles();
   const db = useSQLiteContext();
+  const router = useRouter();
+  const isFocused = useIsFocused()
   const { id: savingsUuid } = useLocalSearchParams();
 
   const [goal, setGoal] = useState(null);
@@ -21,83 +29,83 @@ export default function SavingsDetail() {
 
   useEffect(() => {
     loadGoal();
-  }, []);
-
-  const handleAdd = async () => {
-    const value = Number(amount);
-
-    if (!value || value <= 0) {
-      Alert.alert("Invalid amount", "Please enter a valid amount");
-      return;
-    }
-
-    await addToSavings(db, savingsUuid, value);
-    await loadGoal();
-    setAmount("");
-  };
+  }, [isFocused]);
 
   if (!goal) return null;
 
-  const progress = Math.min(
-    goal.current_amount / goal.target_amount,
-    1
-  );
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete savings goal",
+      "This action cannot be undone. Are you sure?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            await deleteSavingsGoal(db, savingsUuid);
+            router.replace("/savings");
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <View style={globalStyles.container}>
-      
-      <BodyText style={globalStyles.title}>
-        Savings details
-      </BodyText>
-
-     
-      <Card style={{ marginBottom: 16 }}>
-        <BodyText style={{ fontSize: 20, fontWeight: "700", marginBottom: 4 }}>
-          {goal.icon} {goal.name}
+        <BodyText style={globalStyles.title}>
+            Savings details
         </BodyText>
+        <View style={{ flexDirection: "row",justifyContent:"center",alignItems:"center", gap: 16, marginBottom:16 }}>
+                <Pressable
+                    style={{...globalStyles.secondaryBtn,paddingVertical: 8,
+            paddingHorizontal: 16,}}
+                    onPress={() =>
+                    router.push(`/savings/add?id=${savingsUuid}`)
+                    }
+                >
+                    <BodyText style={globalStyles.secondaryBtnText}>
+                        Edit
+                    </BodyText>
+                </Pressable>
 
-        <BodyText style={{ marginBottom: 8 }}>
-          {goal.current_amount.toLocaleString()} /{" "}
-          {goal.target_amount.toLocaleString()}
-        </BodyText>
-
-        
-        <View
-          style={{
-            height: 8,
-            backgroundColor: "#EEE",
-            borderRadius: 4,
-            overflow: "hidden",
-          }}
-        >
-          <View
-            style={{
-              width: `${progress * 100}%`,
-              height: "100%",
-              backgroundColor: goal.color || "#2E8B8B",
-            }}
-          />
+                <Delete 
+                    handleOk={handleDelete} 
+                    item="savings goal"
+                />
         </View>
-      </Card>
 
-     
-      <Card>
-        <Input
-          placeholder="Amount to add"
-          keyboardType="numeric"
-          value={amount}
-          onChangeText={setAmount}
-        />
+        <Card style={{ marginBottom: 16 }}>
+            <BodyText style={{ fontSize: 20, fontWeight: "700" }}>
+            {goal.icon} {goal.name}
+            </BodyText>
 
-        <TouchableOpacity
-          onPress={handleAdd}
-          style={{ ...globalStyles.primaryBtn, marginTop: 16 }}
-        >
-          <BodyText style={globalStyles.primaryBtnText}>
-            Add to savings
-          </BodyText>
-        </TouchableOpacity>
-      </Card>
+            <BodyText>
+            {goal.current_amount} / {goal.target_amount}
+            </BodyText>
+        </Card>
+
+        <Card>
+            <Input
+            placeholder="Add amount"
+            keyboardType="numeric"
+            value={amount}
+            onChangeText={setAmount}
+            />
+
+            <TouchableOpacity
+            onPress={async () => {
+                await addToSavings(db, savingsUuid, Number(amount));
+                await loadGoal();
+                setAmount("");
+            }}
+            style={{ ...globalStyles.primaryBtn, marginTop: 16 }}
+            >
+            <BodyText style={globalStyles.primaryBtnText}>
+                Add to savings
+            </BodyText>
+            </TouchableOpacity>
+        </Card>
     </View>
-  );
+);
 }
