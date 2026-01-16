@@ -4,26 +4,15 @@ import {
   Text,
   TouchableOpacity,
   Alert,
+  ScrollView
 } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
 import { useThemeStyles } from "../../hooks/useThemeStyles";
-import { BodyText, FormLabel, Input , PrimaryBtn} from "../ThemeProvider/components";
+import { BodyText, FormLabel, Input , Card} from "../ThemeProvider/components";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { getCategories, upsertCategory } from "../../db/transactionsDb";
 import uuid from 'react-native-uuid';
-
-const COLORS = [
-  "#FF6B6B",
-  "#F06595",
-  "#845EC2",
-  "#4D96FF",
-  "#2E8B8B",
-  "#6BCB77",
-  "#FFD93D",
-  "#FF9F45",
-  "#A0A0A0",
-];
-
+import { COLORS } from "../../../utils/constants";
 
 export default function AddEdit() {
   const router = useRouter()
@@ -71,13 +60,14 @@ export default function AddEdit() {
   };
 
   return (
-    <View style={globalStyles.container}>
+    <ScrollView style={globalStyles.container}>
 
         <BodyText style={globalStyles.title}>
             {categoryUuid ? "Edit Category" : "Add Category"}
         </BodyText>
 
-        <View style={globalStyles.formGroup}>
+        <Card>
+            <View style={globalStyles.formGroup}>
             <FormLabel >Name</FormLabel>
             <Input
                 value={form.name}
@@ -170,6 +160,7 @@ export default function AddEdit() {
                 {categoryUuid ? "Update Category": "Save Category"}
             </Text>
         </TouchableOpacity>
-    </View>
+        </Card>
+    </ScrollView>
   );
 }

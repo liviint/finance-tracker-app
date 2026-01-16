@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Pressable, TouchableOpacity, Alert } from "react-native";
+import { View, Text, StyleSheet, Pressable, TouchableOpacity, Alert, ScrollView } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Card, BodyText,Input,TextArea , FormLabel, CustomPicker} from "../ThemeProvider/components";
@@ -101,7 +101,7 @@ const isFormValid = () => {
   },[])
 
   return (
-    <View style={globalStyles.container}>
+    <ScrollView style={globalStyles.container}>
       <BodyText style={globalStyles.title}>
         {uuid ? "Edit Transaction" : "Add Transaction"}
       </BodyText>
@@ -184,7 +184,7 @@ const isFormValid = () => {
         </TouchableOpacity>
 
       </Card>
-    </View>
+    </ScrollView>
   );
 }
 
