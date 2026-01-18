@@ -26,3 +26,20 @@ export const htmlToPlainText = (html) => {
         .replace(/\n{3,}/g, '\n\n')
         .trim();
 };
+
+
+
+
+export const getMonthStart = (date = new Date()) => {
+  return new Date(date.getFullYear(), date.getMonth(), 1)
+    .toISOString()
+    .split("T")[0];
+};
+
+export const getMonthEnd = (date = new Date()) => {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0)
+    .toISOString()
+    .split("T")[0];
+};
+
+
