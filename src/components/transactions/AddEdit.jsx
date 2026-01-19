@@ -98,7 +98,6 @@ const isFormValid = () => {
 
   const handleSave = async () => {
     if(!isFormValid()) return
-    console.log(form,"hello form")
     try {
       await upsertTransaction(db,form)
       router.push("/transactions")
@@ -111,8 +110,8 @@ const isFormValid = () => {
     if(!uuid) return
     let getTransaction = async() => {
       let transaction = await getTransactionByUuid(db,uuid)
-      console.log(transaction,"hello transaction")
-      setForm(transaction)
+      let date = form.date ? new Date(form.date) : new Date()
+      setForm({...transaction,date})
     }
     getTransaction()
   },[uuid])

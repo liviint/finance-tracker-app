@@ -1,7 +1,8 @@
 import uuid from "react-native-uuid";
 import { DEFAULT_CATEGORIES } from "../../utils/categoriesSeeder";
 
-let newUuid = uuid.v4
+const newUuid = () => uuid.v4();
+
 export async function upsertTransaction(db, {
     uuid,
     title,
@@ -10,9 +11,11 @@ export async function upsertTransaction(db, {
     category,
     category_uuid,
     note = null,
+    date,
     source = "manual",
 }) {
   const now = new Date().toISOString();
+  const transactionDate = date ? date.toISOString() : now;
 
   try {
     const localUuid = uuid ? uuid :  newUuid()
@@ -22,9 +25,9 @@ export async function upsertTransaction(db, {
       `
       INSERT INTO finance_transactions (
         uuid, title, amount, type, category,category_uuid, note, source,
-        created_at, updated_at
+        created_at, updated_at, date
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         title = excluded.title,
         amount = excluded.amount,
@@ -32,7 +35,8 @@ export async function upsertTransaction(db, {
         category = excluded.category,
         category_uuid = excluded.category_uuid,
         note = excluded.note,
-        updated_at = excluded.updated_at
+        updated_at = excluded.updated_at,
+        date = excluded.date
       `,
       [
         localUuid,
@@ -45,6 +49,7 @@ export async function upsertTransaction(db, {
         source,
         now,
         now,
+        transactionDate
       ]
     );
 

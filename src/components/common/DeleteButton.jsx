@@ -3,7 +3,7 @@ import { Modal, View, Text, Pressable, StyleSheet } from "react-native";
 import { BodyText } from "../ThemeProvider/components";
 import { useThemeStyles } from "../../hooks/useThemeStyles";
 
-const DeleteButton = ({ handleOk, item}) => {
+const DeleteButton = ({ handleOk, item,cusomStyles={}}) => {
     const {globalStyles} = useThemeStyles()
     const [visible, setVisible] = useState(false)
 
@@ -15,7 +15,7 @@ const DeleteButton = ({ handleOk, item}) => {
     return (
         <>
         {/* Delete Button */}
-        <Pressable style={{...globalStyles.primaryBtn,...styles.deleteBtn}} onPress={() => setVisible(true)}>
+        <Pressable style={{...globalStyles.primaryBtn,...styles.deleteBtn,...cusomStyles}} onPress={() => setVisible(true)}>
             <BodyText style={styles.deleteBtnText}>Delete</BodyText>
         </Pressable>
 

@@ -1,15 +1,17 @@
 import {useState,useEffect} from "react"
 import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
-import { Card } from "../../../../src/components/ThemeProvider/components";
+import { Card, BodyText , SecondaryText} from "../../../../src/components/ThemeProvider/components";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { getTransactionByUuid, deleteTransaction } from "../../../../src/db/transactionsDb";
 import { dateFormat } from "../../../../utils/dateFormat";
 import DeleteButton from "../../../../src/components/common/DeleteButton";
+import { useThemeStyles } from "../../../../src/hooks/useThemeStyles";
 
 export default function FinanceEntryViewPage() {
   const db = useSQLiteContext()
   const router = useRouter()
+  const { globalStyles } = useThemeStyles()
   const {id:uuid} = useLocalSearchParams()
   const [transaction,setTransaction] = useState(0)
   const [isExpense,setIsExpense] = useState(transaction.amount < 0)
@@ -35,19 +37,16 @@ export default function FinanceEntryViewPage() {
   },[])
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Transaction Details</Text>
-      <Text style={styles.subHeader}>A closer look at this entry</Text>
+    <View style={globalStyles.container}>
+      <BodyText style={globalStyles.title}>Transaction Details</BodyText>
 
-      {/* Amount Highlight */}
       <Card style={styles.amountCard}>
-        <Text style={styles.amountLabel}>{isExpense ? "Expense" : "Income"}</Text>
-        <Text style={[styles.amount, isExpense ? styles.expense : styles.income]}>
+        <SecondaryText style={styles.amountLabel}>{isExpense ? "Expense" : "Income"}</SecondaryText>
+        <BodyText style={[styles.amount, isExpense ? styles.expense : styles.income]}>
           {isExpense ? "-" : "+"}KES {Math.abs(transaction.amount).toLocaleString()}
-        </Text>
+        </BodyText>
       </Card>
 
-      {/* Details */}
       <Card style={styles.detailsCard}>
         <DetailRow label="Title" value={transaction.title} />
         <DetailRow label="Category" value={transaction.category} />
@@ -55,13 +54,12 @@ export default function FinanceEntryViewPage() {
 
         {transaction.note ? (
           <View style={styles.noteBox}>
-            <Text style={styles.noteLabel}>Note</Text>
-            <Text style={styles.noteText}>{transaction.note}</Text>
+            <SecondaryText style={styles.noteLabel}>Note</SecondaryText>
+            <BodyText style={styles.noteText}>{transaction.note}</BodyText>
           </View>
         ) : null}
       </Card>
 
-      {/* Actions */}
       <View style={styles.actionsRow}>
         <Pressable style={styles.editButton} onPress={() => router.push(`transactions/${uuid}/edit`)}>
           <Text style={styles.actionText}>Edit</Text>
@@ -69,6 +67,7 @@ export default function FinanceEntryViewPage() {
         <DeleteButton 
             handleOk={handleDelete}
             item={"transaction"}
+            cusomStyles={{flex: 1}}
         />
       </View>
     </View>
@@ -78,39 +77,18 @@ export default function FinanceEntryViewPage() {
 function DetailRow({ label, value }) {
   return (
     <View style={styles.detailRow}>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value}</Text>
+      <SecondaryText style={styles.detailLabel}>{label}</SecondaryText>
+      <BodyText style={styles.detailValue}>{value}</BodyText>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FAF9F7",
-    padding: 16,
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#333333",
-    marginBottom: 4,
-  },
-  subHeader: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 16,
-  },
   amountCard: {
-    padding: 20,
-    borderRadius: 20,
     alignItems: "center",
-    marginBottom: 16,
-    backgroundColor: "#FFFFFF",
   },
   amountLabel: {
     fontSize: 13,
-    color: "#888",
     marginBottom: 6,
   },
   amount: {
@@ -126,20 +104,17 @@ const styles = StyleSheet.create({
   detailsCard: {
     padding: 16,
     borderRadius: 16,
-    backgroundColor: "#FFFFFF",
   },
   detailRow: {
     marginBottom: 14,
   },
   detailLabel: {
     fontSize: 12,
-    color: "#888",
     marginBottom: 4,
   },
   detailValue: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#333",
   },
   noteBox: {
     marginTop: 8,
@@ -149,12 +124,10 @@ const styles = StyleSheet.create({
   },
   noteLabel: {
     fontSize: 12,
-    color: "#888",
     marginBottom: 6,
   },
   noteText: {
     fontSize: 14,
-    color: "#444",
     lineHeight: 20,
   },
   actionsRow: {
@@ -167,13 +140,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 16,
     backgroundColor: "#2E8B8B",
-    alignItems: "center",
-  },
-  deleteButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 16,
-    backgroundColor: "#FF6B6B",
     alignItems: "center",
   },
   actionText: {
