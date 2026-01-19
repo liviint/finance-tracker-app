@@ -27,9 +27,6 @@ export const htmlToPlainText = (html) => {
         .trim();
 };
 
-
-
-
 export const getMonthStart = (date = new Date()) => {
   return new Date(date.getFullYear(), date.getMonth(), 1)
     .toISOString()

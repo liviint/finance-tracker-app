@@ -1,7 +1,7 @@
-import { getMonthStart, getMonthEnd, normalizeStartDate } from "../helpers";
+import {  normalizeStartDate } from "../helpers";
 import uuid from 'react-native-uuid';
 
-let newUuid = uuid.v4
+const newUuid = () => uuid.v4();
 
 export const upsertBudget = async ({
   db,
@@ -41,33 +41,49 @@ export const upsertBudget = async ({
 };
 
 
-export const getBudgetsForMonth = async (db, date = new Date()) => {
-  const startDate = getMonthStart(date);
-  const endDate = getMonthEnd(date);
+export const getBudgetsForPeriod = async (
+  db,
+  period,
+  date = new Date()
+) => {
+  const startDate = normalizeStartDate(date, period);
 
   return await db.getAllAsync(
     `
     SELECT 
       b.uuid,
       b.amount AS budget_amount,
+      b.period,
       b.start_date,
-      c.id AS category_uuid,
+
+      c.uuid AS category_uuid,
       c.name AS category_name,
       c.icon,
       c.color,
+
       IFNULL(SUM(t.amount), 0) AS spent
     FROM budgets b
-    JOIN finance_categories c ON c.uuid = b.category_uuid
+    JOIN finance_categories c
+      ON c.uuid = b.category_uuid
     LEFT JOIN finance_transactions t
       ON t.category_uuid = b.category_uuid
-      AND t.date BETWEEN ? AND ?
-    WHERE b.start_date = ?
+      AND t.type = 'expense'
+      AND t.created_at BETWEEN
+        b.start_date AND
+        CASE
+          WHEN b.period = 'daily' THEN b.start_date
+          WHEN b.period = 'weekly' THEN date(b.start_date, '+6 days')
+          WHEN b.period = 'monthly' THEN date(b.start_date, '+1 month', '-1 day')
+        END
+    WHERE b.period = ?
+      AND b.start_date = ?
     GROUP BY b.uuid
     ORDER BY c.name ASC;
     `,
-    [startDate, endDate, startDate]
+    [period, startDate]
   );
 };
+
 
 
 export const getBudgetByUUID = async (db, uuid) => {
@@ -98,44 +114,48 @@ export const deleteBudget = async (db, uuid) => {
 
 export const categoryHasBudget = async ({
   db,
-  categoryId,
+  categoryUUID,
+  period,
   startDate,
 }) => {
   const rows = await db.getAllAsync(
     `
     SELECT uuid
     FROM budgets
-    WHERE category_id = ?
-      AND period = 'monthly'
+    WHERE category_uuid = ?
+      AND period = ?
       AND start_date = ?
     LIMIT 1;
     `,
-    [categoryId, startDate]
+    [categoryUUID, period, startDate]
   );
 
   return rows.length > 0;
 };
 
 
+
 export const getCategoriesWithoutBudget = async ({
   db,
+  period,
   startDate,
 }) => {
   return await db.getAllAsync(
     `
     SELECT c.*
     FROM finance_categories c
-    WHERE c.id NOT IN (
-      SELECT category_id
+    WHERE c.uuid NOT IN (
+      SELECT category_uuid
       FROM budgets
-      WHERE start_date = ?
-        AND period = 'monthly'
+      WHERE period = ?
+        AND start_date = ?
     )
     ORDER BY c.name ASC;
     `,
-    [startDate]
+    [period, startDate]
   );
 };
+
 
 
 export const getBudgetStatus = (spent, budget) => {

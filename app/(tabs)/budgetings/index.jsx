@@ -1,18 +1,20 @@
 import { View, Text, FlatList, Pressable } from "react-native";
 import { useRouter } from "expo-router";
+import { useIsFocused } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import { useSQLiteContext } from "expo-sqlite";
 import {
   getBudgetsForPeriod,
   getBudgetStatus,
 } from "../../../src/db/budgetingDb";
-import { BodyText } from "../../../src/components/ThemeProvider/components";
+import { BodyText, Card } from "../../../src/components/ThemeProvider/components";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 
 const PERIODS = ["daily", "weekly", "monthly"];
 
 export default function BudgetsListScreen() {
   const router = useRouter();
+  const isFocused = useIsFocused()
   const { globalStyles } = useThemeStyles();
   const db = useSQLiteContext();
 
@@ -21,12 +23,13 @@ export default function BudgetsListScreen() {
 
   const loadBudgets = async () => {
     const data = await getBudgetsForPeriod(db, period);
+    console.log(data,"hello data")
     setBudgets(data);
   };
 
   useEffect(() => {
     loadBudgets();
-  }, [period]);
+  }, [period,isFocused]);
 
   const renderItem = ({ item }) => {
     const status = getBudgetStatus(item.spent, item.budget_amount);
@@ -38,25 +41,74 @@ export default function BudgetsListScreen() {
     return (
       <Pressable
         onPress={() => router.push(`/budgeting/${item.uuid}`)}
-        style={{
-          padding: 16,
-          borderBottomWidth: 1,
-          borderColor: "#eee",
-        }}
       >
-        <Text style={{ fontWeight: "600" }}>
-          {item.category_name}
-        </Text>
+        <Card>
+          <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 8,
+          }}
+        >
+          <BodyText style={{ fontWeight: "700", fontSize: 16 }}>
+            {item.category_name}
+          </BodyText>
 
-        <Text>
+          <BodyText style={{ fontSize: 12, color: "#777" }}>
+            {percent}%
+          </BodyText>
+        </View>
+
+        {/* Amounts */}
+        <BodyText style={{ marginBottom: 10, color: "#555" }}>
           {item.spent} / {item.budget_amount}
-        </Text>
+        </BodyText>
 
-        <Text>
-          {percent}% used • {status}
-        </Text>
+        {/* Progress Bar */}
+        <View
+          style={{
+            height: 10,
+            backgroundColor: "#EEE",
+            borderRadius: 8,
+            overflow: "hidden",
+            marginBottom: 8,
+          }}
+        >
+          <View
+            style={{
+              height: "100%",
+              width: `${Math.min(percent, 100)}%`,
+              backgroundColor:
+                percent < 70
+                  ? "#2E8B8B"
+                  : percent < 90
+                  ? "#F4B400"
+                  : "#E53935",
+              borderRadius: 8,
+            }}
+          />
+        </View>
+
+        {/* Status */}
+        <BodyText
+          style={{
+            fontSize: 12,
+            fontWeight: "600",
+            color:
+              percent < 70
+                ? "#2E8B8B"
+                : percent < 90
+                ? "#F4B400"
+                : "#E53935",
+          }}
+        >
+          {status.toUpperCase()}
+        </BodyText>
+        </Card>
       </Pressable>
     );
+
   };
 
   return (
@@ -94,7 +146,7 @@ export default function BudgetsListScreen() {
       </View>
 
       <Pressable
-        onPress={() => router.push(`/budgeting/add`)}
+        onPress={() => router.push(`/budgetings/add?period=${period}`)}
         style={{ ...globalStyles.primaryBtn, marginBottom: 16 }}
       >
         <Text style={{ color: "#fff", fontWeight: "600" }}>

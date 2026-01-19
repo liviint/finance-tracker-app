@@ -28,12 +28,12 @@ export default function AddEditBudget() {
     const router = useRouter();
     const db = useSQLiteContext();
     const { globalStyles } = useThemeStyles();
-    const { uuid: budgetUUID } = useLocalSearchParams();
+    const { uuid: budgetUUID, period } = useLocalSearchParams();
 
     const initialForm = {
         category_uuid: "",
         amount: "",
-        period: "monthly",
+        period: period || "monthly",
         date: new Date(),
         uuid: "",
     };
@@ -47,7 +47,6 @@ export default function AddEditBudget() {
         setForm((prev) => ({ ...prev, category_uuid: selected.uuid, category:selected.name, type:selected.type }))
     } 
 
-    // Load budget (edit mode)
     useEffect(() => {
         if (!budgetUUID) return;
 
@@ -68,33 +67,33 @@ export default function AddEditBudget() {
 
     const saveBudget = async () => {
         if (!form.category_uuid) {
-        Alert.alert("Validation", "Please select a category");
-        return;
+            Alert.alert("Validation", "Please select a category");
+            return;
         }
 
         if (!form.amount || Number(form.amount) <= 0) {
-        Alert.alert("Validation", "Amount must be greater than zero");
-        return;
+            Alert.alert("Validation", "Amount must be greater than zero");
+            return;
         }
 
         try {
-        const budgetUuid = form.uuid || uuid.v4();
-        const startDate = normalizeStartDate(form.date, form.period);
+            const budgetUuid = form.uuid || uuid.v4();
+            const startDate = normalizeStartDate(form.date, form.period);
 
-        await upsertBudget({
-            db,
-            uuid: budgetUuid,
-            categoryUUID: form.category_uuid,
-            amount: Number(form.amount),
-            period: form.period,
-            startDate,
-        });
+            await upsertBudget({
+                db,
+                uuid: budgetUuid,
+                categoryUUID: form.category_uuid,
+                amount: Number(form.amount),
+                period: form.period,
+                startDate,
+            });
 
-        router.back();
-        setForm(initialForm);
+            router.back();
+            setForm(initialForm);
         } catch (err) {
-        console.error(err);
-        Alert.alert("Error", "Failed to save budget");
+            console.error(err);
+            Alert.alert("Error", "Failed to save budget");
         }
     };
 
