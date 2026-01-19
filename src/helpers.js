@@ -43,3 +43,48 @@ export const getMonthEnd = (date = new Date()) => {
 };
 
 
+export const normalizeStartDate = (date, period) => {
+  const d = new Date(date);
+
+  if (period === "daily") {
+    return d.toISOString().split("T")[0];
+  }
+
+  if (period === "weekly") {
+    const day = d.getDay(); // 0 = Sunday
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday
+    const monday = new Date(d.setDate(diff));
+    return monday.toISOString().split("T")[0];
+  }
+
+  // monthly
+  return new Date(d.getFullYear(), d.getMonth(), 1)
+    .toISOString()
+    .split("T")[0];
+};
+
+export const getPeriodRange = (startDate, period) => {
+  const start = new Date(startDate);
+  let end;
+
+  if (period === "daily") {
+    end = new Date(start);
+  }
+
+  if (period === "weekly") {
+    end = new Date(start);
+    end.setDate(end.getDate() + 6);
+  }
+
+  if (period === "monthly") {
+    end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+  }
+
+  return {
+    start: start.toISOString().split("T")[0],
+    end: end.toISOString().split("T")[0],
+  };
+};
+
+
+

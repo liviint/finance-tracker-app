@@ -72,21 +72,26 @@ const migrateDbIfNeeded = async (db) => {
     CREATE TABLE IF NOT EXISTS budgets (
       id INTEGER,
       uuid TEXT UNIQUE PRIMARY KEY,
-      category_id INTEGER NOT NULL,
+
+      category_uuid TEXT NOT NULL,
       amount REAL NOT NULL,
-      period TEXT NOT NULL DEFAULT 'monthly',
-      start_date TEXT NOT NULL, -- YYYY-MM-01
+
+      period TEXT NOT NULL CHECK (period IN ('daily', 'weekly', 'monthly')),
+      start_date TEXT NOT NULL, -- normalized period start
+
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE (category_id, period, start_date),
-      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+
+      UNIQUE (category_uuid, period, start_date),
+
+      FOREIGN KEY (category_uuid)
+        REFERENCES finance_categories(uuid)
+        ON DELETE CASCADE
     );
 
-    CREATE INDEX IF NOT EXISTS idx_budgets_category
-    ON budgets(category_id);
 
-    CREATE INDEX IF NOT EXISTS idx_transactions_category_date
-    ON transactions(category_id, date);
+    CREATE INDEX IF NOT EXISTS idx_budgets_category
+    ON budgets(category_uuid);
 
   `);
 };
