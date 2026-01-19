@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Pressable, TouchableOpacity, Alert, ScrollView } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { Card, BodyText,Input,TextArea , FormLabel, CustomPicker} from "../ThemeProvider/components";
+import { Card, BodyText,Input,TextArea , FormLabel} from "../ThemeProvider/components";
 import { useSQLiteContext } from "expo-sqlite";
 import { getTransactionByUuid,
-        getCategories,
         upsertTransaction,
       } from "../../db/transactionsDb";
 import { useThemeStyles } from "../../hooks/useThemeStyles";
+import CategoriesPicker from "../common/CategoriesPicker";
 
 export default function AddEdit() {
   const {id:uuid} = useLocalSearchParams()
@@ -24,7 +23,6 @@ export default function AddEdit() {
     note: "",
     uuid:"",
   });
-  const [categories,setCategories] = useState([])
 
   const handleChange = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -88,18 +86,6 @@ const isFormValid = () => {
     getTransaction()
   },[uuid])
 
-  useEffect(() => {
-    let fetchCategories = async () => {
-      try {
-        let categories = await getCategories(db)
-        setCategories(categories)
-      } catch (error) {
-        console.log(error,"hello error")
-      }
-    }
-    fetchCategories()
-  },[])
-
   return (
     <ScrollView style={globalStyles.container}>
       <BodyText style={globalStyles.title}>
@@ -117,27 +103,10 @@ const isFormValid = () => {
           />
         </View>
 
-      <View style={globalStyles.formGroup}>
-        <FormLabel>Category</FormLabel>
-
-        <View
-        >
-          <CustomPicker
-            selectedValue={categories.find(cate => cate.uuid === form.category_uuid)}
-            onValueChange={(value) => handleCategoryChange(value)}
-          >
-            <Picker.Item label="Select category" value={null} />
-
-            {categories.map((cat) => (
-              <Picker.Item
-                key={cat.uuid}
-                label={`${cat.icon} ${cat.name}`}
-                value={cat}
-              />
-            ))}
-          </CustomPicker>
-        </View>
-      </View>
+        <CategoriesPicker
+          form={form}
+          handleCategoryChange={handleCategoryChange}
+        />
 
         {/* Amount */}
         <View style={globalStyles.formGroup}>

@@ -7,6 +7,8 @@ import TransactionsProvider from "./TransactionsProvider"
 const migrateDbIfNeeded = async (db) => {
   // await db.execAsync(`DROP TABLE IF EXISTS finance_transactions;`);
   // await db.execAsync(`DROP TABLE IF EXISTS finance_categories;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS savings_goals;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS budgets;`);
   await db.execAsync(`
     PRAGMA journal_mode = WAL;
 
@@ -24,6 +26,7 @@ const migrateDbIfNeeded = async (db) => {
       source TEXT DEFAULT 'manual',
 
       created_at TEXT NOT NULL,
+      date TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       deleted_at TEXT
     );

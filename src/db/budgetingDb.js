@@ -51,15 +51,15 @@ export const getBudgetsForMonth = async (db, date = new Date()) => {
       b.uuid,
       b.amount AS budget_amount,
       b.start_date,
-      c.id AS category_id,
+      c.id AS category_uuid,
       c.name AS category_name,
       c.icon,
       c.color,
       IFNULL(SUM(t.amount), 0) AS spent
     FROM budgets b
-    JOIN finance_categories c ON c.id = b.category_id
-    LEFT JOIN transactions t
-      ON t.category_id = b.category_id
+    JOIN finance_categories c ON c.uuid = b.category_uuid
+    LEFT JOIN finance_transactions t
+      ON t.category_uuid = b.category_uuid
       AND t.date BETWEEN ? AND ?
     WHERE b.start_date = ?
     GROUP BY b.uuid
