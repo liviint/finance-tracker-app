@@ -114,4 +114,9 @@ export const createGlobalStyles = (colors) =>
     formGroup: {
       marginBottom: 14,
     },
+    formBorder:{
+      borderWidth: 1,
+      borderColor:colors.border,
+      borderRadius: 10,
+    },
   });

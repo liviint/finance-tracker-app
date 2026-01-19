@@ -8,6 +8,7 @@ import { getTransactionByUuid,
       } from "../../db/transactionsDb";
 import { useThemeStyles } from "../../hooks/useThemeStyles";
 import CategoriesPicker from "../common/CategoriesPicker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function AddEdit() {
   const {id:uuid} = useLocalSearchParams()
@@ -22,10 +23,40 @@ export default function AddEdit() {
     type: "expense", 
     note: "",
     uuid:"",
+    date:new Date(),
   });
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [transactionDate, setTransactionDate] = useState(
+    form.created_at ? new Date(form.created_at) : new Date()
+  );
+
 
   const handleChange = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+    const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      const updated = new Date(transactionDate);
+      updated.setFullYear(selectedDate.getFullYear());
+      updated.setMonth(selectedDate.getMonth());
+      updated.setDate(selectedDate.getDate());
+      setTransactionDate(updated);
+      setForm(prev => ({...prev,date:updated}))
+    }
+  };
+
+  const handleTimeChange = (event, selectedTime) => {
+    setShowTimePicker(false);
+    if (selectedTime) {
+      const updated = new Date(form.date);
+      updated.setHours(selectedTime.getHours());
+      updated.setMinutes(selectedTime.getMinutes());
+      updated.setSeconds(selectedTime.getSeconds());
+      setForm(prev => ({...prev,date:updated}))
+    }
   };
 
   const handleCategoryChange = (selected) => {
@@ -135,7 +166,63 @@ const isFormValid = () => {
           </Pressable>
         </View>
 
-        {/* Note */}
+        <View style={globalStyles.formGroup}>
+          <FormLabel>Date & Time</FormLabel>
+          <View style={{ flexDirection: "row", gap: 12 }}>
+            <TouchableOpacity
+              onPress={() => setShowDatePicker(true)}
+              style={{
+                flex: 1,
+                paddingVertical: 8,
+                paddingHorizontal: 4,
+                alignItems: "center",
+                ...globalStyles.formBorder
+              }}
+            >
+              <BodyText>{transactionDate.toDateString()}</BodyText>
+            </TouchableOpacity>
+
+            {/* Time Button */}
+            <TouchableOpacity
+              onPress={() => setShowTimePicker(true)}
+              style={{
+                flex: 1,
+                paddingVertical: 8,
+                paddingHorizontal: 4,
+                borderRadius: 14,
+                alignItems: "center",
+                justifyContent:"center",
+                ...globalStyles.formBorder
+              }}
+            >
+              <BodyText>
+                {form.date.getHours().toString().padStart(2, "0")}:
+                {form.date.getMinutes().toString().padStart(2, "0")}
+              </BodyText>
+            </TouchableOpacity>
+          </View>
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={form.date}
+              mode="date"
+              display="calendar"
+              onChange={handleDateChange}
+              maximumDate={new Date()} 
+            />
+          )}
+
+          {showTimePicker && (
+            <DateTimePicker
+              value={form.date}
+              mode="time"
+              display="spinner"
+              onChange={handleTimeChange}
+            />
+          )}
+        </View>
+
+
         <View style={globalStyles.formGroup}>
           <FormLabel >Note (optional)</FormLabel>
           <TextArea

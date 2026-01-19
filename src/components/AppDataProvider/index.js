@@ -1,6 +1,7 @@
 import React from "react";
 import { SQLiteProvider } from "expo-sqlite";
 import TransactionsProvider from "./TransactionsProvider"
+import {version2Migrations} from '../../../utils/migrations'
 
 // Migration / initialization function
 // Migration / initialization function
@@ -9,7 +10,22 @@ const migrateDbIfNeeded = async (db) => {
   // await db.execAsync(`DROP TABLE IF EXISTS finance_categories;`);
   // await db.execAsync(`DROP TABLE IF EXISTS savings_goals;`);
   // await db.execAsync(`DROP TABLE IF EXISTS budgets;`);
-  await db.execAsync(`
+  // await db.execAsync(`PRAGMA user_version = 0;`);
+
+
+  await db.execAsync(`PRAGMA foreign_keys = ON;`);
+
+  const result = await db.getFirstAsync(
+    `PRAGMA user_version;`
+  );
+
+  const currentVersion = result.user_version ?? 0;
+
+  let nextVersion = currentVersion;
+  console.log(nextVersion,"hello next version")
+
+  if(nextVersion < 1) {
+    await db.execAsync(`
     PRAGMA journal_mode = WAL;
 
     CREATE TABLE IF NOT EXISTS finance_transactions (
@@ -26,7 +42,6 @@ const migrateDbIfNeeded = async (db) => {
       source TEXT DEFAULT 'manual',
 
       created_at TEXT NOT NULL,
-      date TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       deleted_at TEXT
     );
@@ -97,6 +112,18 @@ const migrateDbIfNeeded = async (db) => {
     ON budgets(category_uuid);
 
   `);
+  nextVersion = 1;
+  }
+
+  if(nextVersion < 2) {
+    await version2Migrations(db)
+    nextVersion = 2;
+  }
+
+  await db.execAsync(
+    `PRAGMA user_version = ${nextVersion};`
+  );
+
 };
 
 
