@@ -34,12 +34,13 @@ export default function AddEdit() {
         [key]:value
     }))
   }
+  
 
   useEffect(() => {
     if (!categoryUuid) return;
     let fetchCategory = async() => {
       let category = await getCategories(db,categoryUuid)
-      setForm(category)
+    setForm(category)
     }
     fetchCategory()
   }, [categoryUuid]);
