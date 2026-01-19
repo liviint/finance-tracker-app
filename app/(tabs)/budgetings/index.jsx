@@ -1,7 +1,7 @@
 import { View, Text, FlatList, Pressable } from "react-native";
 import { useEffect, useState } from "react";
 import { useSQLiteContext } from "expo-sqlite";
-import { getBudgetsForMonth, getBudgetStatus } from "@/db/budgets";
+import { getBudgetsForMonth, getBudgetStatus } from "../../../src/db/budgetingDb";
 
 export default function BudgetsListScreen({ navigation }) {
   const db = useSQLiteContext();

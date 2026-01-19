@@ -1,7 +1,7 @@
 import { View, Text, Pressable } from "react-native";
 import { useEffect, useState } from "react";
 import { useSQLiteContext } from "expo-sqlite";
-import { getBudgetByUUID } from "@/db/budgets";
+import { getBudgetByUUID } from "../../../../src/db/budgetingDb";
 
 export default function BudgetDetailsScreen({ route, navigation }) {
   const { uuid } = route.params;
