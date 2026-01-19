@@ -51,6 +51,15 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={24} name="savings" color={color} />,
         }}
       />
+
+      <Tabs.Screen
+        name="budgetings"
+        options={{
+          title: 'Budget',
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="budgetings" color={color} />,
+        }}
+      />
+
       <Tabs.Screen
         name="index"
         options={{

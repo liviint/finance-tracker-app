@@ -107,9 +107,9 @@ export default function BudgetsListScreen() {
         keyExtractor={(item) => item.uuid}
         renderItem={renderItem}
         ListEmptyComponent={
-          <Text style={{ textAlign: "center", marginTop: 32 }}>
+          <BodyText style={{ textAlign: "center", marginTop: 32 }}>
             No {period} budgets yet
-          </Text>
+          </BodyText>
         }
       />
     </View>
