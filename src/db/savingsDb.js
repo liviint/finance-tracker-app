@@ -122,19 +122,52 @@ export const addToSavings = async ({
 };
 
 
-export const removeFromSavings = async (db, uuid, amount) => {
-    if (!amount || amount <= 0) return;
+export const removeFromSavings = async (
+  db,
+  goalUuid,
+  amount,
+  note = null
+) => {
+  if (!amount || amount <= 0) return;
+
+  const now = new Date().toISOString();
+  const transactionUuid = newUuid();
+
+  await db.execAsync("BEGIN TRANSACTION;");
+
+  try {
+    await db.runAsync(
+      `
+      INSERT INTO savings_transactions (
+        uuid,
+        goal_uuid,
+        amount,
+        note,
+        source,
+        created_at
+      )
+      VALUES (?, ?, ?, ?, 'withdrawal', ?)
+      `,
+      [transactionUuid, goalUuid, amount, note, now]
+    );
 
     await db.runAsync(
-        `
-        UPDATE savings_goals
-        SET current_amount = MAX(current_amount - ?, 0),
-            updated_at = ?
-        WHERE uuid = ? AND deleted_at IS NULL
-        `,
-        [amount, new Date().toISOString(), uuid]
+      `
+      UPDATE savings_goals
+      SET current_amount = MAX(current_amount - ?, 0),
+          updated_at = ?
+      WHERE uuid = ? AND deleted_at IS NULL
+      `,
+      [amount, now, goalUuid]
     );
+
+    await db.execAsync("COMMIT;");
+  } catch (error) {
+    await db.execAsync("ROLLBACK;");
+    throw error;
+  }
 };
+
 
 export const deleteSavingsGoal = async (db, uuid) => {
     await db.runAsync(

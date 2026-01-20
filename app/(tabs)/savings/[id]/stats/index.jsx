@@ -97,13 +97,14 @@ export default function SavingsGoalStats() {
                     color={goal.color}
                 />
             </Card>
-
-        <Pressable
-            style={[styles.primaryBtn, { backgroundColor: goal.color }]}
-            onPress={() => router.push(`/savings/${uuid}`)}
-        >
-            <Text style={styles.primaryBtnText}>Add Savings</Text>
-        </Pressable>
+        <View style={{marginBottom:24}}>
+            <Pressable
+                style={{...globalStyles.primaryBtn, backgroundColor: goal.color }}
+                onPress={() => router.push(`/savings/${uuid}`)}
+            >
+                <Text style={globalStyles.primaryBtnText}>Add Savings</Text>
+            </Pressable>
+        </View>
         </ScrollView>
     );
 }
@@ -175,15 +176,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#999",
     paddingVertical: 24,
-  },
-  primaryBtn: {
-    paddingVertical: 14,
-    borderRadius: 16,
-    alignItems: "center",
-    marginTop: 12,
-  },
-  primaryBtnText: {
-    color: "#FFF",
-    fontWeight: "700",
   },
 });

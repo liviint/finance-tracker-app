@@ -5,7 +5,7 @@ import { useThemeStyles } from "../../hooks/useThemeStyles";
 const screenWidth = Dimensions.get("window").width;
 
 export default function SavingsLineChart({ data, color }) {
-  const { isDark } = useThemeStyles();
+  const { isDark , colors} = useThemeStyles();
 
   if (!data || data.length === 0) return null;
 
@@ -36,7 +36,7 @@ export default function SavingsLineChart({ data, color }) {
         backgroundGradientTo: "transparent",
         decimalPlaces: 0,
         color: () => color,
-        labelColor: () => (isDark ? "#CCC" : "#666"),
+        labelColor: () => colors.labelColor,
         propsForDots: {
           r: "4",
           strokeWidth: "2",
