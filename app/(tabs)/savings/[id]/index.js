@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, Alert, Pressable, } from "react-native";
+import { View, TouchableOpacity, Pressable, } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import { useSQLiteContext } from "expo-sqlite";
@@ -49,10 +49,22 @@ export default function SavingsDetail() {
         </BodyText>
         <View style={{ flexDirection: "row",justifyContent:"center",alignItems:"center", gap: 16, marginBottom:16 }}>
                 <Pressable
+                    style={{...globalStyles.primaryBtn,paddingVertical: 8,
+            paddingHorizontal: 16,}}
+                    onPress={() =>
+                    router.push(`/savings/${savingsUuid}/stats`)
+                    }
+                >
+                    <BodyText style={globalStyles.primaryBtnText}>
+                        Stats
+                    </BodyText>
+                </Pressable>
+
+                <Pressable
                     style={{...globalStyles.secondaryBtn,paddingVertical: 8,
             paddingHorizontal: 16,}}
                     onPress={() =>
-                    router.push(`/savings/add?id=${savingsUuid}`)
+                    router.push(`/savings/${savingsUuid}/edit`)
                     }
                 >
                     <BodyText style={globalStyles.secondaryBtnText}>

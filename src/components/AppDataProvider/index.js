@@ -10,6 +10,7 @@ const migrateDbIfNeeded = async (db) => {
   // await db.execAsync(`DROP TABLE IF EXISTS finance_categories;`);
   // await db.execAsync(`DROP TABLE IF EXISTS savings_goals;`);
   // await db.execAsync(`DROP TABLE IF EXISTS budgets;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS savings_transactions;`);
   // await db.execAsync(`PRAGMA user_version = 0;`);
 
 
@@ -24,7 +25,7 @@ const migrateDbIfNeeded = async (db) => {
   let nextVersion = currentVersion;
   console.log(nextVersion,"hello next version")
 
-  if(nextVersion < 1) {
+  
     await db.execAsync(`
     PRAGMA journal_mode = WAL;
 
@@ -111,14 +112,36 @@ const migrateDbIfNeeded = async (db) => {
     CREATE INDEX IF NOT EXISTS idx_budgets_category
     ON budgets(category_uuid);
 
-  `);
-  nextVersion = 1;
-  }
+    CREATE TABLE IF NOT EXISTS savings_transactions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      uuid TEXT UNIQUE NOT NULL,
 
+      goal_uuid TEXT NOT NULL,
+      amount REAL NOT NULL CHECK (amount > 0),
+
+      note TEXT,
+      source TEXT DEFAULT 'manual',
+
+      created_at TEXT NOT NULL,
+
+      FOREIGN KEY (goal_uuid)
+        REFERENCES savings_goals(uuid)
+        ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_savings_transactions_goal
+    ON savings_transactions(goal_uuid);
+
+    CREATE INDEX IF NOT EXISTS idx_savings_transactions_created_at
+    ON savings_transactions(created_at);
+
+  `);
+  
   if(nextVersion < 2) {
     await version2Migrations(db)
-    nextVersion = 2;
+    nextVersion = 1;
   }
+
 
   await db.execAsync(
     `PRAGMA user_version = ${nextVersion};`

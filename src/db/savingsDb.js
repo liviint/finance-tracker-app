@@ -121,3 +121,108 @@ export const resetSavings = async (db, uuid) => {
         [new Date().toISOString(), uuid]
     );
 };
+
+export const getSavingsTotal = async (db, goalUuid) => {
+    const row = await db.getFirstAsync(
+        `
+        SELECT COALESCE(SUM(amount), 0) AS total
+        FROM savings_transactions
+        WHERE goal_uuid = ?
+        `,
+        [goalUuid]
+    );
+
+    return row?.total ?? 0;
+};
+
+export const getSavingsActivityStats = async (db, goalUuid) => {
+    return db.getFirstAsync(
+        `
+        SELECT
+        COUNT(*) as deposits_count,
+        MAX(created_at) as last_deposit
+        FROM savings_transactions
+        WHERE goal_uuid = ?
+        `,
+        [goalUuid]
+    );
+};
+
+export const getSavingsProgress = async (db, goalUuid) => {
+    const goal = await getSavingsGoal(db, goalUuid);
+    if (!goal) return null;
+
+    const totalSaved = await getSavingsTotal(db, goalUuid);
+
+    const progress = Math.min(
+        (totalSaved / goal.target_amount) * 100,
+        100
+    );
+
+    const remaining = Math.max(
+        goal.target_amount - totalSaved,
+        0
+    );
+
+    return {
+        totalSaved,
+        target: goal.target_amount,
+        remaining,
+        progress,
+    };
+};
+
+export const getSavingsChartData = async (db, goalUuid) => {
+    return db.getAllAsync(
+        `
+        SELECT
+        date(created_at) as date,
+        SUM(amount) as total
+        FROM savings_transactions
+        WHERE goal_uuid = ?
+        GROUP BY date(created_at)
+        ORDER BY date(created_at) ASC
+        `,
+        [goalUuid]
+    );
+};
+
+export const getSavingsCumulativeChartData = async (db, goalUuid) => {
+    const rows = await getSavingsChartData(db, goalUuid);
+
+    let runningTotal = 0;
+
+    return rows.map(r => {
+        runningTotal += r.total;
+        return {
+        date: r.date,
+        total: runningTotal,
+        };
+    });
+};
+
+
+export const getSavingsGoalStats = async (db, goalUuid) => {
+    const goal = await getSavingsGoal(db, goalUuid);
+    if (!goal) return null;
+
+    const [progress, activity, chart] = await Promise.all([
+        getSavingsProgress(db, goalUuid),
+        getSavingsActivityStats(db, goalUuid),
+        getSavingsCumulativeChartData(db, goalUuid),
+    ]);
+
+    return {
+        goal,
+        ...progress,
+        depositsCount: activity.deposits_count,
+        lastDeposit: activity.last_deposit,
+        chartData: chart,
+    };
+};
+
+
+
+
+
+

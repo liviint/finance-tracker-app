@@ -18,3 +18,4 @@ export const version2Migrations = async (db) => {
     `);
   }
 };
+
