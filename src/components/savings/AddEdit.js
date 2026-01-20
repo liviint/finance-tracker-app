@@ -81,7 +81,6 @@ export default function AddEditSavings() {
             uuid: goalUuid,
             name: form.name.trim(),
             target_amount: target,
-            current_amount: current,
             color: form.color,
             icon: form.icon,
         });
@@ -123,8 +122,7 @@ export default function AddEditSavings() {
             />
             </View>
 
-            {/* Current */}
-            <View style={globalStyles.formGroup}>
+            {!savingsUuid && <View style={globalStyles.formGroup}>
             <FormLabel>Current Amount</FormLabel>
             <Input
                 placeholder="0"
@@ -134,7 +132,7 @@ export default function AddEditSavings() {
                     handleFormChange("current_amount",value.replace(/[^0-9.]/g, ""))
                 }
             />
-            </View>
+            </View>}
 
             {/* Icon */}
             <View style={globalStyles.formGroup}>
