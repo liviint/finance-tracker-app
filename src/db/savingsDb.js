@@ -1,5 +1,5 @@
 import uuid from "react-native-uuid";
-let newUuid = uuid.v4
+let newUuid = () => uuid.v4()
 
 export const getSavingsGoals = async (db) => {
     return db.getAllAsync(`
@@ -71,19 +71,56 @@ export const upsertSavingsGoal = async (
     return goalUuid;
 };
 
-export const addToSavings = async (db, uuid, amount) => {
+export const addToSavings = async ({
+    db,
+    savingsUuid,
+    amount,
+    note = null,
+    source = "manual"
+}
+) => {
     if (!amount || amount <= 0) return;
 
-    await db.runAsync(
+    const now = new Date().toISOString();
+    const transactionUuid = newUuid();
+
+    await db.execAsync("BEGIN TRANSACTION;");
+
+    try {
+        await db.runAsync(
         `
-        UPDATE savings_goals
-        SET current_amount = current_amount + ?,
-            updated_at = ?
-        WHERE uuid = ? AND deleted_at IS NULL
+        INSERT INTO savings_transactions (
+            uuid,
+            goal_uuid,
+            amount,
+            note,
+            source,
+            created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
         `,
-        [amount, new Date().toISOString(), uuid]
+        [transactionUuid, savingsUuid, amount, note, source, now]
+        );
+
+    
+        await db.runAsync(
+            `
+            UPDATE savings_goals
+            SET current_amount = current_amount + ?,
+                updated_at = ?
+            WHERE uuid = ? AND deleted_at IS NULL
+            `,
+        [amount, now, savingsUuid]
     );
+
+    await db.execAsync("COMMIT;");
+  } catch (error) {
+    await db.execAsync("ROLLBACK;");
+    console.error("❌ Failed to add to savings:", error);
+    throw error;
+  }
 };
+
 
 export const removeFromSavings = async (db, uuid, amount) => {
     if (!amount || amount <= 0) return;

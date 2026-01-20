@@ -26,14 +26,7 @@ export default function SavingsDetail() {
     const data = await getSavingsGoal(db, savingsUuid);
     setGoal(data);
   };
-
-  useEffect(() => {
-    loadGoal();
-  }, [isFocused]);
-
-  if (!goal) return null;
-
-    const handleDelete = async() => {
+  const handleDelete = async() => {
         try {
             await deleteSavingsGoal(db, savingsUuid);
             router.replace("/savings");
@@ -41,6 +34,20 @@ export default function SavingsDetail() {
             console.log(error,"hello error")
         }
     };
+
+    const handleAddSavings = async() => {
+        await addToSavings({db, savingsUuid,amount: Number(amount)});
+        await loadGoal();
+        setAmount("");
+    }
+
+  useEffect(() => {
+    loadGoal();
+  }, [isFocused]);
+
+    if (!goal) return null;
+
+    
 
   return (
     <View style={globalStyles.container}>
@@ -97,11 +104,7 @@ export default function SavingsDetail() {
             />
 
             <TouchableOpacity
-            onPress={async () => {
-                await addToSavings(db, savingsUuid, Number(amount));
-                await loadGoal();
-                setAmount("");
-            }}
+            onPress={handleAddSavings}
             style={{ ...globalStyles.primaryBtn, marginTop: 16 }}
             >
             <BodyText style={globalStyles.primaryBtnText}>
