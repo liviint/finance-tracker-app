@@ -1,9 +1,10 @@
 import { View, Alert, TouchableOpacity, ScrollView } from "react-native";
+import uuid from "react-native-uuid";
 import { useState, useEffect } from "react";
 import { useSQLiteContext } from "expo-sqlite";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Card, Input, FormLabel, BodyText } from "../ThemeProvider/components";
-import { upsertSavingsGoal, getSavingsGoal } from "../../../src/db/savingsDb";
+import { upsertSavingsGoal, getSavingsGoal, addToSavings } from "../../../src/db/savingsDb";
 import { useThemeStyles } from "../../hooks/useThemeStyles";
 import { COLORS } from "../../../utils/constants";
 
@@ -74,14 +75,20 @@ export default function AddEditSavings() {
         return;
         }
 
+        let goalUuid = savingsUuid || uuid.v4()
+
         await upsertSavingsGoal(db, {
-            uuid: savingsUuid,
+            uuid: goalUuid,
             name: form.name.trim(),
             target_amount: target,
             current_amount: current,
             color: form.color,
             icon: form.icon,
         });
+
+        if (!savingsUuid && current > 0) {
+            await addToSavings({db, savingsUuid:goalUuid,amount: Number(current)});
+        }
 
         router.back();
     };
