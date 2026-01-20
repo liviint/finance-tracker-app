@@ -91,7 +91,7 @@ export default function SavingsDetail() {
             </BodyText>
 
             <BodyText>
-            {goal.current_amount} / {goal.target_amount}
+            {goal.total_saved} / {goal.target_amount}
             </BodyText>
         </Card>
 

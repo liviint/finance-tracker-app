@@ -124,14 +124,14 @@ export default function AddEditSavings() {
 
             {!savingsUuid && <View style={globalStyles.formGroup}>
             <FormLabel>Current Amount</FormLabel>
-            <Input
-                placeholder="0"
-                keyboardType="numeric"
-                value={form.current_amount}
-                onChangeText={(value) =>
-                    handleFormChange("current_amount",value.replace(/[^0-9.]/g, ""))
-                }
-            />
+                <Input
+                    placeholder="0"
+                    keyboardType="numeric"
+                    value={form.current_amount}
+                    onChangeText={(value) =>
+                        handleFormChange("current_amount",value.replace(/[^0-9.]/g, ""))
+                    }
+                />
             </View>}
 
             {/* Icon */}

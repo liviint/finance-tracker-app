@@ -15,6 +15,7 @@ export default function SavingsList() {
 
   const loadGoals = async () => {
     const data = await getSavingsGoals(db);
+    console.log(data,"hello data")
     setGoals(data || []);
   };
 
@@ -27,7 +28,7 @@ export default function SavingsList() {
 
   const renderItem = ({ item }) => {
     const progress = Math.min(
-      item.current_amount / item.target_amount,
+      item.total_saved / item.target_amount,
       1
     );
 
@@ -42,8 +43,8 @@ export default function SavingsList() {
           </BodyText>
 
           <BodyText style={{ opacity: 0.8 }}>
-            {item.current_amount.toLocaleString()} /{" "}
-            {item.target_amount.toLocaleString()}
+            {item?.total_saved?.toLocaleString() || 0} /{" "}
+            {item?.target_amount?.toLocaleString() || 0}
           </BodyText>
 
           {/* Progress bar */}

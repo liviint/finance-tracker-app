@@ -2,24 +2,76 @@ import uuid from "react-native-uuid";
 let newUuid = () => uuid.v4()
 
 export const getSavingsGoals = async (db) => {
-    return db.getAllAsync(`
-        SELECT *
-        FROM savings_goals
-        WHERE deleted_at IS NULL
-        ORDER BY created_at DESC
-    `);
+  return await db.getAllAsync(`
+    SELECT
+      g.uuid,
+      g.name,
+      g.target_amount,
+      g.color,
+      g.icon,
+      g.created_at,
+      g.updated_at,
+
+      -- derived totals
+      IFNULL(SUM(t.amount), 0) AS total_saved,
+      COUNT(t.id) AS transactions_count,
+
+      -- progress (0–100)
+      CASE
+        WHEN g.target_amount > 0
+        THEN ROUND((IFNULL(SUM(t.amount), 0) / g.target_amount) * 100, 1)
+        ELSE 0
+      END AS progress_percent
+
+    FROM savings_goals g
+    LEFT JOIN savings_transactions t
+      ON t.goal_uuid = g.uuid
+
+    WHERE g.deleted_at IS NULL
+    GROUP BY g.uuid
+    ORDER BY g.created_at DESC;
+  `);
 };
 
-export const getSavingsGoal = async (db, uuid) => {
-    return db.getFirstAsync(
-        `
-        SELECT *
-        FROM savings_goals
-        WHERE uuid = ? AND deleted_at IS NULL
-        `,
-        [uuid]
-    );
+
+export const getSavingsGoal = async (db, goalUuid) => {
+  return await db.getFirstAsync(
+    `
+    SELECT
+      g.uuid,
+      g.name,
+      g.target_amount,
+      g.color,
+      g.icon,
+      g.created_at,
+      g.updated_at,
+
+      -- derived values
+      IFNULL(SUM(t.amount), 0) AS total_saved,
+      COUNT(t.id) AS transactions_count,
+
+      CASE
+        WHEN g.target_amount > 0
+        THEN ROUND((IFNULL(SUM(t.amount), 0) / g.target_amount) * 100, 1)
+        ELSE 0
+      END AS progress_percent,
+
+      MAX(g.target_amount - IFNULL(SUM(t.amount), 0), 0) AS remaining_amount
+
+    FROM savings_goals g
+    LEFT JOIN savings_transactions t
+      ON t.goal_uuid = g.uuid
+
+    WHERE g.uuid = ?
+      AND g.deleted_at IS NULL
+
+    GROUP BY g.uuid
+    LIMIT 1;
+    `,
+    [goalUuid]
+  );
 };
+
 
 export const upsertSavingsGoal = async (
     db,
