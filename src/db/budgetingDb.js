@@ -89,9 +89,33 @@ export const getBudgetsForPeriod = async (
 export const getBudgetByUUID = async (db, uuid) => {
   const rows = await db.getAllAsync(
     `
-    SELECT *
-    FROM budgets
-    WHERE uuid = ?
+    SELECT 
+      b.uuid,
+      b.amount AS budget_amount,
+      b.period,
+      b.start_date,
+
+      c.uuid AS category_uuid,
+      c.name AS category_name,
+      c.icon,
+      c.color,
+
+      IFNULL(SUM(t.amount), 0) AS spent
+    FROM budgets b
+    JOIN finance_categories c
+      ON c.uuid = b.category_uuid
+    LEFT JOIN finance_transactions t
+      ON t.category_uuid = b.category_uuid
+      AND t.type = 'expense'
+      AND t.created_at BETWEEN
+        b.start_date AND
+        CASE
+          WHEN b.period = 'daily' THEN b.start_date
+          WHEN b.period = 'weekly' THEN date(b.start_date, '+6 days')
+          WHEN b.period = 'monthly' THEN date(b.start_date, '+1 month', '-1 day')
+        END
+    WHERE b.uuid = ?
+    GROUP BY b.uuid
     LIMIT 1;
     `,
     [uuid]
@@ -99,6 +123,7 @@ export const getBudgetByUUID = async (db, uuid) => {
 
   return rows[0] || null;
 };
+
 
 
 export const deleteBudget = async (db, uuid) => {

@@ -40,7 +40,7 @@ export default function BudgetsListScreen() {
 
     return (
       <Pressable
-        onPress={() => router.push(`/budgeting/${item.uuid}`)}
+        onPress={() => router.push(`/budgetings/${item.uuid}`)}
       >
         <Card>
           <View
@@ -60,12 +60,10 @@ export default function BudgetsListScreen() {
           </BodyText>
         </View>
 
-        {/* Amounts */}
         <BodyText style={{ marginBottom: 10, color: "#555" }}>
           {item.spent} / {item.budget_amount}
         </BodyText>
 
-        {/* Progress Bar */}
         <View
           style={{
             height: 10,
@@ -90,7 +88,6 @@ export default function BudgetsListScreen() {
           />
         </View>
 
-        {/* Status */}
         <BodyText
           style={{
             fontSize: 12,
@@ -117,7 +114,6 @@ export default function BudgetsListScreen() {
         My Budgets
       </BodyText>
 
-      {/* Period Selector */}
       <View style={{ flexDirection: "row", marginBottom: 16 }}>
         {PERIODS.map((p) => (
           <Pressable
