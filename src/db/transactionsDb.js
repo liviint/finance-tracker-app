@@ -123,6 +123,23 @@ export async function getTransactionStats(db) {
     };
 }
 
+export async function getExpenseBreakdownByCategory(db) {
+    return await db.getAllAsync(`
+        SELECT
+        c.name AS name,
+        c.color AS color,
+        SUM(t.amount) AS total
+        FROM finance_transactions t
+        JOIN finance_categories c
+        ON c.uuid = t.category_uuid
+        WHERE t.type = 'expense'
+        AND t.deleted_at IS NULL
+        GROUP BY t.category_uuid
+        ORDER BY total DESC
+    `);
+}
+
+
 export async function getTopCategory(db) {
     return await db.getFirstAsync(`
         SELECT category, SUM(amount) AS total

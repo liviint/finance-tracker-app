@@ -54,7 +54,6 @@ export default function BudgetDetailsScreen() {
 
   return (
     <View style={globalStyles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <BodyText style={globalStyles.title}>Budget Details</BodyText>
 
