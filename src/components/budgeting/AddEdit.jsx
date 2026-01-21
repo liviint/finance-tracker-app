@@ -121,40 +121,6 @@ export default function AddEditBudget() {
                 />
             </View>
 
-            <View style={globalStyles.formGroup}>
-            <FormLabel>Period</FormLabel>
-            <View style={{ flexDirection: "row" }}>
-                {["daily", "weekly", "monthly"].map((p) => {
-                const selected = form.period === p;
-
-                return (
-                    <TouchableOpacity
-                    key={p}
-                    onPress={() => handleFormChange("period", p)}
-                    style={{
-                        flex: 1,
-                        padding: 12,
-                        marginRight: p !== "monthly" ? 8 : 0,
-                        borderRadius: 10,
-                        backgroundColor: selected ? "#2E8B8B" : "#EEE",
-                    }}
-                    >
-                    <Text
-                        style={{
-                        textAlign: "center",
-                        fontWeight: "600",
-                        color: selected ? "#FFF" : "#333",
-                        }}
-                    >
-                        {p}
-                    </Text>
-                    </TouchableOpacity>
-                );
-                })}
-            </View>
-            </View>
-
-            {/* SAVE */}
             <TouchableOpacity
             onPress={saveBudget}
             style={globalStyles.primaryBtn}

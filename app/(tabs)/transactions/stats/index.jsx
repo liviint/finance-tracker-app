@@ -142,7 +142,6 @@ export default function FinanceStatsPage() {
   );
 }
 
-
 const styles = StyleSheet.create({
   balanceCard: {
     alignItems: "center",

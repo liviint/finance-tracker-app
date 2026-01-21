@@ -10,8 +10,6 @@ import {
 import { BodyText, Card } from "../../../src/components/ThemeProvider/components";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 
-const PERIODS = ["daily", "weekly", "monthly"];
-
 export default function BudgetsListScreen() {
   const router = useRouter();
   const isFocused = useIsFocused()
@@ -23,7 +21,6 @@ export default function BudgetsListScreen() {
 
   const loadBudgets = async () => {
     const data = await getBudgetsForPeriod(db, period);
-    console.log(data,"hello data")
     setBudgets(data);
   };
 
@@ -111,36 +108,8 @@ export default function BudgetsListScreen() {
   return (
     <View style={globalStyles.container}>
       <BodyText style={globalStyles.title}>
-        My Budgets
+        My Monthly budegt
       </BodyText>
-
-      <View style={{ flexDirection: "row", marginBottom: 16 }}>
-        {PERIODS.map((p) => (
-          <Pressable
-            key={p}
-            onPress={() => setPeriod(p)}
-            style={{
-              flex: 1,
-              padding: 10,
-              marginRight: 8,
-              borderRadius: 8,
-              backgroundColor:
-                period === p ? "#2E8B8B" : "#EEE",
-            }}
-          >
-            <Text
-              style={{
-                textAlign: "center",
-                color: period === p ? "#FFF" : "#333",
-                fontWeight: "600",
-              }}
-            >
-              {p.charAt(0).toUpperCase() + p.slice(1)}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
       <Pressable
         onPress={() => router.push(`/budgetings/add?period=${period}`)}
         style={{ ...globalStyles.primaryBtn, marginBottom: 16 }}

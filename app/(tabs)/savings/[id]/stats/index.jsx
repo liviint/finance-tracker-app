@@ -19,14 +19,18 @@ export default function SavingsGoalStats() {
         if (!uuid) return;
 
         const loadStats = async () => {
-            const data = await getSavingsGoalStats(db, uuid);
-            setStats(data);
+            try {
+                const data = await getSavingsGoalStats(db, uuid);
+                setStats(data);
+            } catch (error) {
+                console.log(error,"hello error")
+            }
         };
 
         loadStats();
     }, [uuid]);
 
-    if (!stats) return null;
+    if (!stats) return <View style={globalStyles.container}></View>
 
     const {
         goal,

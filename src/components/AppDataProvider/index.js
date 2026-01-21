@@ -117,7 +117,7 @@ const migrateDbIfNeeded = async (db) => {
       uuid TEXT UNIQUE NOT NULL,
 
       goal_uuid TEXT NOT NULL,
-      amount REAL NOT NULL CHECK (amount > 0),
+      amount REAL NOT NULL,
 
       note TEXT,
       source TEXT DEFAULT 'manual',

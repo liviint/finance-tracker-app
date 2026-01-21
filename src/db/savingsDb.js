@@ -170,11 +170,11 @@ export const addToSavings = async ({
 };
 
 
-export const removeFromSavings = async (
+export const removeFromSavings = async ({
   db,
   goalUuid,
   amount,
-  note = null
+  note = null}
 ) => {
   if (!amount || amount <= 0) return;
 
@@ -196,7 +196,7 @@ export const removeFromSavings = async (
       )
       VALUES (?, ?, ?, ?, 'withdrawal', ?)
       `,
-      [transactionUuid, goalUuid, amount, note, now]
+      [transactionUuid, goalUuid, -amount, note, now]
     );
 
     await db.runAsync(
