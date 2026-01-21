@@ -2,7 +2,7 @@ import { View, Pressable, StyleSheet, Text } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useSQLiteContext } from "expo-sqlite";
-
+import { useIsFocused } from "@react-navigation/native";
 import { getBudgetByUUID, deleteBudget, getBudgetStatus } from "../../../../src/db/budgetingDb";
 import DeleteButton from "../../../../src/components/common/DeleteButton";
 import { useThemeStyles } from "../../../../src/hooks/useThemeStyles";
@@ -17,16 +17,17 @@ export default function BudgetDetailsScreen() {
   const router = useRouter();
   const db = useSQLiteContext();
   const { globalStyles } = useThemeStyles();
-
+  const isFocused = useIsFocused()
   const [budget, setBudget] = useState(null);
 
   useEffect(() => {
-    (async () => {
+    const loadBudget = async () => {
       const data = await getBudgetByUUID(db, uuid);
       console.log(data,"hello data")
       setBudget(data);
-    })();
-  }, [uuid]);
+    }
+    if(isFocused) loadBudget()
+  }, [uuid, isFocused]);
 
   const handleDelete = async () => {
     await deleteBudget(db, uuid);

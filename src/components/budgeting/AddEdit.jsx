@@ -28,7 +28,7 @@ export default function AddEditBudget() {
     const router = useRouter();
     const db = useSQLiteContext();
     const { globalStyles } = useThemeStyles();
-    const { uuid: budgetUUID, period } = useLocalSearchParams();
+    const { id: budgetUUID, period } = useLocalSearchParams();
 
     const initialForm = {
         category_uuid: "",
@@ -52,11 +52,12 @@ export default function AddEditBudget() {
 
         const loadBudget = async () => {
         const budget = await getBudgetByUUID(db, budgetUUID);
+        console.log(budget,"hello budget")
 
         setForm({
             uuid: budget.uuid,
             category_uuid: budget.category_uuid,
-            amount: String(budget.amount),
+            amount: String(budget.budget_amount),
             period: budget.period,
             date: new Date(budget.start_date),
         });
