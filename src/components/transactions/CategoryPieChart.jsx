@@ -1,10 +1,12 @@
 import { PieChart } from "react-native-chart-kit";
-import { Dimensions, View } from "react-native";
+import { Dimensions } from "react-native";
 import { Card, BodyText, SecondaryText } from "../ThemeProvider/components";
+import { useThemeStyles } from "../../hooks/useThemeStyles";
 
 const screenWidth = Dimensions.get("window").width;
 
 export default function CategoryPieChart({ data }) {
+  const {colors} = useThemeStyles()
   if (!data || data.length === 0) {
     return (
       <Card>
@@ -17,7 +19,7 @@ export default function CategoryPieChart({ data }) {
     name: item.name,
     population: item.total,
     color: item.color || "#ccc",
-    legendFontColor: "#333",
+    legendFontColor: colors.labelColor,
     legendFontSize: 12,
   }));
 
@@ -35,7 +37,7 @@ export default function CategoryPieChart({ data }) {
         backgroundColor="transparent"
         paddingLeft="10"
         chartConfig={{
-          color: () => "#000",
+          color: () => colors.text,
         }}
         absolute
       />

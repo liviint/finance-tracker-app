@@ -102,13 +102,13 @@ export default function FinanceStatsPage() {
           fromZero
           showValuesOnTopOfBars
           chartConfig={{
-            backgroundGradientFrom: "transparent",
-            backgroundGradientTo: "transparent",
+            backgroundGradientFrom: colors.background,
+            backgroundGradientTo: colors.background,
             decimalPlaces: 0,
             color: () => `${colors.tint}`,
             labelColor: () => colors.secondaryText,
             propsForBackgroundLines: {
-              stroke: "#eee",
+              stroke: colors.border,
             },
           }}
           style={{ borderRadius: 16, marginTop: 12 }}
