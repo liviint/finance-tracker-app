@@ -15,26 +15,35 @@ export default function TransactionsProvider({ children }) {
   const db = useSQLiteContext();
   const userDetails = useSelector((state) => state?.user?.userDetails);
   const enabled = !!userDetails;
-
-  const bootstrap = async () => {
-    //Push local to server
+  
+  const syncFromLocalToApi = async() => {
     const unsynced = await getUnsyncedTransactions(db);
     console.log(unsynced,"hello unsynced 123")
     if (unsynced.length > 0) {
-      await api.post("/finances/transactions/bulk-sync/", {
+      await api.post("/finances/transactions/bulk_sync/", {
         items: unsynced,
       });
     }
+  }
 
-    // 2️⃣ Pull server → local
+  const syncFromApiToLocal = async() => {
     const lastSyncedAt = await getLastSyncedAt(db);
-    const res = await api.post("/finances/transactions/sync/", {
-      last_synced_at: lastSyncedAt,
-    });
+    try {
+        const res = await api.post("/finances/transactions/sync/", {
+        last_synced_at: lastSyncedAt,
+      });
+      console.log(res.data,"hello results 12...")
 
-    await syncTransactionsFromApi(db, res.data.results);
-    await saveLastSyncedAt(db, res.data.server_time);
+      await syncTransactionsFromApi(db, res.data.results);
+      await saveLastSyncedAt(db, res.data.server_time);
+    } catch (error) {
+      console.log(error?.response?.data,"hello error 123")
+    }
+  }
 
+  const bootstrap = async () => {
+    await syncFromLocalToApi()
+    await syncFromApiToLocal()
     syncManager.emit("transactions_updated");
   };
 
