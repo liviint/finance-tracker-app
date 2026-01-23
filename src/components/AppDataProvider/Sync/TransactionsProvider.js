@@ -18,7 +18,6 @@ export default function TransactionsProvider({ children }) {
   
   const syncFromLocalToApi = async() => {
     const unsynced = await getUnsyncedTransactions(db);
-    console.log(unsynced,"hello unsynced 123")
     if (unsynced.length > 0) {
       await api.post("/finances/transactions/bulk_sync/", {
         items: unsynced,
