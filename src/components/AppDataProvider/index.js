@@ -1,7 +1,7 @@
-import React from "react";
 import { SQLiteProvider } from "expo-sqlite";
-import TransactionsProvider from "./TransactionsProvider"
-import {version2Migrations} from '../../../utils/migrations'
+import React from "react";
+import { version2Migrations } from '../../../utils/migrations';
+import TransactionsProvider from "./Sync/TransactionsProvider";
 
 // Migration / initialization function
 // Migration / initialization function
