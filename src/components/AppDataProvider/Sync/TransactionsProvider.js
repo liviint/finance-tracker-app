@@ -4,9 +4,9 @@ import { useSQLiteContext } from "expo-sqlite";
 import {
   getUnsyncedTransactions,
   syncTransactionsFromApi,
-  getLastSyncedAt,
   saveLastSyncedAt,
 } from "../../../db/transactionsDb";
+import {getLastSyncedAt} from "../../../db/common"
 import { api } from "../../../../api";
 import { syncManager } from "../../../../utils/syncManager";
 import { useSyncEngine } from "../../../../src/hooks/useSyncEngine";
@@ -17,8 +17,9 @@ export default function TransactionsProvider({ children }) {
   const enabled = !!userDetails;
 
   const bootstrap = async () => {
-    // 1️⃣ Push local → server
+    //Push local to server
     const unsynced = await getUnsyncedTransactions(db);
+    console.log(unsynced,"hello unsynced 123")
     if (unsynced.length > 0) {
       await api.post("/finances/transactions/bulk-sync/", {
         items: unsynced,

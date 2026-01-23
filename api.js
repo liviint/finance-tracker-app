@@ -2,6 +2,7 @@ import axios from "axios";
 import {safeLocalStorage} from './utils/storage'
 
 const baseURL = process.env.EXPO_PUBLIC_API_URL
+console.log(baseURL,"hello baseUrl")
 
 export let api = axios.create({baseURL})
 

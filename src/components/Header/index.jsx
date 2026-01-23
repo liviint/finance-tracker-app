@@ -36,11 +36,11 @@ export default function Header() {
             path="/feedback" 
             isActive={isActive("/(tabs)/feedback")} 
           />
-          {/* <NavLink 
+          <NavLink 
             label="Profile" 
             path="/profile" 
             isActive={isActive("/(tabs)/profile")} 
-          /> */}
+          /> 
           <NavLink 
             label="Settings" 
             path="/settings" 

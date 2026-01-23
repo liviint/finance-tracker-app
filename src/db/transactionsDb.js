@@ -77,6 +77,19 @@ export async function getTransactionByUuid(db, uuid) {
     `, [uuid]);
 }
 
+export async function getUnsyncedTransactions(db) {
+    return await db.getAllAsync(
+        `
+        SELECT *
+        FROM finance_transactions
+        WHERE is_synced = 0
+        AND deleted_at IS NULL
+        ORDER BY datetime(updated_at) ASC
+        `
+    );
+}
+
+
 export async function updateTransaction(db, uuid, updates) {
     let {title,amount,type,category,note} = updates
     const fields = ['title','amount','type','category','note','updated_at = ?'];
