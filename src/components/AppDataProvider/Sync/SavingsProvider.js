@@ -8,11 +8,10 @@ import {
   syncSavingsTransactionsFromApi,
   getSavingsLastSyncedAt,
   saveSavingsLastSyncedAt,
-} from "../../db/savingsDb";
-
-import { api } from "../../../api";
-import { syncManager } from "../../../utils/syncManager";
-import { useSyncEngine } from "../../../utils/useSyncEngine";
+} from "../../../db/savingsDb";
+import { api } from "../../../../api";
+import { syncManager } from "../../../../utils/syncManager";
+import { useSyncEngine } from "../../../../src/hooks/useSyncEngine";
 
 export default function SavingsProvider({ children }) {
   const db = useSQLiteContext();

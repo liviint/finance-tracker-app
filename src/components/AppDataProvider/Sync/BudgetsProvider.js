@@ -6,11 +6,10 @@ import {
   syncBudgetsFromApi,
   getBudgetsLastSyncedAt,
   saveBudgetsLastSyncedAt,
-} from "../../db/budgetsDb";
-
-import { api } from "../../../api";
-import { syncManager } from "../../../utils/syncManager";
-import { useSyncEngine } from "../../../utils/useSyncEngine";
+} from "../../../db/budgetingDb";
+import { api } from "../../../../api";
+import { syncManager } from "../../../../utils/syncManager";
+import { useSyncEngine } from "../../../../src/hooks/useSyncEngine";
 
 export default function BudgetsProvider({ children }) {
   const db = useSQLiteContext();
