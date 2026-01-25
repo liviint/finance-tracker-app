@@ -72,6 +72,29 @@ export const getSavingsGoal = async (db, goalUuid) => {
   );
 };
 
+export async function getUnsyncedSavingsGoals(db) {
+    return await db.getAllAsync(
+        `
+        SELECT *
+        FROM savings_goals
+        WHERE is_synced = 0
+        AND deleted_at IS NULL
+        ORDER BY datetime(updated_at) ASC
+        `
+    );
+}
+
+export async function getUnsyncedSavingsTransactions(db) {
+    return await db.getAllAsync(
+        `
+        SELECT *
+        FROM savings_transactions
+        WHERE is_synced = 0
+        ORDER BY datetime(created_at) ASC
+        `
+    );
+}
+
 
 export const upsertSavingsGoal = async (
     db,
@@ -117,6 +140,83 @@ export const upsertSavingsGoal = async (
     );
 
     return goalUuid;
+};
+
+export const syncSavingsGoalsFromApi = async (db, goals = []) => {
+  if (!Array.isArray(goals) || goals.length === 0) return;
+
+  await db.execAsync("BEGIN TRANSACTION;");
+
+  try {
+    for (const goal of goals) {
+      const {
+        uuid,
+        name,
+        target_amount,
+        color,
+        icon,
+        created_at,
+        updated_at,
+        deleted_at,
+        current_amount,
+      } = goal;
+
+      // 🗑 Soft-deleted on server → mirror locally
+      if (deleted_at) {
+        await db.runAsync(
+          `
+          UPDATE savings_goals
+          SET deleted_at = ?, updated_at = ?
+          WHERE uuid = ?
+          `,
+          [deleted_at, updated_at, uuid]
+        );
+        continue;
+      }
+
+      // 🔄 Upsert active goal
+      await db.runAsync(
+        `
+        INSERT INTO savings_goals (
+          uuid,
+          name,
+          target_amount,
+          current_amount,
+          color,
+          icon,
+          created_at,
+          updated_at,
+          is_synced
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+        ON CONFLICT(uuid) DO UPDATE SET
+          name = excluded.name,
+          target_amount = excluded.target_amount,
+          current_amount = excluded.current_amount,
+          color = excluded.color,
+          icon = excluded.icon,
+          updated_at = excluded.updated_at,
+          is_synced = 1
+        `,
+        [
+          uuid,
+          name,
+          target_amount,
+          current_amount ?? 0,
+          color,
+          icon,
+          created_at,
+          updated_at,
+        ]
+      );
+    }
+
+    await db.execAsync("COMMIT;");
+  } catch (error) {
+    await db.execAsync("ROLLBACK;");
+    console.error("❌ Failed syncing savings goals:", error);
+    throw error;
+  }
 };
 
 export const addToSavings = async ({
@@ -165,6 +265,82 @@ export const addToSavings = async ({
   } catch (error) {
     await db.execAsync("ROLLBACK;");
     console.error("❌ Failed to add to savings:", error);
+    throw error;
+  }
+};
+
+export const syncSavingsTransactionsFromApi = async (db, transactions = []) => {
+  if (!Array.isArray(transactions) || transactions.length === 0) return;
+
+  await db.execAsync("BEGIN TRANSACTION;");
+
+  try {
+    for (const tx of transactions) {
+      const {
+        uuid,
+        goal_uuid,
+        amount,
+        note,
+        source,
+        created_at,
+      } = tx;
+
+      // ⛔ Skip invalid rows
+      if (!uuid || !goal_uuid || !amount) continue;
+
+      // 🔍 Check if already exists locally
+      const existing = await db.getFirstAsync(
+        `
+        SELECT uuid
+        FROM savings_transactions
+        WHERE uuid = ?
+        LIMIT 1
+        `,
+        [uuid]
+      );
+
+      if (existing) continue; // already applied
+
+      // ➕ Insert transaction
+      await db.runAsync(
+        `
+        INSERT INTO savings_transactions (
+          uuid,
+          goal_uuid,
+          amount,
+          note,
+          source,
+          created_at,
+          is_synced
+        )
+        VALUES (?, ?, ?, ?, ?, ?, 1)
+        `,
+        [
+          uuid,
+          goal_uuid,
+          amount,
+          note,
+          source,
+          created_at,
+        ]
+      );
+
+      // 💰 Apply balance increment once
+      await db.runAsync(
+        `
+        UPDATE savings_goals
+        SET current_amount = current_amount + ?,
+            updated_at = ?
+        WHERE uuid = ? AND deleted_at IS NULL
+        `,
+        [amount, created_at, goal_uuid]
+      );
+    }
+
+    await db.execAsync("COMMIT;");
+  } catch (error) {
+    await db.execAsync("ROLLBACK;");
+    console.error("❌ Failed syncing savings transactions:", error);
     throw error;
   }
 };

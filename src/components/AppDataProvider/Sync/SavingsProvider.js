@@ -6,9 +6,8 @@ import {
   getUnsyncedSavingsTransactions,
   syncSavingsGoalsFromApi,
   syncSavingsTransactionsFromApi,
-  getSavingsLastSyncedAt,
-  saveSavingsLastSyncedAt,
 } from "../../../db/savingsDb";
+import {getLastSyncedAt,saveLastSyncedAt} from "../../../db/common"
 import { api } from "../../../../api";
 import { syncManager } from "../../../../utils/syncManager";
 import { useSyncEngine } from "../../../../src/hooks/useSyncEngine";
@@ -17,38 +16,65 @@ export default function SavingsProvider({ children }) {
   const db = useSQLiteContext();
   const userDetails = useSelector((state) => state?.user?.userDetails);
   const enabled = !!userDetails;
+  
+  const syncGoalsFromLocalToApi = async() => {
+    try {
+      const unsyncedGoals = await getUnsyncedSavingsGoals(db);
+      if (unsyncedGoals.length > 0) {
+        let res = await api.post("/finances/savings/goals/bulk_sync/", {
+          items: unsyncedGoals,
+        });
+      }
+    } catch (error) {
+      console.log(error,"hello error")
+    }
+  }
+  const syncTransactionsFromLocalToApi = async() => {
+    try {
+      const unsyncedTransactions = await getUnsyncedSavingsTransactions(db);
+      if (unsyncedTransactions.length > 0) {
+        let res = await api.post("/finances/savings/transactions/bulk_sync/", {
+          items: unsyncedTransactions,
+        });
+      }
+    } catch (error) {
+      console.log(error,"hello error")
+    }
+  }
+
+  const syncGoalsFromApiToLocal = async() => {
+    const lastSyncedAt = await getLastSyncedAt(db,"savings-goals");
+    try {
+        const res = await api.post("/finances/savings/goals/sync/", {
+        last_synced_at: lastSyncedAt,
+      });
+      await syncSavingsGoalsFromApi(db, res.data.results);
+      await saveLastSyncedAt(db, res.data.server_time,"savings-goals");
+    } catch (error) {
+      console.log(error,"hello error")
+    }
+  }
+
+  const syncTransationsFromApiToLocal = async() => {
+    const lastSyncedAt = await getLastSyncedAt(db,"savings-transactions");
+    try {
+        const res = await api.post("/finances/savings/transactions/sync/", {
+        last_synced_at: lastSyncedAt,
+      });
+      console.log(res.data,"hello res data")
+      await syncSavingsTransactionsFromApi(db, res.data.results);
+      await saveLastSyncedAt(db, res.data.server_time,"savings-transactions");
+    } catch (error) {
+      console.log(error,"hello error")
+    }
+  }
 
   const bootstrap = async () => {
-    // ─────────────────────────────
-    // 1️⃣ PUSH: local → server
-    // ─────────────────────────────
-    const unsyncedGoals = await getUnsyncedSavingsGoals(db);
-    if (unsyncedGoals.length > 0) {
-      await api.post("/finances/savings/goals/bulk-sync/", {
-        items: unsyncedGoals,
-      });
-    }
+    await syncGoalsFromLocalToApi()
+    await syncTransactionsFromLocalToApi()
 
-    const unsyncedTransactions = await getUnsyncedSavingsTransactions(db);
-    if (unsyncedTransactions.length > 0) {
-      await api.post("/finances/savings/transactions/bulk-sync/", {
-        items: unsyncedTransactions,
-      });
-    }
-
-    // ─────────────────────────────
-    // 2️⃣ PULL: server → local
-    // ─────────────────────────────
-    const lastSyncedAt = await getSavingsLastSyncedAt(db);
-
-    const res = await api.post("/finances/savings/sync/", {
-      last_synced_at: lastSyncedAt,
-    });
-
-    await syncSavingsGoalsFromApi(db, res.data.goals);
-    await syncSavingsTransactionsFromApi(db, res.data.transactions);
-
-    await saveSavingsLastSyncedAt(db, res.data.server_time);
+    await syncGoalsFromApiToLocal()
+    await syncTransationsFromApiToLocal()
 
     syncManager.emit("savings_updated");
   };

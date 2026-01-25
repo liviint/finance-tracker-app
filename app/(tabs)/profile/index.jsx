@@ -35,7 +35,6 @@ const ProfileView = () => {
             method:"POST",
             data:{refresh: refereshToken}
         }).then(res => {
-          console.log(res,"hello res")
         }).catch(error => console.log(error))
         .finally(() => {
           dispatch(clearUserDetails())

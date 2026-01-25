@@ -19,8 +19,6 @@ export const version2Migrations = async (db) => {
   }
 };
 
-// utils/migrations.js
-
 export const version3Migrations = async (db) => {
   console.log("🚀 Running version 2 migrations (sync columns)");
 
