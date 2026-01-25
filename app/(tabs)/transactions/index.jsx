@@ -18,7 +18,6 @@ export default function FinanceListPage() {
     useEffect(() => {
         let fetchTransactions = async() => {
             let transactions = await getTransactions(db)
-            console.log(transactions,"hello transactions")
             setTransactions(transactions)
         }
         fetchTransactions()

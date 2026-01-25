@@ -19,7 +19,6 @@ export async function upsertTransaction(db, {
 
   try {
     const localUuid = uuid ? uuid :  newUuid()
-    console.log(localUuid,"hello uuid")
 
     await db.runAsync(
       `

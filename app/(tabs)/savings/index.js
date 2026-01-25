@@ -15,7 +15,6 @@ export default function SavingsList() {
 
   const loadGoals = async () => {
     const data = await getSavingsGoals(db);
-    console.log(data,"hello data")
     setGoals(data || []);
   };
 

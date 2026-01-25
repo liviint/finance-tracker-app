@@ -12,6 +12,7 @@ const migrateDbIfNeeded = async (db) => {
   await db.execAsync(`DROP TABLE IF EXISTS savings_goals;`);
   // await db.execAsync(`DROP TABLE IF EXISTS budgets;`);
   await db.execAsync(`DROP TABLE IF EXISTS savings_transactions;`);
+  await db.execAsync(`DROP TABLE IF EXISTS  app_settings;`);
   // await db.execAsync(`PRAGMA user_version = 0;`);
 
 
@@ -24,9 +25,7 @@ const migrateDbIfNeeded = async (db) => {
   const currentVersion = result.user_version ?? 0;
 
   let nextVersion = currentVersion;
-  console.log(nextVersion,"hello next version")
 
-  
     await db.execAsync(`
     PRAGMA journal_mode = WAL;
 

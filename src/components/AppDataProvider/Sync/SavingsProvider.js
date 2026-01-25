@@ -61,7 +61,6 @@ export default function SavingsProvider({ children }) {
         const res = await api.post("/finances/savings/transactions/sync/", {
         last_synced_at: lastSyncedAt,
       });
-      console.log(res.data,"hello res data")
       await syncSavingsTransactionsFromApi(db, res.data.results);
       await saveLastSyncedAt(db, res.data.server_time,"savings-transactions");
     } catch (error) {

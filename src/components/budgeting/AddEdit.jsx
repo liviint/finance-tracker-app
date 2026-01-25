@@ -52,7 +52,6 @@ export default function AddEditBudget() {
 
         const loadBudget = async () => {
         const budget = await getBudgetByUUID(db, budgetUUID);
-        console.log(budget,"hello budget")
 
         setForm({
             uuid: budget.uuid,
