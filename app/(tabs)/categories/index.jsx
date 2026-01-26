@@ -1,16 +1,17 @@
-import React, {  useState } from "react";
+import React, {  useState , useEffect} from "react";
 import {
   View,
   Text,
-  FlatList,
   TouchableOpacity,
   Alert,
-  ScrollView
+  ScrollView,
 } from "react-native";
+import { useIsFocused } from "@react-navigation/native";
 import { useSQLiteContext } from "expo-sqlite";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 import { SecondaryText , BodyText} from "../../../src/components/ThemeProvider/components";
+import { syncManager } from "../../../utils/syncManager";
 
 export default function CategoriesListScreen({ navigation }) {
   const db = useSQLiteContext();
@@ -18,6 +19,7 @@ export default function CategoriesListScreen({ navigation }) {
   const {globalStyles} = useThemeStyles()
   const [incomeCategories, setIncomeCategories] = useState([]);
   const [expenseCategories, setExpenseCategories] = useState([]);
+  const isFocused = useIsFocused()
 
   const loadCategories = async () => {
     const income = await db.getAllAsync(
@@ -36,11 +38,16 @@ export default function CategoriesListScreen({ navigation }) {
     setExpenseCategories(expense);
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
+  useEffect(() => {
+    loadCategories();
+  }, [isFocused]);
+
+  useEffect(() => {
+    const unsub = syncManager.on("transactions_updated", async () => {
       loadCategories();
-    }, [])
-  );
+    });
+    return unsub;
+  }, []);
 
   const deleteCategory = (category) => {
     Alert.alert(

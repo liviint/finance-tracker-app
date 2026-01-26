@@ -9,6 +9,7 @@ import {
 } from "../../../src/db/budgetingDb";
 import { BodyText, Card } from "../../../src/components/ThemeProvider/components";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
+import { syncManager } from "../../../utils/syncManager";
 
 export default function BudgetsListScreen() {
   const router = useRouter();
@@ -27,6 +28,13 @@ export default function BudgetsListScreen() {
   useEffect(() => {
     loadBudgets();
   }, [period,isFocused]);
+
+  useEffect(() => {
+    const unsub = syncManager.on("transactions_updated", async () => {
+      loadBudgets();
+    });
+    return unsub;
+  }, []);
 
   const renderItem = ({ item }) => {
     const status = getBudgetStatus(item.spent, item.budget_amount);

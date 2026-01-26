@@ -1,16 +1,19 @@
 import { View, FlatList, TouchableOpacity } from "react-native";
-import {  useState, useCallback } from "react";
+import {  useState, useEffect } from "react";
+import { useIsFocused } from "@react-navigation/native";
 import { useSQLiteContext } from "expo-sqlite";
-import { useRouter, useFocusEffect } from "expo-router";
+import { useRouter } from "expo-router";
 import { Card, BodyText } from "../../../src/components/ThemeProvider/components";
 import { getSavingsGoals } from "../../../src/db/savingsDb";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
+import { syncManager } from "../../../utils/syncManager";
 
 export default function SavingsList() {
   const { globalStyles } = useThemeStyles();
   const db = useSQLiteContext();
   const router = useRouter();
-
+  const isFocused = useIsFocused()
+  
   const [goals, setGoals] = useState([]);
 
   const loadGoals = async () => {
@@ -18,12 +21,16 @@ export default function SavingsList() {
     setGoals(data || []);
   };
 
-  // Refresh when screen is focused
-  useFocusEffect(
-    useCallback(() => {
+  useEffect(() => {
       loadGoals();
-    }, [])
-  );
+  },[isFocused])
+  
+  useEffect(() => {
+    const unsub = syncManager.on("transactions_updated", async () => {
+      loadGoals();
+    });
+    return unsub;
+  }, []);
 
   const renderItem = ({ item }) => {
     const progress = Math.min(
