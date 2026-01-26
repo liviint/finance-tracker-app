@@ -6,16 +6,14 @@ import SavingsProvider from "./Sync/SavingsProvider"
 import BudgetsProvider from "./Sync/BudgetsProvider"
 import CategoriesProvider from "./Sync/CategoriesProvider"
 
-// Migration / initialization function
-// Migration / initialization function
 const migrateDbIfNeeded = async (db) => {
-  // await db.execAsync(`DROP TABLE IF EXISTS finance_transactions;`);
-  // await db.execAsync(`DROP TABLE IF EXISTS finance_categories;`);
-  // await db.execAsync(`DROP TABLE IF EXISTS savings_goals;`);
-  // await db.execAsync(`DROP TABLE IF EXISTS budgets;`);
-  // await db.execAsync(`DROP TABLE IF EXISTS savings_transactions;`);
-  // await db.execAsync(`DROP TABLE IF EXISTS  app_settings;`);
-  // await db.execAsync(`PRAGMA user_version = 0;`);
+  await db.execAsync(`DROP TABLE IF EXISTS finance_transactions;`);
+  await db.execAsync(`DROP TABLE IF EXISTS finance_categories;`);
+  await db.execAsync(`DROP TABLE IF EXISTS savings_goals;`);
+  await db.execAsync(`DROP TABLE IF EXISTS budgets;`);
+  await db.execAsync(`DROP TABLE IF EXISTS savings_transactions;`);
+  await db.execAsync(`DROP TABLE IF EXISTS  app_settings;`);
+  await db.execAsync(`PRAGMA user_version = 0;`);
 
 
   await db.execAsync(`PRAGMA foreign_keys = ON;`);
@@ -106,6 +104,7 @@ const migrateDbIfNeeded = async (db) => {
 
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      deleted_at TEXT DEFAULT NULL,
       is_synced INTEGER DEFAULT 0,
 
       FOREIGN KEY (category_uuid)
@@ -142,22 +141,6 @@ const migrateDbIfNeeded = async (db) => {
     ON savings_transactions(created_at);
 
   `);
-  
-  if(nextVersion < 2) {
-    await version2Migrations(db)
-    nextVersion = 1;
-  }
-
-  if(nextVersion < 3) {
-    await version3Migrations(db)
-    nextVersion = 2;
-  }
-
-  if(nextVersion < 3) {
-    await version4Migrations(db)
-    nextVersion = 3;
-  }
-
 
   await db.execAsync(
     `PRAGMA user_version = ${nextVersion};`

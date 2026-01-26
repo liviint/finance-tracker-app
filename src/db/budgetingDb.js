@@ -38,7 +38,6 @@ export const upsertBudget = async ({ db, categoryUUID, amount, period, date = ne
 };
 
 export const syncBudgetsFromApi = async (db, apiBudgets = []) => {
-  console.log(apiBudgets,"hello api budgets")
   if (!Array.isArray(apiBudgets) || apiBudgets.length === 0) {
     return;
   }
@@ -54,7 +53,6 @@ export const syncBudgetsFromApi = async (db, apiBudgets = []) => {
         created_at,
         updated_at,
       } = budget;
-      console.log(uuid,"hello api budgets")
 
       await db.runAsync(
         `
@@ -71,7 +69,6 @@ export const syncBudgetsFromApi = async (db, apiBudgets = []) => {
         VALUES (?, ?, ?, ?, ?, ?, ?, 1)
         ON CONFLICT(uuid)
         DO UPDATE SET
-          uuid = excluded.uuid,
           amount = excluded.amount,
           updated_at = excluded.updated_at,
           is_synced = 1;
@@ -82,16 +79,15 @@ export const syncBudgetsFromApi = async (db, apiBudgets = []) => {
           amount,
           period,
           start_date,
-          created_at ?? "CURRENT_TIMESTAMP",
-          updated_at ?? "CURRENT_TIMESTAMP",
+          created_at,
+          updated_at,
         ]
       );
     }
 
-    await db.runAsync("COMMIT");
+    console.log("✅ Budgets synced from API");
   } catch (error) {
-    await db.runAsync("ROLLBACK");
-    console.error("Failed to sync budgets from API:", error);
+    console.error("❌ Failed to sync budgets from API:", error);
     throw error;
   }
 };
