@@ -19,12 +19,10 @@ export default function CategoriesProvider({ children }) {
   const syncFromLocalToApi = async() => {
     try {
       const unsynced = await getUnsyncedCategories(db);
-      console.log(unsynced,"hello unst")
       if (unsynced.length > 0) {
-        let res = await api.post("/finances/categories/bulk_sync/", {
+        await api.post("/finances/categories/bulk_sync/", {
           items: unsynced,
         });
-        console.log(res.data,"hello res data")
       }
     } catch (error) {
       console.log(error,"hello error")
@@ -37,8 +35,6 @@ export default function CategoriesProvider({ children }) {
     const res = await api.post("/finances/categories/sync/", {
       last_synced_at: lastSyncedAt,
     });
-
-    console.log(res.data.results,"hello rew 1223....")
 
     await syncCategoriesFromApi(db, res.data.results);
     await saveLastSyncedAt(db, res.data.server_time,"categories");
