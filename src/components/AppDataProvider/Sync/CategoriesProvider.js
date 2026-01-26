@@ -6,6 +6,7 @@ import {
   syncCategoriesFromApi,
   getCategoriesLastSyncedAt,
   saveCategoriesLastSyncedAt,
+  seedCategoriesIfEmpty,
 } from "../../../db/categoriesDb";
 import { api } from "../../../../api";
 import { syncManager } from "../../../../utils/syncManager";
@@ -17,29 +18,30 @@ export default function CategoriesProvider({ children }) {
   const enabled = !!userDetails;
 
   const bootstrap = async () => {
-    // ─────────────────────────────
-    // 1️⃣ PUSH: local → server
-    // ─────────────────────────────
-    const unsynced = await getUnsyncedCategories(db);
-    if (unsynced.length > 0) {
-      await api.post("/finances/categories/bulk-sync/", {
-        items: unsynced,
-      });
-    }
+    seedCategoriesIfEmpty(db)
+    // // ─────────────────────────────
+    // // 1️⃣ PUSH: local → server
+    // // ─────────────────────────────
+    // const unsynced = await getUnsyncedCategories(db);
+    // if (unsynced.length > 0) {
+    //   await api.post("/finances/categories/bulk-sync/", {
+    //     items: unsynced,
+    //   });
+    // }
 
-    // ─────────────────────────────
-    // 2️⃣ PULL: server → local
-    // ─────────────────────────────
-    const lastSyncedAt = await getCategoriesLastSyncedAt(db);
+    // // ─────────────────────────────
+    // // 2️⃣ PULL: server → local
+    // // ─────────────────────────────
+    // const lastSyncedAt = await getCategoriesLastSyncedAt(db);
 
-    const res = await api.post("/finances/categories/sync/", {
-      last_synced_at: lastSyncedAt,
-    });
+    // const res = await api.post("/finances/categories/sync/", {
+    //   last_synced_at: lastSyncedAt,
+    // });
 
-    await syncCategoriesFromApi(db, res.data.results);
-    await saveCategoriesLastSyncedAt(db, res.data.server_time);
+    // await syncCategoriesFromApi(db, res.data.results);
+    // await saveCategoriesLastSyncedAt(db, res.data.server_time);
 
-    syncManager.emit("categories_updated");
+    // syncManager.emit("categories_updated");
   };
 
   useSyncEngine({

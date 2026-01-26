@@ -3,16 +3,18 @@ import React from "react";
 import { version2Migrations, version3Migrations } from '../../../utils/migrations';
 import TransactionsProvider from "./Sync/TransactionsProvider";
 import SavingsProvider from "./Sync/SavingsProvider"
+import BudgetsProvider from "./Sync/BudgetsProvider"
+import CategoriesProvider from "./Sync/CategoriesProvider"
 
 // Migration / initialization function
 // Migration / initialization function
 const migrateDbIfNeeded = async (db) => {
   // await db.execAsync(`DROP TABLE IF EXISTS finance_transactions;`);
   // await db.execAsync(`DROP TABLE IF EXISTS finance_categories;`);
-  await db.execAsync(`DROP TABLE IF EXISTS savings_goals;`);
+  //await db.execAsync(`DROP TABLE IF EXISTS savings_goals;`);
   // await db.execAsync(`DROP TABLE IF EXISTS budgets;`);
-  await db.execAsync(`DROP TABLE IF EXISTS savings_transactions;`);
-  await db.execAsync(`DROP TABLE IF EXISTS  app_settings;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS savings_transactions;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS  app_settings;`);
   // await db.execAsync(`PRAGMA user_version = 0;`);
 
 
@@ -160,6 +162,8 @@ export default function AppDataProvider({ children }) {
     <SQLiteProvider databaseName="zeniahub.db" onInit={migrateDbIfNeeded}>
       <TransactionsProvider />
       <SavingsProvider />
+      <BudgetsProvider />
+      <CategoriesProvider />
       {children}
     </SQLiteProvider>
   );

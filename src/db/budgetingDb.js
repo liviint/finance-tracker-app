@@ -3,10 +3,7 @@ import uuid from "react-native-uuid";
 
 const newUuid = () => uuid.v4();
 
-/**
- * Upsert (insert or update) a budget.
- */
-export const upsertBudget = async ({ db, categoryUUID, amount, period, date = new Date() }) => {
+export const upsertBudget = async ({ db, categoryUUID, amount, period, date = new Date(), uuid=newUuid() }) => {
   if (!["daily", "weekly", "monthly"].includes(period)) {
     throw new Error("Invalid budget period");
   }
@@ -15,7 +12,6 @@ export const upsertBudget = async ({ db, categoryUUID, amount, period, date = ne
     throw new Error("Budget amount must be greater than zero");
   }
 
-  const uuid = newUuid();
   const startDate = normalizeStartDate(date, period);
 
   await db.runAsync(
@@ -41,9 +37,65 @@ export const upsertBudget = async ({ db, categoryUUID, amount, period, date = ne
   );
 };
 
-/**
- * Get budgets for a specific period and start date.
- */
+export const syncBudgetsFromApi = async (db, apiBudgets = []) => {
+  if (!Array.isArray(apiBudgets) || apiBudgets.length === 0) {
+    return;
+  }
+
+  await db.runAsync("BEGIN TRANSACTION");
+
+  try {
+    for (const budget of apiBudgets) {
+      const {
+        uuid,
+        category_uuid,
+        amount,
+        period,
+        start_date,
+        created_at,
+        updated_at,
+      } = budget;
+
+      await db.runAsync(
+        `
+        INSERT INTO budgets (
+          uuid,
+          category_uuid,
+          amount,
+          period,
+          start_date,
+          created_at,
+          updated_at,
+          is_synced
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+        ON CONFLICT(category_uuid, period, start_date)
+        DO UPDATE SET
+          uuid = excluded.uuid,
+          amount = excluded.amount,
+          updated_at = excluded.updated_at,
+          is_synced = 1;
+        `,
+        [
+          uuid,
+          category_uuid,
+          amount,
+          period,
+          start_date,
+          created_at ?? "CURRENT_TIMESTAMP",
+          updated_at ?? "CURRENT_TIMESTAMP",
+        ]
+      );
+    }
+
+    await db.runAsync("COMMIT");
+  } catch (error) {
+    await db.runAsync("ROLLBACK");
+    console.error("Failed to sync budgets from API:", error);
+    throw error;
+  }
+};
+
 export const getBudgetsForPeriod = async (db, period, date = new Date()) => {
   const startDate = normalizeStartDate(date, period);
 
@@ -115,9 +167,6 @@ export const getBudgetByUUID = async (db, uuid) => {
   return rows[0] || null;
 };
 
-/**
- * Delete budget by UUID
- */
 export const deleteBudget = async (db, uuid) => {
   await db.runAsync(
     `
@@ -128,9 +177,6 @@ export const deleteBudget = async (db, uuid) => {
   );
 };
 
-/**
- * Check if a category already has a budget for a period/start date
- */
 export const categoryHasBudget = async ({ db, categoryUUID, period, startDate }) => {
   const rows = await db.getAllAsync(
     `
@@ -147,9 +193,6 @@ export const categoryHasBudget = async ({ db, categoryUUID, period, startDate })
   return rows.length > 0;
 };
 
-/**
- * Get categories that don't have a budget yet for a given period/start date
- */
 export const getCategoriesWithoutBudget = async ({ db, period, startDate }) => {
   return db.getAllAsync(
     `
@@ -167,9 +210,6 @@ export const getCategoriesWithoutBudget = async ({ db, period, startDate }) => {
   );
 };
 
-/**
- * Get budget usage status
- */
 export const getBudgetStatus = (spent, budget) => {
   if (budget <= 0) return "safe";
 
@@ -180,9 +220,6 @@ export const getBudgetStatus = (spent, budget) => {
   return "over";
 };
 
-/**
- * Get all budgets for a specific date
- */
 export const getBudgetsForDate = async (db, date = new Date()) => {
   const day = date.toISOString().split("T")[0];
 
@@ -216,28 +253,6 @@ export const getBudgetsForDate = async (db, date = new Date()) => {
   );
 };
 
-/**
- * Get budgets that haven't been synced yet
- */
+
 export const getUnsyncedBudgets = async (db) =>
   db.getAllAsync(`SELECT * FROM budgets WHERE is_synced = 0`);
-
-/**
- * Last sync timestamp
- */
-export const getBudgetsLastSyncedAt = async (db) => {
-  const row = await db.getFirstAsync(
-    `SELECT value FROM meta WHERE key = 'budgets_last_sync'`
-  );
-  return row?.value || null;
-};
-
-/**
- * Save last sync timestamp
- */
-export const saveBudgetsLastSyncedAt = async (db, serverTime) => {
-  await db.runAsync(
-    `INSERT OR REPLACE INTO meta (key, value) VALUES ('budgets_last_sync', ?)`,
-    [serverTime]
-  );
-};

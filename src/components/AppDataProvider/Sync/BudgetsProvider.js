@@ -1,12 +1,10 @@
 import { useSelector } from "react-redux";
 import { useSQLiteContext } from "expo-sqlite";
-
 import {
   getUnsyncedBudgets,
   syncBudgetsFromApi,
-  getBudgetsLastSyncedAt,
-  saveBudgetsLastSyncedAt,
 } from "../../../db/budgetingDb";
+import {getLastSyncedAt,saveLastSyncedAt} from "../../../db/common"
 import { api } from "../../../../api";
 import { syncManager } from "../../../../utils/syncManager";
 import { useSyncEngine } from "../../../../src/hooks/useSyncEngine";
@@ -16,29 +14,37 @@ export default function BudgetsProvider({ children }) {
   const userDetails = useSelector((state) => state?.user?.userDetails);
   const enabled = !!userDetails;
 
-  const bootstrap = async () => {
-    // ─────────────────────────────
-    // 1️⃣ PUSH: local → server
-    // ─────────────────────────────
-    const unsynced = await getUnsyncedBudgets(db);
-    if (unsynced.length > 0) {
-      await api.post("/finances/budgets/bulk-sync/", {
-        items: unsynced,
-      });
+  const syncFromLocalToApi = async() => {
+    try {
+      const unsynced = await getUnsyncedBudgets(db);
+      if (unsynced.length > 0) {
+        await api.post("/finances/budgets/bulk_sync/", {
+          items: unsynced,
+        });
+      }
+    } catch (error) {
+      console.log(error,"hello error")
     }
+  }
 
-    // ─────────────────────────────
-    // 2️⃣ PULL: server → local
-    // ─────────────────────────────
-    const lastSyncedAt = await getBudgetsLastSyncedAt(db);
+  const syncFromApiToLocal = async() => {
+    try {
+      const lastSyncedAt = await getLastSyncedAt(db,"budgets");
 
-    const res = await api.post("/finances/budgets/sync/", {
-      last_synced_at: lastSyncedAt,
-    });
+      const res = await api.post("/finances/budgets/sync/", {
+        last_synced_at: lastSyncedAt,
+      });
 
-    await syncBudgetsFromApi(db, res.data.results);
-    await saveBudgetsLastSyncedAt(db, res.data.server_time);
+      await syncBudgetsFromApi(db, res.data.results);
+      await saveLastSyncedAt(db, res.data.server_time,"budgets");
+    } catch (error) {
+      console.log(error,"hello error")
+    }
+  }
 
+  const bootstrap = async () => {
+    await syncFromLocalToApi()
+    await syncFromApiToLocal()
     syncManager.emit("budgets_updated");
   };
 
