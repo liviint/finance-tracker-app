@@ -2,7 +2,6 @@ import { useCallback, useState} from "react";
 import {
   View,
   Text,
-  Image,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
@@ -15,7 +14,6 @@ import AccountInfoPage from "../../../src/components/common/AccountInfoPage";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 import { Card, BodyText } from "../../../src/components/ThemeProvider/components";
 import PageLoader from "../../../src/components/common/PageLoader";
-
 
 const ProfileView = () => {
   const {globalStyles} = useThemeStyles()
@@ -69,14 +67,6 @@ const ProfileView = () => {
   return (
     <ScrollView contentContainerStyle={{...globalStyles.container,...styles.container}}>
       <Card style={styles.card}>
-        {userData.profilePic ? (
-          <View style={styles.avatarWrapper}>
-            <Image
-              source={{ uri: userData.profilePic }}
-              style={styles.avatar}
-            />
-          </View>
-        ) : null}
 
         <BodyText style={styles.username}>Username: {userData.username}</BodyText>
         <Text style={styles.email}>{userData.email}</Text>
