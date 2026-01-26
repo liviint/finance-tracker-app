@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Pressable } from "react-native";
+import { View, FlatList, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 import { useEffect, useState } from "react";
