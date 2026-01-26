@@ -1,6 +1,5 @@
 import { SQLiteProvider } from "expo-sqlite";
 import React from "react";
-import { version2Migrations, version3Migrations , version4Migrations} from '../../../utils/migrations';
 import TransactionsProvider from "./Sync/TransactionsProvider";
 import SavingsProvider from "./Sync/SavingsProvider"
 import BudgetsProvider from "./Sync/BudgetsProvider"
