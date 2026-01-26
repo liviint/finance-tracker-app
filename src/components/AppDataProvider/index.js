@@ -103,8 +103,6 @@ const migrateDbIfNeeded = async (db) => {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
 
-      UNIQUE (category_uuid, period, start_date),
-
       FOREIGN KEY (category_uuid)
         REFERENCES finance_categories(uuid)
         ON DELETE CASCADE

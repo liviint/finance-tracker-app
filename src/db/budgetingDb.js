@@ -38,12 +38,10 @@ export const upsertBudget = async ({ db, categoryUUID, amount, period, date = ne
 };
 
 export const syncBudgetsFromApi = async (db, apiBudgets = []) => {
-  console.log(apiBudgets,"hello api budgets")
+  
   if (!Array.isArray(apiBudgets) || apiBudgets.length === 0) {
     return;
   }
-
-  await db.runAsync("BEGIN TRANSACTION");
 
   try {
     for (const budget of apiBudgets) {
@@ -56,6 +54,7 @@ export const syncBudgetsFromApi = async (db, apiBudgets = []) => {
         created_at,
         updated_at,
       } = budget;
+      console.log(uuid,"hello api budgets")
 
       await db.runAsync(
         `
