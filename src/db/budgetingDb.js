@@ -38,7 +38,7 @@ export const upsertBudget = async ({ db, categoryUUID, amount, period, date = ne
 };
 
 export const syncBudgetsFromApi = async (db, apiBudgets = []) => {
-  
+  console.log(apiBudgets,"hello api budgets")
   if (!Array.isArray(apiBudgets) || apiBudgets.length === 0) {
     return;
   }

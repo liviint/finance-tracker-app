@@ -70,9 +70,9 @@ export default function SavingsProvider({ children }) {
 
   const bootstrap = async () => {
     await syncGoalsFromLocalToApi()
-    await syncTransactionsFromLocalToApi()
-
     await syncGoalsFromApiToLocal()
+
+    await syncTransactionsFromLocalToApi()
     await syncTransationsFromApiToLocal()
 
     syncManager.emit("savings_updated");
