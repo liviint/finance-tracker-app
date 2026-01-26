@@ -9,13 +9,13 @@ import CategoriesProvider from "./Sync/CategoriesProvider"
 // Migration / initialization function
 // Migration / initialization function
 const migrateDbIfNeeded = async (db) => {
-  await db.execAsync(`DROP TABLE IF EXISTS finance_transactions;`);
-  await db.execAsync(`DROP TABLE IF EXISTS finance_categories;`);
-  await db.execAsync(`DROP TABLE IF EXISTS savings_goals;`);
-  await db.execAsync(`DROP TABLE IF EXISTS budgets;`);
-  await db.execAsync(`DROP TABLE IF EXISTS savings_transactions;`);
-  await db.execAsync(`DROP TABLE IF EXISTS  app_settings;`);
-  await db.execAsync(`PRAGMA user_version = 0;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS finance_transactions;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS finance_categories;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS savings_goals;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS budgets;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS savings_transactions;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS  app_settings;`);
+  // await db.execAsync(`PRAGMA user_version = 0;`);
 
 
   await db.execAsync(`PRAGMA foreign_keys = ON;`);
@@ -46,7 +46,9 @@ const migrateDbIfNeeded = async (db) => {
 
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      deleted_at TEXT
+      date TEXT NOT NULL,
+      deleted_at TEXT,
+      is_synced INTEGER DEFAULT 0
     );
 
     CREATE INDEX IF NOT EXISTS idx_finance_created_at
@@ -67,7 +69,8 @@ const migrateDbIfNeeded = async (db) => {
 
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-      deleted_at TEXT
+      deleted_at TEXT,
+      is_synced INTEGER DEFAULT 0
     );
 
     CREATE INDEX IF NOT EXISTS idx_categories_type
@@ -87,7 +90,8 @@ const migrateDbIfNeeded = async (db) => {
       icon TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      deleted_at TEXT
+      deleted_at TEXT,
+      is_synced INTEGER DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS budgets (
@@ -102,6 +106,7 @@ const migrateDbIfNeeded = async (db) => {
 
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      is_synced INTEGER DEFAULT 0,
 
       FOREIGN KEY (category_uuid)
         REFERENCES finance_categories(uuid)
@@ -123,6 +128,7 @@ const migrateDbIfNeeded = async (db) => {
       source TEXT DEFAULT 'manual',
 
       created_at TEXT NOT NULL,
+      is_synced INTEGER DEFAULT 0,
 
       FOREIGN KEY (goal_uuid)
         REFERENCES savings_goals(uuid)

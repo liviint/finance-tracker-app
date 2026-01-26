@@ -27,7 +27,7 @@ export const upsertBudget = async ({ db, categoryUUID, amount, period, date = ne
       is_synced
     )
     VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0)
-    ON CONFLICT(category_uuid, period, start_date)
+    ON CONFLICT(uuid)
     DO UPDATE SET
       amount = excluded.amount,
       updated_at = CURRENT_TIMESTAMP,
