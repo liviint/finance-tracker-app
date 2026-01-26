@@ -6,12 +6,12 @@ const newUuid = () => uuid.v4();
 /**
  * Seed default categories if table is empty
  */
-export const seedCategoriesIfEmpty = async (db) => {
+export const seedCategoriesIfEmpty = async (db,apiData=[]) => {
   const rows = await db.getAllAsync(
     "SELECT COUNT(*) as count FROM finance_categories"
   );
 
-  if (rows[0].count > 0) return;
+  if (rows[0].count > 0 || apiData.length) return;
 
   for (const cat of DEFAULT_CATEGORIES) {
     await db.runAsync(

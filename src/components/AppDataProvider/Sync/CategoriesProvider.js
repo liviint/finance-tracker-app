@@ -38,12 +38,21 @@ export default function CategoriesProvider({ children }) {
       last_synced_at: lastSyncedAt,
     });
 
+    console.log(res.data.results,"hello rew 1223....")
+
     await syncCategoriesFromApi(db, res.data.results);
     await saveLastSyncedAt(db, res.data.server_time,"categories");
   }
 
+  const handleDefaultCategoriesSync = async() => {
+    const res = await api.post("/finances/categories/sync/", {
+      last_synced_at: null,
+    });
+    seedCategoriesIfEmpty(db,res.data.results)
+  }
+
   const bootstrap = async () => {
-    seedCategoriesIfEmpty(db)
+    await handleDefaultCategoriesSync()
     await syncFromLocalToApi()
     await syncFromApiToLocal()
     syncManager.emit("categories_updated");

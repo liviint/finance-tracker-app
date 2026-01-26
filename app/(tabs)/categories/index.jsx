@@ -5,6 +5,7 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
+  ScrollView
 } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -102,18 +103,16 @@ export default function CategoriesListScreen({ navigation }) {
 
       {data.length === 0 ? (
         <Text style={{ color: "#888" }}>No categories</Text>
-      ) : (
-        <FlatList
-          data={data}
-          keyExtractor={(item) => item?.uuid}
-          renderItem={renderCategory}
-        />
+        ) : (
+        data.map((item) => (
+        <View key={item.uuid}>{renderCategory({ item })}</View>
+        ))
       )}
     </View>
   );
 
   return (
-    <View style={globalStyles.container}>
+    <ScrollView style={globalStyles.container}>
       <Section title="Income" data={incomeCategories} />
       <Section title="Expenses" data={expenseCategories} />
 
@@ -125,12 +124,13 @@ export default function CategoriesListScreen({ navigation }) {
           borderRadius: 12,
           alignItems: "center",
           marginTop: 12,
+          marginBottom:50
         }}
       >
         <Text style={{ color: "#FFF", fontWeight: "600" }}>
           Add Category
         </Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
