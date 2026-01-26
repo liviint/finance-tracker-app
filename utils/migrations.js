@@ -29,6 +29,16 @@ export const version3Migrations = async (db) => {
   await addIsSyncedColumn(db, "savings_transactions");
 };
 
+export const version4Migrations = async (db) => {
+  console.log("🚀 Running version 4 migrations (sync columns)");
+
+  await addDeletedAtColumn(db, "finance_transactions");
+  await addDeletedAtColumn(db, "finance_categories");
+  await addDeletedAtColumn(db, "budgets");
+  await addDeletedAtColumn(db, "savings_goals");
+  await addDeletedAtColumn(db, "savings_transactions");
+};
+
 const addIsSyncedColumn = async (db, tableName) => {
   const columns = await db.getAllAsync(
     `PRAGMA table_info(${tableName});`
@@ -46,6 +56,25 @@ const addIsSyncedColumn = async (db, tableName) => {
   );
 
   console.log(`✅ Added is_synced to ${tableName}`);
+};
+
+export const addDeletedAtColumn = async (db, tableName) => {
+  const columns = await db.getAllAsync(
+    `PRAGMA table_info(${tableName});`
+  );
+
+  const exists = columns.some(col => col.name === "deleted_at");
+
+  if (exists) {
+    console.log(`ℹ️ ${tableName}.deleted_at already exists`);
+    return;
+  }
+
+  await db.execAsync(
+    `ALTER TABLE ${tableName} ADD COLUMN deleted_at TEXT DEFAULT NULL;`
+  );
+
+  console.log(`✅ Added deleted_at to ${tableName}`);
 };
 
 

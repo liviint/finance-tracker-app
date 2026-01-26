@@ -1,6 +1,6 @@
 import { SQLiteProvider } from "expo-sqlite";
 import React from "react";
-import { version2Migrations, version3Migrations } from '../../../utils/migrations';
+import { version2Migrations, version3Migrations , version4Migrations} from '../../../utils/migrations';
 import TransactionsProvider from "./Sync/TransactionsProvider";
 import SavingsProvider from "./Sync/SavingsProvider"
 import BudgetsProvider from "./Sync/BudgetsProvider"
@@ -147,6 +147,11 @@ const migrateDbIfNeeded = async (db) => {
   if(nextVersion < 3) {
     await version3Migrations(db)
     nextVersion = 2;
+  }
+
+  if(nextVersion < 3) {
+    await version4Migrations(db)
+    nextVersion = 3;
   }
 
 
