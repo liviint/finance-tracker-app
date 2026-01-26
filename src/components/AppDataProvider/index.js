@@ -1,7 +1,10 @@
-import React from "react";
 import { SQLiteProvider } from "expo-sqlite";
-import TransactionsProvider from "./TransactionsProvider"
-import {version2Migrations} from '../../../utils/migrations'
+import React from "react";
+import { version2Migrations, version3Migrations , version4Migrations} from '../../../utils/migrations';
+import TransactionsProvider from "./Sync/TransactionsProvider";
+import SavingsProvider from "./Sync/SavingsProvider"
+import BudgetsProvider from "./Sync/BudgetsProvider"
+import CategoriesProvider from "./Sync/CategoriesProvider"
 
 // Migration / initialization function
 // Migration / initialization function
@@ -11,6 +14,7 @@ const migrateDbIfNeeded = async (db) => {
   // await db.execAsync(`DROP TABLE IF EXISTS savings_goals;`);
   // await db.execAsync(`DROP TABLE IF EXISTS budgets;`);
   // await db.execAsync(`DROP TABLE IF EXISTS savings_transactions;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS  app_settings;`);
   // await db.execAsync(`PRAGMA user_version = 0;`);
 
 
@@ -23,9 +27,7 @@ const migrateDbIfNeeded = async (db) => {
   const currentVersion = result.user_version ?? 0;
 
   let nextVersion = currentVersion;
-  console.log(nextVersion,"hello next version")
 
-  
     await db.execAsync(`
     PRAGMA journal_mode = WAL;
 
@@ -44,7 +46,9 @@ const migrateDbIfNeeded = async (db) => {
 
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      deleted_at TEXT
+      date TEXT NOT NULL,
+      deleted_at TEXT,
+      is_synced INTEGER DEFAULT 0
     );
 
     CREATE INDEX IF NOT EXISTS idx_finance_created_at
@@ -65,7 +69,8 @@ const migrateDbIfNeeded = async (db) => {
 
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-      deleted_at TEXT
+      deleted_at TEXT,
+      is_synced INTEGER DEFAULT 0
     );
 
     CREATE INDEX IF NOT EXISTS idx_categories_type
@@ -85,7 +90,8 @@ const migrateDbIfNeeded = async (db) => {
       icon TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      deleted_at TEXT
+      deleted_at TEXT,
+      is_synced INTEGER DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS budgets (
@@ -100,8 +106,7 @@ const migrateDbIfNeeded = async (db) => {
 
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-
-      UNIQUE (category_uuid, period, start_date),
+      is_synced INTEGER DEFAULT 0,
 
       FOREIGN KEY (category_uuid)
         REFERENCES finance_categories(uuid)
@@ -123,6 +128,7 @@ const migrateDbIfNeeded = async (db) => {
       source TEXT DEFAULT 'manual',
 
       created_at TEXT NOT NULL,
+      is_synced INTEGER DEFAULT 0,
 
       FOREIGN KEY (goal_uuid)
         REFERENCES savings_goals(uuid)
@@ -142,6 +148,16 @@ const migrateDbIfNeeded = async (db) => {
     nextVersion = 1;
   }
 
+  if(nextVersion < 3) {
+    await version3Migrations(db)
+    nextVersion = 2;
+  }
+
+  if(nextVersion < 3) {
+    await version4Migrations(db)
+    nextVersion = 3;
+  }
+
 
   await db.execAsync(
     `PRAGMA user_version = ${nextVersion};`
@@ -153,7 +169,10 @@ const migrateDbIfNeeded = async (db) => {
 export default function AppDataProvider({ children }) {
   return (
     <SQLiteProvider databaseName="zeniahub.db" onInit={migrateDbIfNeeded}>
+      <CategoriesProvider />
       <TransactionsProvider />
+      <SavingsProvider />
+      <BudgetsProvider />
       {children}
     </SQLiteProvider>
   );

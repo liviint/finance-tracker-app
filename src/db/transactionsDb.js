@@ -19,7 +19,6 @@ export async function upsertTransaction(db, {
 
   try {
     const localUuid = uuid ? uuid :  newUuid()
-    console.log(localUuid,"hello uuid")
 
     await db.runAsync(
       `
@@ -60,6 +59,89 @@ export async function upsertTransaction(db, {
   }
 }
 
+export const syncTransactionsFromApi = async (db, transactions = []) => {
+    if (!Array.isArray(transactions) || transactions.length === 0) {
+        return;
+    }
+
+    for (const tx of transactions) {
+        const {
+        uuid,
+        title,
+        amount,
+        type,
+        category,
+        category_uuid,
+        note,
+        source,
+        date,
+        created_at,
+        updated_at,
+        deleted_at,
+        } = tx;
+
+        // 🗑️ Handle server-side soft delete
+        if (deleted_at) {
+        await db.runAsync(
+            `
+            UPDATE finance_transactions
+            SET deleted_at = ?, updated_at = ?, is_synced = 1
+            WHERE uuid = ?
+            `,
+            [deleted_at, updated_at, uuid]
+        );
+        continue;
+        }
+
+        // 🔁 Upsert from server
+        await db.runAsync(
+        `
+        INSERT INTO finance_transactions (
+            uuid,
+            title,
+            amount,
+            type,
+            category,
+            category_uuid,
+            note,
+            source,
+            date,
+            created_at,
+            updated_at,
+            is_synced
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+        ON CONFLICT(uuid) DO UPDATE SET
+            title = excluded.title,
+            amount = excluded.amount,
+            type = excluded.type,
+            category = excluded.category,
+            category_uuid = excluded.category_uuid,
+            note = excluded.note,
+            source = excluded.source,
+            date = excluded.date,
+            updated_at = excluded.updated_at,
+            deleted_at = NULL,
+            is_synced = 1
+        `,
+        [
+            uuid,
+            title,
+            amount,
+            type,
+            category,
+            category_uuid,
+            note,
+            source,
+            date,
+            created_at,
+            updated_at,
+        ]
+        );
+    }
+
+    console.log("✅ Transactions synced from API");
+};
 
 export async function getTransactions(db) {
     return await db.getAllAsync(`
@@ -76,6 +158,19 @@ export async function getTransactionByUuid(db, uuid) {
         LIMIT 1
     `, [uuid]);
 }
+
+export async function getUnsyncedTransactions(db) {
+    return await db.getAllAsync(
+        `
+        SELECT *
+        FROM finance_transactions
+        WHERE is_synced = 0
+        AND deleted_at IS NULL
+        ORDER BY datetime(updated_at) ASC
+        `
+    );
+}
+
 
 export async function updateTransaction(db, uuid, updates) {
     let {title,amount,type,category,note} = updates
@@ -152,29 +247,6 @@ export async function getTopCategory(db) {
         LIMIT 1
     `);
 }
-
-export const seedCategoriesIfEmpty = async (db) => {
-    const rows = await db.getAllAsync(
-        "SELECT COUNT(*) as count FROM finance_categories"
-    );
-
-    if (rows[0].count > 0) return;
-
-    for (const cat of DEFAULT_CATEGORIES) {
-        await db.runAsync(
-        `INSERT INTO finance_categories 
-        (uuid, name, type, color, icon)
-        VALUES (?, ?, ?, ?, ?)`,
-        [
-            uuid.v4(),
-            cat.name,
-            cat.type,
-            cat.color,
-            cat.icon,
-        ]
-        );
-    }
-};
 
 export const getCategories = async (db, uuid = null) => {
     if (uuid) {

@@ -9,6 +9,7 @@ import {
 } from "../../../src/db/budgetingDb";
 import { BodyText, Card } from "../../../src/components/ThemeProvider/components";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
+import { syncManager } from "../../../utils/syncManager";
 
 export default function BudgetsListScreen() {
   const router = useRouter();
@@ -21,12 +22,20 @@ export default function BudgetsListScreen() {
 
   const loadBudgets = async () => {
     const data = await getBudgetsForPeriod(db, period);
+    console.log(data,"hello data")
     setBudgets(data);
   };
 
   useEffect(() => {
     loadBudgets();
   }, [period,isFocused]);
+
+  useEffect(() => {
+    const unsub = syncManager.on("transactions_updated", async () => {
+      loadBudgets();
+    });
+    return unsub;
+  }, []);
 
   const renderItem = ({ item }) => {
     const status = getBudgetStatus(item.spent, item.budget_amount);
@@ -114,9 +123,9 @@ export default function BudgetsListScreen() {
         onPress={() => router.push(`/budgetings/add?period=${period}`)}
         style={{ ...globalStyles.primaryBtn, marginBottom: 16 }}
       >
-        <Text style={{ color: "#fff", fontWeight: "600" }}>
-          Add {period} Budget
-        </Text>
+        <BodyText style={globalStyles.primaryBtnText}>
+          + Add {period} Budget
+        </BodyText>
       </Pressable>
 
       <FlatList

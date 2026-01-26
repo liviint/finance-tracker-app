@@ -1,15 +1,17 @@
-import React, {  useState } from "react";
+import React, {  useState , useEffect} from "react";
 import {
   View,
   Text,
-  FlatList,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from "react-native";
+import { useIsFocused } from "@react-navigation/native";
 import { useSQLiteContext } from "expo-sqlite";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 import { SecondaryText , BodyText} from "../../../src/components/ThemeProvider/components";
+import { syncManager } from "../../../utils/syncManager";
 
 export default function CategoriesListScreen({ navigation }) {
   const db = useSQLiteContext();
@@ -17,6 +19,7 @@ export default function CategoriesListScreen({ navigation }) {
   const {globalStyles} = useThemeStyles()
   const [incomeCategories, setIncomeCategories] = useState([]);
   const [expenseCategories, setExpenseCategories] = useState([]);
+  const isFocused = useIsFocused()
 
   const loadCategories = async () => {
     const income = await db.getAllAsync(
@@ -35,11 +38,16 @@ export default function CategoriesListScreen({ navigation }) {
     setExpenseCategories(expense);
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
+  useEffect(() => {
+    loadCategories();
+  }, [isFocused]);
+
+  useEffect(() => {
+    const unsub = syncManager.on("transactions_updated", async () => {
       loadCategories();
-    }, [])
-  );
+    });
+    return unsub;
+  }, []);
 
   const deleteCategory = (category) => {
     Alert.alert(
@@ -102,35 +110,34 @@ export default function CategoriesListScreen({ navigation }) {
 
       {data.length === 0 ? (
         <Text style={{ color: "#888" }}>No categories</Text>
-      ) : (
-        <FlatList
-          data={data}
-          keyExtractor={(item) => item?.uuid}
-          renderItem={renderCategory}
-        />
+        ) : (
+        data.map((item) => (
+        <View key={item.uuid}>{renderCategory({ item })}</View>
+        ))
       )}
     </View>
   );
 
   return (
-    <View style={globalStyles.container}>
-      <Section title="Income" data={incomeCategories} />
-      <Section title="Expenses" data={expenseCategories} />
+    <ScrollView style={globalStyles.container}>
+
+      <BodyText style={globalStyles.title}>
+        My Categories
+      </BodyText>
 
       <TouchableOpacity
         onPress={() => router.push("/categories/add")}
         style={{
-          backgroundColor: "#2E8B8B",
-          padding: 14,
-          borderRadius: 12,
-          alignItems: "center",
-          marginTop: 12,
+          ...globalStyles.primaryBtn, marginBottom:20
         }}
       >
-        <Text style={{ color: "#FFF", fontWeight: "600" }}>
-          Add Category
+        <Text style={globalStyles.primaryBtnText}>
+          + Add Category
         </Text>
       </TouchableOpacity>
-    </View>
+
+      <Section title="Income" data={incomeCategories} />
+      <Section title="Expenses" data={expenseCategories} />
+    </ScrollView>
   );
 }

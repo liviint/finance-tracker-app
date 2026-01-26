@@ -23,7 +23,6 @@ export default function BudgetDetailsScreen() {
   useEffect(() => {
     const loadBudget = async () => {
       const data = await getBudgetByUUID(db, uuid);
-      console.log(data,"hello data")
       setBudget(data);
     }
     if(isFocused) loadBudget()

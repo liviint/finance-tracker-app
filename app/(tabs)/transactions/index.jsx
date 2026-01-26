@@ -7,6 +7,7 @@ import { getTransactions } from "../../../src/db/transactionsDb";
 import { useSQLiteContext } from "expo-sqlite";
 import { dateFormat } from "../../../utils/dateFormat";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles"
+import { syncManager } from "../../../utils/syncManager";
 
 export default function FinanceListPage() {
     const db = useSQLiteContext()
@@ -15,14 +16,21 @@ export default function FinanceListPage() {
     const isFocused = useIsFocused()
     const {globalStyles} = useThemeStyles()
 
+    let fetchTransactions = async() => {
+        let transactions = await getTransactions(db)
+        setTransactions(transactions)
+    }
+
     useEffect(() => {
-        let fetchTransactions = async() => {
-            let transactions = await getTransactions(db)
-            console.log(transactions,"hello transactions")
-            setTransactions(transactions)
-        }
         fetchTransactions()
     },[isFocused])
+
+    useEffect(() => {
+      const unsub = syncManager.on("transactions_updated", async () => {
+        fetchTransactions()
+      });
+      return unsub;
+    }, []);
 
   const renderItem = ({ item }) => (
     <Pressable onPress={() => router.push(`/transactions/${item.uuid}`)}>

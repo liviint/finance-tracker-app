@@ -44,7 +44,6 @@ export default function Index() {
       if (!formData.password.trim()) newErrors.password = "Please enter your password.";
 
       setErrors(newErrors);
-      console.log(newErrors,"hello new erro")
       return Object.keys(newErrors).length === 0;
   };
 
@@ -62,7 +61,7 @@ export default function Index() {
       router.push("/profile");
       setFormData({ email: "", password: "" });
     } catch (error) {
-      console.error("Login failed:", error?.response);
+      console.error("Login failed:", error);
       setServerError(
         error.response?.data?.message || error?.response?.data?.non_field_errors ||
           "Invalid credentials. Please try again."
