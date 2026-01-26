@@ -123,9 +123,9 @@ export default function BudgetsListScreen() {
         onPress={() => router.push(`/budgetings/add?period=${period}`)}
         style={{ ...globalStyles.primaryBtn, marginBottom: 16 }}
       >
-        <Text style={{ color: "#fff", fontWeight: "600" }}>
-          Add {period} Budget
-        </Text>
+        <BodyText style={globalStyles.primaryBtnText}>
+          + Add {period} Budget
+        </BodyText>
       </Pressable>
 
       <FlatList

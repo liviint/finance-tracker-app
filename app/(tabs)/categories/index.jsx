@@ -120,24 +120,24 @@ export default function CategoriesListScreen({ navigation }) {
 
   return (
     <ScrollView style={globalStyles.container}>
-      <Section title="Income" data={incomeCategories} />
-      <Section title="Expenses" data={expenseCategories} />
+
+      <BodyText style={globalStyles.title}>
+        My Categories
+      </BodyText>
 
       <TouchableOpacity
         onPress={() => router.push("/categories/add")}
         style={{
-          backgroundColor: "#2E8B8B",
-          padding: 14,
-          borderRadius: 12,
-          alignItems: "center",
-          marginTop: 12,
-          marginBottom:50
+          ...globalStyles.primaryBtn, marginBottom:20
         }}
       >
-        <Text style={{ color: "#FFF", fontWeight: "600" }}>
-          Add Category
+        <Text style={globalStyles.primaryBtnText}>
+          + Add Category
         </Text>
       </TouchableOpacity>
+
+      <Section title="Income" data={incomeCategories} />
+      <Section title="Expenses" data={expenseCategories} />
     </ScrollView>
   );
 }
