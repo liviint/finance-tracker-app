@@ -1,4 +1,4 @@
-import React, {  useState , useEffect} from "react";
+import {  useState , useEffect} from "react";
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import { useSQLiteContext } from "expo-sqlite";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 import { SecondaryText , BodyText} from "../../../src/components/ThemeProvider/components";
 import { syncManager } from "../../../utils/syncManager";

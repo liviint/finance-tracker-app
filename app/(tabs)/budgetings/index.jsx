@@ -22,7 +22,6 @@ export default function BudgetsListScreen() {
 
   const loadBudgets = async () => {
     const data = await getBudgetsForPeriod(db, period);
-    console.log(data,"hello data")
     setBudgets(data);
   };
 
