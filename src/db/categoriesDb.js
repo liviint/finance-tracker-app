@@ -52,6 +52,16 @@ export const getCategories = async (db, uuid = null) => {
   );
 };
 
+export const getUnsyncedCategories = (db) => {
+  return db.getAllAsync(
+    `
+    SELECT *
+    FROM finance_categories
+    WHERE is_synced = 0
+    `
+  );
+}
+
 /**
  * Upsert a category
  */
