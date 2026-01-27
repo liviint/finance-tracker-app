@@ -139,6 +139,40 @@ const migrateDbIfNeeded = async (db) => {
     CREATE INDEX IF NOT EXISTS idx_savings_transactions_created_at
     ON savings_transactions(created_at);
 
+    
+  CREATE TABLE IF NOT EXISTS debts (
+    id INTEGER,
+    uuid TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+
+    counterparty_name TEXT NOT NULL,
+    counterparty_type TEXT CHECK(counterparty_type IN ('person', 'company')) DEFAULT 'person',
+
+    amount REAL NOT NULL,
+    type TEXT CHECK(type IN ('owed', 'owing')) NOT NULL,
+
+    due_date TEXT,
+    note TEXT,
+    is_paid INTEGER DEFAULT 0,
+
+    is_synced INTEGER DEFAULT 0,
+    deleted_at TEXT,
+
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS debt_payments (
+    id INTEGER,
+    uuid TEXT PRIMARY KEY,
+    debt_uuid TEXT NOT NULL,           
+    amount REAL NOT NULL,              
+    note TEXT,                         
+    created_at TEXT DEFAULT (datetime('now')),
+    is_synced INTEGER DEFAULT 0,       
+    FOREIGN KEY (debt_uuid) REFERENCES debts(uuid)
+  );
+
   `);
 
   await db.execAsync(
