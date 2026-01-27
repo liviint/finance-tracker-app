@@ -88,6 +88,6 @@ export default {
       },
     },
 
-    owner: process.env.EXPO_OWNER || "kevinmosigisi1",
+    owner: process.env.EXPO_OWNER || "zeniamoney"
   },
 };
