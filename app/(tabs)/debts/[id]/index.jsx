@@ -8,11 +8,11 @@ import {
   Modal,
   TextInput,
 } from "react-native";
-
-// later:
-// import { getDebtByUuid, deleteDebt, upsertDebt } from "@/db/debts";
+import { useThemeStyles } from "../../../../src/hooks/useThemeStyles";
+import { BodyText, SecondaryText,Card } from "../../../../src/components/ThemeProvider/components";
 
 export default function DebtDetailsScreen({ route, navigation }) {
+  const {globalStyles} = useThemeStyles()
   // const { uuid } = route.params;
 
   // dummy data for now
@@ -73,8 +73,6 @@ export default function DebtDetailsScreen({ route, navigation }) {
     setDebt(updatedDebt);
     setOffsetAmount("");
     setShowOffsetModal(false);
-
-    // await upsertDebt(db, updatedDebt);
   };
 
   const handleDelete = () => {
@@ -98,8 +96,8 @@ export default function DebtDetailsScreen({ route, navigation }) {
   /* -------------------- UI -------------------- */
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>{debt.title}</Text>
+    <View style={globalStyles.container}>
+      <BodyText style={globalStyles.title}>{debt.title}</BodyText>
 
       <Text
         style={[
@@ -110,13 +108,13 @@ export default function DebtDetailsScreen({ route, navigation }) {
         {isOwed ? "-" : "+"} KES {debt.amount}
       </Text>
 
-      <Text style={styles.counterparty}>
+      <SecondaryText style={{...styles.counterparty, marginBottom:10}}>
         {debt.counterparty_type === "company" ? "🏢" : "👤"}{" "}
         {debt.counterparty_name}
-      </Text>
+      </SecondaryText>
 
-      {/* Info */}
-      <View style={styles.card}>
+
+      <Card  >
         <InfoRow label="Type" value={isOwed ? "I Owe" : "Owes Me"} />
         <InfoRow label="Due Date" value={debt.due_date ?? "N/A"} />
         <InfoRow
@@ -126,7 +124,7 @@ export default function DebtDetailsScreen({ route, navigation }) {
         {debt.note ? (
           <InfoRow label="Note" value={debt.note} />
         ) : null}
-      </View>
+      </Card>
 
       {/* Offset */}
       {!debt.is_paid && (
@@ -151,7 +149,7 @@ export default function DebtDetailsScreen({ route, navigation }) {
         </Text>
       </TouchableOpacity>
 
-      {/* Edit */}
+      
       <TouchableOpacity
         style={styles.secondaryBtn}
         onPress={() =>
@@ -163,7 +161,7 @@ export default function DebtDetailsScreen({ route, navigation }) {
         <Text style={styles.secondaryText}>Edit Debt</Text>
       </TouchableOpacity>
 
-      {/* Delete */}
+    
       <TouchableOpacity
         style={styles.deleteBtn}
         onPress={handleDelete}
@@ -171,10 +169,10 @@ export default function DebtDetailsScreen({ route, navigation }) {
         <Text style={styles.deleteText}>Delete Debt</Text>
       </TouchableOpacity>
 
-      {/* Offset Modal */}
+  
       <Modal visible={showOffsetModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <Card style={styles.modalContent}>
             <Text style={styles.modalTitle}>Offset Debt</Text>
             <Text style={styles.modalSub}>
               Remaining: KES {debt.amount}
@@ -201,23 +199,19 @@ export default function DebtDetailsScreen({ route, navigation }) {
             >
               <Text style={{ color: "#666" }}>Cancel</Text>
             </TouchableOpacity>
-          </View>
+          </Card>
         </View>
       </Modal>
     </View>
   );
 }
 
-/* -------------------- Helpers -------------------- */
-
 const InfoRow = ({ label, value }) => (
   <View style={styles.infoRow}>
-    <Text style={styles.infoLabel}>{label}</Text>
-    <Text style={styles.infoValue}>{value}</Text>
+    <SecondaryText style={styles.infoLabel}>{label}</SecondaryText>
+    <BodyText style={styles.infoValue}>{value}</BodyText>
   </View>
 );
-
-/* -------------------- Styles -------------------- */
 
 const styles = StyleSheet.create({
   container: {
@@ -239,20 +233,17 @@ const styles = StyleSheet.create({
   owing: { color: "#2E8B8B" },
   counterparty: {
     marginTop: 4,
-    color: "#666",
   },
   card: {
     marginTop: 20,
-    backgroundColor: "#FFF",
-    borderRadius: 12,
-    padding: 16,
   },
   infoRow: { marginBottom: 12 },
-  infoLabel: { fontSize: 12, color: "#999" },
+  infoLabel: { 
+    fontSize: 12, 
+  },
   infoValue: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#333",
   },
   actionBtn: {
     marginTop: 16,
@@ -288,7 +279,6 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: "90%",
-    backgroundColor: "#FFF",
     borderRadius: 12,
     padding: 16,
   },

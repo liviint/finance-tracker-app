@@ -6,6 +6,11 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
+import { BodyText, Card, SecondaryText } from "../../../src/components/ThemeProvider/components";
+import { useSQLiteContext } from "expo-sqlite";
+import { dateFormat } from "../../../utils/dateFormat";
+import { useThemeStyles } from "../../../src/hooks/useThemeStyles"
+import { syncManager } from "../../../utils/syncManager";
 
 const DUMMY_DEBTS = [
   {
@@ -41,13 +46,14 @@ const DUMMY_DEBTS = [
 ];
 
 export default function DebtsListScreen() {
+  const { globalStyles } =   useThemeStyles()
   const renderItem = ({ item }) => {
     const isOwed = item.type === "owed";
 
     return (
-      <TouchableOpacity style={styles.card}>
+      <Card>
         <View style={styles.row}>
-          <Text style={styles.title}>{item.title}</Text>
+          <BodyText style={styles.title}>{item.title}</BodyText>
           <Text
             style={[
               styles.amount,
@@ -58,10 +64,10 @@ export default function DebtsListScreen() {
           </Text>
         </View>
 
-        <Text style={styles.counterparty}>
+        <SecondaryText style={styles.counterparty}>
           {item.counterparty_name} ·{" "}
           {item.counterparty_type === "company" ? "🏢" : "👤"}
-        </Text>
+        </SecondaryText>
 
         <View style={styles.row}>
           <Text style={styles.dueDate}>
@@ -77,13 +83,13 @@ export default function DebtsListScreen() {
             {item.is_paid ? "Paid" : "Unpaid"}
           </Text>
         </View>
-      </TouchableOpacity>
+      </Card>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Debts</Text>
+    <View style={globalStyles.container}>
+      <BodyText style={globalStyles.title}>Debts</BodyText>
 
       <FlatList
         data={DUMMY_DEBTS}
@@ -96,17 +102,6 @@ export default function DebtsListScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#FAF9F7",
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: 16,
-    color: "#333",
-  },
   card: {
     backgroundColor: "#FFF",
     padding: 16,
@@ -122,11 +117,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  title: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-  },
+  
   amount: {
     fontSize: 16,
     fontWeight: "700",
@@ -139,7 +130,7 @@ const styles = StyleSheet.create({
   },
   counterparty: {
     marginTop: 6,
-    color: "#666",
+    fontSize:12,
   },
   dueDate: {
     marginTop: 8,
