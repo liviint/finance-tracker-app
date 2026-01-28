@@ -55,6 +55,7 @@ export default function AddEdit() {
     };
 
     useEffect(() => {
+        if(!uuid) return
         let getDebt = async() => {
             let debt = await getDebtByUuid(db,uuid)
             console.log(debt,"hello debt")
@@ -65,7 +66,9 @@ export default function AddEdit() {
 
     return (
         <ScrollView style={globalStyles.container}>
-            <Text style={globalStyles.title}>Add Debt</Text>
+            <Text style={globalStyles.title}>
+                {uuid ? "Edit Debt" : "Add Debt"}
+            </Text>
 
             <Card>
                 <View style={globalStyles.formGroup}>
@@ -171,12 +174,12 @@ export default function AddEdit() {
                 </View>
 
                 <TouchableOpacity style={globalStyles.primaryBtn} onPress={handleSave}>
-                    <BodyText style={globalStyles.primaryBtnText}>Save Debt</BodyText>
+                    <BodyText style={globalStyles.primaryBtnText}>
+                        {uuid ? "Update Debt" : "Save Debt"}
+                    </BodyText>
                 </TouchableOpacity>
                 
             </Card>
-
-        
         </ScrollView>
     );
 }
