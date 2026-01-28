@@ -1,9 +1,9 @@
-import { v4 as uuidv4 } from "uuid";
+import uuid from "react-native-uuid";
 
-/* -------------------- Debts -------------------- */
+const newUuid = () => uuid.v4();
 export const upsertDebt = async (db, debt) => {
   const {
-    uuid = uuidv4(),
+    uuid = newUuid(),
     title,
     counterparty_name,
     counterparty_type = "person",
@@ -120,7 +120,7 @@ export const getUnsyncedDebts = async (db) => {
  * Add a partial payment / offset for a debt
  */
 export const addDebtPayment = async (db, { debt_uuid, amount, note }) => {
-  const uuid = uuidv4();
+  const uuid =  newUuid();
 
   await db.runAsync(
     `

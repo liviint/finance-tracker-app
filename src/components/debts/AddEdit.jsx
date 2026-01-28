@@ -1,40 +1,45 @@
 import  { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Switch,
-  ScrollView
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    Switch,
+    ScrollView
 } from "react-native";
+import { useLocalSearchParams , useRouter} from "expo-router";
 import { useThemeStyles } from "../../hooks/useThemeStyles";
 import { BodyText, FormLabel, Input, TextArea , Card} from "../ThemeProvider/components";
+import { upsertDebt } from "../../db/debtsDb";
+import { useSQLiteContext } from "expo-sqlite";
 
-export default function AddEdit({ navigation }) {
+export default function AddEdit() {
+    const db = useSQLiteContext()
     const { globalStyles } = useThemeStyles()
-    const [title, setTitle] = useState("");
-    const [counterpartyName, setCounterpartyName] = useState("");
-    const [isCompany, setIsCompany] = useState(false);
-    const [amount, setAmount] = useState("");
-    const [isOwed, setIsOwed] = useState(true);
-    const [note, setNote] = useState("");
+    const router = useRouter()
+    const {id:uuid} = useLocalSearchParams()
+    const [form,setForm] = useState({
+        title:"",
+        counterparty_name:"",
+        counterparty_type:"person",
+        type:"owed",
+        isCompany:false,
+        amount:"",
+        note:"",
+    })
+
+    const handleFormChange = (key,value) => {
+        setForm(prev => ({
+            ...prev,
+            [key]:value
+        }))
+    }
 
     const handleSave = async () => {
-        if (!title || !counterpartyName || !amount) return;
-
-        const payload = {
-        title,
-        counterparty_name: counterpartyName,
-        counterparty_type: isCompany ? "company" : "person",
-        amount: Number(amount),
-        type: isOwed ? "owed" : "owing",
-        note,
-        };
-
-        console.log("Saving debt:", payload);
-
-        // await upsertDebt(db, payload);
-        navigation.goBack();
+        if (!form.title || !form.counterparty_name || !form.amount) return;
+        console.log("Saving debt:", form);
+        await upsertDebt(db, form);
+        router.back()
     };
 
     return (
@@ -45,8 +50,8 @@ export default function AddEdit({ navigation }) {
                 <View style={globalStyles.formGroup}>
                     <FormLabel style={styles.label}>Title</FormLabel>
                     <Input
-                        value={title}
-                        onChangeText={setTitle}
+                        value={form.title}
+                        onChangeText={(value) => handleFormChange("title",value)}
                         placeholder="e.g. KCB Loan"
                         style={styles.input}
                     />
@@ -54,25 +59,30 @@ export default function AddEdit({ navigation }) {
                 <View style={globalStyles.formGroup}>
                     <FormLabel >Who is this with?</FormLabel>
                     <Input
-                        value={counterpartyName}
-                        onCangeText={setCounterpartyName}
+                        value={form.counterparty_name}
+                        onChangeText={(value) => handleFormChange("counterparty_name",value)}
                         placeholder="Person or company name"
                     />
                 </View>
                 <View style={globalStyles.formGroup}>
                     <View style={styles.switchRow}>
                         <FormLabel >
-                        {isCompany ? "Company" : "Person"}
+                        {form.counterparty_type === "company" ? "Company" : "Person"}
                         </FormLabel>
-                        <Switch value={isCompany} onValueChange={setIsCompany} />
+                        <Switch 
+                            value={form.counterparty_type === "company"} 
+                            onValueChange={() =>
+                                handleFormChange("counterparty_type",form.counterparty_type === "company" ?   "person" : "company")
+                            }
+                        />
                     </View>
                 </View>
 
                 <View style={globalStyles.formGroup}>
                     <FormLabel>Amount</FormLabel>
                     <Input
-                        value={amount}
-                        onChangeText={setAmount}
+                        value={form.amount}
+                        onChangeText={(value) => handleFormChange("amount",value)}
                         placeholder="0"
                         keyboardType="numeric"
                     />
@@ -81,23 +91,23 @@ export default function AddEdit({ navigation }) {
                 <View style={globalStyles.formGroup}>
                     <View style={styles.toggleRow}>
                         <TouchableOpacity
-                        style={[
-                            styles.toggleBtn,
-                            isOwed && styles.toggleActiveOwed,
-                        ]}
-                        onPress={() => setIsOwed(true)}
+                            style={[
+                                styles.toggleBtn,
+                                form.type === "owing" && styles.toggleActiveOwed,
+                            ]}
+                            onPress={() => handleFormChange("type","owing")}
                         >
-                        <BodyText style={[styles.toggleText,isOwed && styles.toggleActiveText]}>I Owe</BodyText>
+                        <BodyText style={[styles.toggleText,form.type === "owing" && styles.toggleActiveText]}>I Owe</BodyText>
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                        style={[
-                            styles.toggleBtn,
-                            !isOwed && styles.toggleActiveOwing,
-                        ]}
-                        onPress={() => setIsOwed(false)}
+                            style={[
+                                styles.toggleBtn,
+                                form.type === "owed" && styles.toggleActiveOwing,
+                            ]}
+                            onPress={() => handleFormChange("type","owed")}
                         >
-                        <BodyText style={[styles.toggleText,!isOwed && styles.toggleActiveText]}>Owes Me</BodyText>
+                        <BodyText style={[styles.toggleText,form.type === "owed" && styles.toggleActiveText]}>Owes Me</BodyText>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -105,8 +115,8 @@ export default function AddEdit({ navigation }) {
                 <View style={globalStyles.formGroup}>
                     <FormLabel >Note (optional)</FormLabel>
                     <TextArea
-                        value={note}
-                        onChangeText={setNote}
+                        value={form.note}
+                        onChangeText={(value) => handleFormChange("note",value)}
                         placeholder="Any extra info"
                         multiline
                     />

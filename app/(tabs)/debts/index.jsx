@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,49 +6,31 @@ import {
   StyleSheet,
   Pressable,
 } from "react-native";
+import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { BodyText, Card, SecondaryText } from "../../../src/components/ThemeProvider/components";
 import { useSQLiteContext } from "expo-sqlite";
 import { dateFormat } from "../../../utils/dateFormat";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles"
 import { syncManager } from "../../../utils/syncManager";
-
-const DUMMY_DEBTS = [
-  {
-    uuid: "1",
-    title: "KCB Loan",
-    counterparty_name: "KCB Bank",
-    counterparty_type: "company",
-    amount: 25000,
-    type: "owed",
-    is_paid: 0,
-    due_date: "2026-02-10",
-  },
-  {
-    uuid: "2",
-    title: "Friend Loan",
-    counterparty_name: "John Mwangi",
-    counterparty_type: "person",
-    amount: 5000,
-    type: "owing",
-    is_paid: 1,
-    due_date: "2026-01-15",
-  },
-  {
-    uuid: "3",
-    title: "Fuliza",
-    counterparty_name: "Safaricom",
-    counterparty_type: "company",
-    amount: 1200,
-    type: "owed",
-    is_paid: 0,
-    due_date: "2026-01-30",
-  },
-];
+import { getAllDebts } from "../../../src/db/debtsDb";
 
 export default function DebtsListScreen() {
+  const isFocused = useIsFocused()
+  const db = useSQLiteContext()
   const router = useRouter()
   const { globalStyles } =   useThemeStyles()
+  const [debts,setDebts] = useState([])
+
+  let fetchTransactions = async() => {
+      let debts = await getAllDebts(db)
+      setDebts(debts)
+  }
+
+  useEffect(() => {
+      fetchTransactions()
+  },[isFocused])
+
   const renderItem = ({ item }) => {
     const isOwed = item.type === "owed";
 
@@ -73,7 +55,7 @@ export default function DebtsListScreen() {
 
         <View style={styles.row}>
           <Text style={styles.dueDate}>
-            Due: {item.due_date ?? "N/A"}
+            Due: {dateFormat(item.due_date)}
           </Text>
 
           <Text
@@ -94,7 +76,7 @@ export default function DebtsListScreen() {
       <BodyText style={globalStyles.title}>Debts</BodyText>
 
       <FlatList
-        data={DUMMY_DEBTS}
+        data={debts}
         keyExtractor={(item) => item.uuid}
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 24 }}

@@ -1,5 +1,4 @@
 import uuid from "react-native-uuid";
-import { DEFAULT_CATEGORIES } from "../../utils/categoriesSeeder";
 
 const newUuid = () => uuid.v4();
 
