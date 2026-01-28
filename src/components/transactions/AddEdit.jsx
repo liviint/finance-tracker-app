@@ -37,15 +37,15 @@ export default function AddEdit() {
   };
 
     const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      const updated = new Date(transactionDate);
-      updated.setFullYear(selectedDate.getFullYear());
-      updated.setMonth(selectedDate.getMonth());
-      updated.setDate(selectedDate.getDate());
-      setTransactionDate(updated);
-      setForm(prev => ({...prev,date:updated}))
-    }
+      setShowDatePicker(false);
+      if (selectedDate) {
+        const updated = new Date(transactionDate);
+        updated.setFullYear(selectedDate.getFullYear());
+        updated.setMonth(selectedDate.getMonth());
+        updated.setDate(selectedDate.getDate());
+        setTransactionDate(updated);
+        setForm(prev => ({...prev,date:updated}))
+      }
   };
 
   const handleTimeChange = (event, selectedTime) => {

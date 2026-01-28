@@ -1,4 +1,4 @@
-import  { useState } from "react";
+import  { useState, useEffect } from "react";
 import {
     View,
     Text,
@@ -10,14 +10,16 @@ import {
 import { useLocalSearchParams , useRouter} from "expo-router";
 import { useThemeStyles } from "../../hooks/useThemeStyles";
 import { BodyText, FormLabel, Input, TextArea , Card} from "../ThemeProvider/components";
-import { upsertDebt } from "../../db/debtsDb";
+import { upsertDebt, getDebtByUuid } from "../../db/debtsDb";
 import { useSQLiteContext } from "expo-sqlite";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function AddEdit() {
     const db = useSQLiteContext()
     const { globalStyles } = useThemeStyles()
     const router = useRouter()
     const {id:uuid} = useLocalSearchParams()
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const [form,setForm] = useState({
         title:"",
         counterparty_name:"",
@@ -26,6 +28,7 @@ export default function AddEdit() {
         isCompany:false,
         amount:"",
         note:"",
+        due_date:new Date(),
     })
 
     const handleFormChange = (key,value) => {
@@ -35,12 +38,30 @@ export default function AddEdit() {
         }))
     }
 
+    const handleDateChange = (event, selectedDate) => {
+        setShowDatePicker(false);
+        if (selectedDate) {
+            const updated = new Date(selectedDate);
+            console.log(updated,"hello updated")
+            setForm(prev => ({...prev,due_date:updated}))
+        }
+    };
+
     const handleSave = async () => {
         if (!form.title || !form.counterparty_name || !form.amount) return;
         console.log("Saving debt:", form);
         await upsertDebt(db, form);
         router.back()
     };
+
+    useEffect(() => {
+        let getDebt = async() => {
+            let debt = await getDebtByUuid(db,uuid)
+            console.log(debt,"hello debt")
+            setForm(prev => ({...prev,...debt,due_date:new Date(debt.due_date)}))
+        }
+        getDebt()
+    },[])
 
     return (
         <ScrollView style={globalStyles.container}>
@@ -81,11 +102,38 @@ export default function AddEdit() {
                 <View style={globalStyles.formGroup}>
                     <FormLabel>Amount</FormLabel>
                     <Input
-                        value={form.amount}
+                        value={String(form.amount)}
                         onChangeText={(value) => handleFormChange("amount",value)}
                         placeholder="0"
                         keyboardType="numeric"
                     />
+                </View>
+
+                <View style={globalStyles.formGroup}>
+                    <FormLabel>Date & Time</FormLabel>
+                    <View style={{ flexDirection: "row", gap: 12 }}>
+                    <TouchableOpacity
+                        onPress={() => setShowDatePicker(true)}
+                        style={{
+                        flex: 1,
+                        paddingVertical: 8,
+                        paddingHorizontal: 4,
+                        alignItems: "center",
+                        ...globalStyles.formBorder
+                        }}
+                    >
+                        <BodyText>{form.due_date.toDateString()}</BodyText>
+                    </TouchableOpacity>
+                    </View>
+                
+                    {showDatePicker && (
+                    <DateTimePicker
+                        value={form.due_date}
+                        mode="date"
+                        display="calendar"
+                        onChange={handleDateChange}
+                    />
+                    )}
                 </View>
 
                 <View style={globalStyles.formGroup}>

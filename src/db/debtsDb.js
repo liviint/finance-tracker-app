@@ -14,6 +14,8 @@ export const upsertDebt = async (db, debt) => {
     is_paid = 0,
   } = debt;
 
+  const dueDate = due_date.toISOString() 
+
   await db.runAsync(
     `
     INSERT INTO debts (
@@ -50,7 +52,7 @@ export const upsertDebt = async (db, debt) => {
       counterparty_type,
       amount,
       type,
-      due_date,
+      dueDate,
       note,
       is_paid,
     ]

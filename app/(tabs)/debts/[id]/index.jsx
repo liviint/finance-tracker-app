@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,33 +8,37 @@ import {
   Modal,
   ScrollView
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { useIsFocused } from "@react-navigation/native";
 import { useThemeStyles } from "../../../../src/hooks/useThemeStyles";
 import { BodyText, SecondaryText,Card, Input } from "../../../../src/components/ThemeProvider/components";
 import DeleteButton from "../../../../src/components/common/DeleteButton";
+import { getDebtByUuid } from "../../../../src/db/debtsDb";
+import { useSQLiteContext } from "expo-sqlite";
+import { dateFormat } from "../../../../utils/dateFormat";
 
 export default function DebtDetailsScreen() {
   const router = useRouter()
+  const isFocused = useIsFocused()
+  const db = useSQLiteContext()
   const {globalStyles} = useThemeStyles()
-  // const { uuid } = route.params;
+  const { id:uuid } = useLocalSearchParams()
 
   const [debt, setDebt] = useState({
-    // uuid,
-    title: "KCB Loan",
-    counterparty_name: "KCB Bank",
-    counterparty_type: "company",
-    amount: 25000,
-    type: "owed",
-    due_date: "2026-02-10",
-    note: "Personal loan",
+    uuid,
+    title: "",
+    counterparty_name: "",
+    counterparty_type: "",
+    amount: "",
+    type: "owing",
+    due_date: "",
+    note: "",
     is_paid: 0,
   });
 
   const [showOffsetModal, setShowOffsetModal] = useState(false);
   const [offsetAmount, setOffsetAmount] = useState("");
-
-  const isOwed = debt.type === "owed";
-
+  const [isOwed,setIsOwed] = useState(debt.type === "owed")
 
   const togglePaid = async () => {
     const updated = {
@@ -93,6 +97,16 @@ export default function DebtDetailsScreen() {
     );
   };
 
+  useEffect(() => {
+      let getDebt = async() => {
+        let res = await getDebtByUuid(db,uuid)
+        setDebt(res)
+        console.log(res,"hello debt")
+        setIsOwed(res.type === "owed")
+      }
+      getDebt()
+  },[isFocused])
+
   return (
     <ScrollView style={globalStyles.container}>
       <BodyText style={globalStyles.title}>{debt.title}</BodyText>
@@ -103,7 +117,7 @@ export default function DebtDetailsScreen() {
           isOwed ? styles.owed : styles.owing,
         ]}
       >
-        {isOwed ? "-" : "+"} KES {debt.amount}
+        {isOwed  ? "+" : "-"} KES {debt.amount}
       </Text>
 
       <SecondaryText style={{...styles.counterparty, marginBottom:10}}>
@@ -113,8 +127,8 @@ export default function DebtDetailsScreen() {
 
 
       <Card  >
-        <InfoRow label="Type" value={isOwed ? "I Owe" : "Owes Me"} />
-        <InfoRow label="Due Date" value={debt.due_date ?? "N/A"} />
+        <InfoRow label="Type" value={isOwed ? "Owes Me" :  "I Owe" } />
+        <InfoRow label="Due Date" value={dateFormat(debt.due_date)} />
         <InfoRow
           label="Status"
           value={debt.is_paid ? "Paid" : "Unpaid"}
@@ -133,7 +147,6 @@ export default function DebtDetailsScreen() {
         </TouchableOpacity>
       )}
 
-
       <TouchableOpacity
         style={[
           globalStyles.primaryBtn,
@@ -150,7 +163,7 @@ export default function DebtDetailsScreen() {
       
       <TouchableOpacity
         style={{...globalStyles.secondaryBtn,marginBottom:12}}
-        onPress={() =>router.push(`/debts/${"jd"}/edit`)}
+        onPress={() =>router.push(`/debts/${uuid}/edit`)}
       >
         <Text style={globalStyles.secondaryBtnText}>Edit Debt</Text>
       </TouchableOpacity>
@@ -220,8 +233,8 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginTop: 8,
   },
-  owed: { color: "#FF6B6B" },
-  owing: { color: "#2E8B8B" },
+  owed: { color: "#2E8B8B" },
+  owing: { color: "#FF6B6B" },
   counterparty: {
     marginTop: 4,
   },

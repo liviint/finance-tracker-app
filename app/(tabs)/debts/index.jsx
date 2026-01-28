@@ -12,7 +12,6 @@ import { BodyText, Card, SecondaryText } from "../../../src/components/ThemeProv
 import { useSQLiteContext } from "expo-sqlite";
 import { dateFormat } from "../../../utils/dateFormat";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles"
-import { syncManager } from "../../../utils/syncManager";
 import { getAllDebts } from "../../../src/db/debtsDb";
 
 export default function DebtsListScreen() {
@@ -22,13 +21,13 @@ export default function DebtsListScreen() {
   const { globalStyles } =   useThemeStyles()
   const [debts,setDebts] = useState([])
 
-  let fetchTransactions = async() => {
+  let fetchDebts = async() => {
       let debts = await getAllDebts(db)
       setDebts(debts)
   }
 
   useEffect(() => {
-      fetchTransactions()
+      fetchDebts()
   },[isFocused])
 
   const renderItem = ({ item }) => {
@@ -36,37 +35,37 @@ export default function DebtsListScreen() {
 
     return (
       <Card>
-        <View style={styles.row}>
-          <BodyText style={styles.title}>{item.title}</BodyText>
-          <Text
-            style={[
-              styles.amount,
-              isOwed ? styles.owed : styles.owing,
-            ]}
-          >
-            {isOwed ? "-" : "+"} KES {item.amount}
-          </Text>
-        </View>
+        <Pressable onPress={() => router.push(`/debts/${item.uuid}`)}>
+          <View style={styles.row}>
+            <BodyText style={styles.title}>{item.title}</BodyText>
+            <Text
+              style={[
+                styles.amount,
+                isOwed ? styles.owed : styles.owing,
+              ]}
+            >
+              {isOwed ? "+" : "-"} KES {item.amount}
+            </Text>
+          </View>
+          <SecondaryText style={styles.counterparty}>
+            {item.counterparty_name} ·{" "}
+            {item.counterparty_type === "company" ? "🏢" : "👤"}
+          </SecondaryText>
+          <View style={styles.row}>
+            <Text style={styles.dueDate}>
+              Due: {dateFormat(item.due_date)}
+            </Text>
 
-        <SecondaryText style={styles.counterparty}>
-          {item.counterparty_name} ·{" "}
-          {item.counterparty_type === "company" ? "🏢" : "👤"}
-        </SecondaryText>
-
-        <View style={styles.row}>
-          <Text style={styles.dueDate}>
-            Due: {dateFormat(item.due_date)}
-          </Text>
-
-          <Text
-            style={[
-              styles.status,
-              item.is_paid ? styles.paid : styles.unpaid,
-            ]}
-          >
-            {item.is_paid ? "Paid" : "Unpaid"}
-          </Text>
-        </View>
+            <Text
+              style={[
+                styles.status,
+                item.is_paid ? styles.paid : styles.unpaid,
+              ]}
+            >
+              {item.is_paid ? "Paid" : "Unpaid"}
+            </Text>
+          </View>
+        </Pressable>
       </Card>
     );
   };
@@ -114,10 +113,10 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   owed: {
-    color: "#FF6B6B",
+    color: "#2E8B8B",
   },
   owing: {
-    color: "#2E8B8B",
+    color: "#FF6B6B",
   },
   counterparty: {
     marginTop: 6,
