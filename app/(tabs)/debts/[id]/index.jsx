@@ -13,7 +13,7 @@ import { useThemeStyles } from "../../../../src/hooks/useThemeStyles";
 import { BodyText, SecondaryText,Card, Input } from "../../../../src/components/ThemeProvider/components";
 import DeleteButton from "../../../../src/components/common/DeleteButton";
 
-export default function DebtDetailsScreen({ route, navigation }) {
+export default function DebtDetailsScreen() {
   const router = useRouter()
   const {globalStyles} = useThemeStyles()
   // const { uuid } = route.params;
