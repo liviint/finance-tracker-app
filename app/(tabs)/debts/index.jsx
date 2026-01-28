@@ -4,8 +4,9 @@ import {
   Text,
   FlatList,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { BodyText, Card, SecondaryText } from "../../../src/components/ThemeProvider/components";
 import { useSQLiteContext } from "expo-sqlite";
 import { dateFormat } from "../../../utils/dateFormat";
@@ -46,6 +47,7 @@ const DUMMY_DEBTS = [
 ];
 
 export default function DebtsListScreen() {
+  const router = useRouter()
   const { globalStyles } =   useThemeStyles()
   const renderItem = ({ item }) => {
     const isOwed = item.type === "owed";
@@ -97,6 +99,13 @@ export default function DebtsListScreen() {
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 24 }}
       />
+
+      <Pressable
+        onPress={() => router.push("/debts/add")}
+        style={globalStyles.addButton}
+      >
+        <Text style={globalStyles.addText}>＋</Text>
+      </Pressable>
     </View>
   );
 }

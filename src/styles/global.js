@@ -32,21 +32,6 @@ export const createGlobalStyles = (colors) =>
       color: colors.text,
     },
 
-    addButton: {
-      flex: 1,
-      backgroundColor: colors.primary,
-      paddingVertical: 12,
-      borderRadius: 12,
-      marginRight: 8,
-      alignItems: "center",
-    },
-
-    addButtonText: {
-      color: "#fff",
-      fontWeight: "bold",
-      fontSize: 16,
-    },
-
     primaryBtn: {
       backgroundColor: colors.primary,
       paddingVertical: 12,
@@ -77,6 +62,23 @@ export const createGlobalStyles = (colors) =>
       fontSize: 16,
     },
 
+    addButton: {
+      position: "absolute",
+      right: 20,
+      bottom: 24,
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: "#333333",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    addText: {
+      color: "#FFFFFF",
+      fontSize: 28,
+      fontWeight: "700",
+      marginTop: -2,
+    },
     trackButton: {
       flex: 1,
       borderColor: colors.secondary,

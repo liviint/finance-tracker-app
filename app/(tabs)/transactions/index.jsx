@@ -73,9 +73,9 @@ export default function FinanceListPage() {
 
       <Pressable
         onPress={() => router.push("/transactions/add")}
-        style={styles.addButton}
+        style={globalStyles.addButton}
       >
-        <Text style={styles.addText}>＋</Text>
+        <Text style={globalStyles.addText}>＋</Text>
       </Pressable>
     </View>
   );
@@ -134,22 +134,5 @@ const styles = StyleSheet.create({
   },
   expense: {
     color: "#FF6B6B",
-  },
-  addButton: {
-    position: "absolute",
-    right: 20,
-    bottom: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#333333",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  addText: {
-    color: "#FFFFFF",
-    fontSize: 28,
-    fontWeight: "700",
-    marginTop: -2,
   },
 });
