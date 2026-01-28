@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -6,16 +6,18 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
-  TextInput,
+  ScrollView
 } from "react-native";
+import { useRouter } from "expo-router";
 import { useThemeStyles } from "../../../../src/hooks/useThemeStyles";
-import { BodyText, SecondaryText,Card } from "../../../../src/components/ThemeProvider/components";
+import { BodyText, SecondaryText,Card, Input } from "../../../../src/components/ThemeProvider/components";
+import DeleteButton from "../../../../src/components/common/DeleteButton";
 
 export default function DebtDetailsScreen({ route, navigation }) {
+  const router = useRouter()
   const {globalStyles} = useThemeStyles()
   // const { uuid } = route.params;
 
-  // dummy data for now
   const [debt, setDebt] = useState({
     // uuid,
     title: "KCB Loan",
@@ -33,7 +35,6 @@ export default function DebtDetailsScreen({ route, navigation }) {
 
   const isOwed = debt.type === "owed";
 
-  /* -------------------- Actions -------------------- */
 
   const togglePaid = async () => {
     const updated = {
@@ -86,17 +87,14 @@ export default function DebtDetailsScreen({ route, navigation }) {
           style: "destructive",
           onPress: async () => {
             // await deleteDebt(db, uuid);
-            navigation.goBack();
           },
         },
       ]
     );
   };
 
-  /* -------------------- UI -------------------- */
-
   return (
-    <View style={globalStyles.container}>
+    <ScrollView style={globalStyles.container}>
       <BodyText style={globalStyles.title}>{debt.title}</BodyText>
 
       <Text
@@ -126,20 +124,20 @@ export default function DebtDetailsScreen({ route, navigation }) {
         ) : null}
       </Card>
 
-      {/* Offset */}
       {!debt.is_paid && (
         <TouchableOpacity
-          style={styles.secondaryBtn}
+          style={globalStyles.secondaryBtn}
           onPress={() => setShowOffsetModal(true)}
         >
-          <Text style={styles.secondaryText}>Offset Amount</Text>
+          <BodyText style={globalStyles.secondaryBtnText}>Offset Amount</BodyText>
         </TouchableOpacity>
       )}
 
-      {/* Paid toggle */}
+
       <TouchableOpacity
         style={[
-          styles.actionBtn,
+          globalStyles.primaryBtn,
+          {marginTop:12,marginBottom:12},
           debt.is_paid ? styles.unpaidBtn : styles.paidBtn,
         ]}
         onPress={togglePaid}
@@ -151,34 +149,27 @@ export default function DebtDetailsScreen({ route, navigation }) {
 
       
       <TouchableOpacity
-        style={styles.secondaryBtn}
-        onPress={() =>
-          navigation.navigate("AddDebt", {
-            // uuid,
-          })
-        }
+        style={{...globalStyles.secondaryBtn,marginBottom:12}}
+        onPress={() =>router.push(`/debts/${"jd"}/edit`)}
       >
-        <Text style={styles.secondaryText}>Edit Debt</Text>
+        <Text style={globalStyles.secondaryBtnText}>Edit Debt</Text>
       </TouchableOpacity>
 
-    
-      <TouchableOpacity
-        style={styles.deleteBtn}
-        onPress={handleDelete}
-      >
-        <Text style={styles.deleteText}>Delete Debt</Text>
-      </TouchableOpacity>
+      <DeleteButton 
+        handleOk={handleDelete} 
+        item={"debt"}
+        cusomStyles={{marginBottom:32}}
+      />
 
-  
       <Modal visible={showOffsetModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <Card style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Offset Debt</Text>
-            <Text style={styles.modalSub}>
+            <BodyText style={globalStyles.title}>Offset Debt</BodyText>
+            <SecondaryText style={{marginBottom:12}}>
               Remaining: KES {debt.amount}
-            </Text>
+            </SecondaryText>
 
-            <TextInput
+            <Input
               value={offsetAmount}
               onChangeText={setOffsetAmount}
               placeholder="Enter amount"
@@ -187,22 +178,22 @@ export default function DebtDetailsScreen({ route, navigation }) {
             />
 
             <TouchableOpacity
-              style={styles.paidBtn}
+              style={{...globalStyles.primaryBtn,marginBottom:12}}
               onPress={handleOffset}
             >
-              <Text style={styles.actionText}>Apply Offset</Text>
+              <BodyText style={globalStyles.primaryBtnText}>Apply Offset</BodyText>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.modalCancel}
+              style={globalStyles.secondaryBtn}
               onPress={() => setShowOffsetModal(false)}
             >
-              <Text style={{ color: "#666" }}>Cancel</Text>
+              <BodyText style={globalStyles.secondaryBtnText}>Cancel</BodyText>
             </TouchableOpacity>
           </Card>
         </View>
       </Modal>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -251,8 +242,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
   },
-  paidBtn: { backgroundColor: "#2E8B8B" },
-  unpaidBtn: { backgroundColor: "#FF6B6B" },
   actionText: { color: "#FFF", fontWeight: "700" },
   secondaryBtn: {
     marginTop: 12,
@@ -282,15 +271,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
   },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 8,
-  },
-  modalSub: {
-    color: "#666",
-    marginBottom: 12,
-  },
+
   modalInput: {
     borderWidth: 1,
     borderColor: "#DDD",
