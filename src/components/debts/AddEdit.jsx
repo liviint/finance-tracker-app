@@ -24,7 +24,7 @@ export default function AddEdit() {
         title:"",
         counterparty_name:"",
         counterparty_type:"person",
-        type:"owed",
+        type:"owing",
         isCompany:false,
         amount:"",
         note:"",
@@ -42,14 +42,12 @@ export default function AddEdit() {
         setShowDatePicker(false);
         if (selectedDate) {
             const updated = new Date(selectedDate);
-            console.log(updated,"hello updated")
             setForm(prev => ({...prev,due_date:updated}))
         }
     };
 
     const handleSave = async () => {
         if (!form.title || !form.counterparty_name || !form.amount) return;
-        console.log("Saving debt:", form);
         await upsertDebt(db, form);
         router.back()
     };
@@ -58,7 +56,6 @@ export default function AddEdit() {
         if(!uuid) return
         let getDebt = async() => {
             let debt = await getDebtByUuid(db,uuid)
-            console.log(debt,"hello debt")
             setForm(prev => ({...prev,...debt,due_date:new Date(debt.due_date)}))
         }
         getDebt()

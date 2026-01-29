@@ -13,7 +13,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { useThemeStyles } from "../../../../src/hooks/useThemeStyles";
 import { BodyText, SecondaryText,Card, Input } from "../../../../src/components/ThemeProvider/components";
 import DeleteButton from "../../../../src/components/common/DeleteButton";
-import { getDebtByUuid } from "../../../../src/db/debtsDb";
+import { getDebtByUuid, offsetDebt, markDebtAsPaid, markDebtAsUnpaid } from "../../../../src/db/debtsDb";
 import { useSQLiteContext } from "expo-sqlite";
 import { dateFormat } from "../../../../utils/dateFormat";
 
@@ -41,15 +41,27 @@ export default function DebtDetailsScreen() {
   const [isOwed,setIsOwed] = useState(debt.type === "owed")
 
   const togglePaid = async () => {
-    const updated = {
-      ...debt,
-      is_paid: debt.is_paid ? 0 : 1,
-      amount: debt.is_paid ? debt.amount : 0,
-    };
+  try {
+    if (!debt.is_paid) {
+      await markDebtAsPaid(db, debt.uuid);
 
-    setDebt(updated);
-    // await upsertDebt(db, updated);
-  };
+      setDebt((prev) => ({
+        ...prev,
+        amount: 0,
+        is_paid: 1,
+      }));
+
+      Alert.alert("Success", "Debt marked as paid!");
+    } else {
+      Alert.alert(
+        "Unpaid not supported",
+        "To undo payment, use offset history restoration."
+      );
+    }
+  } catch (err) {
+    Alert.alert("Error", err.message);
+  }
+};
 
   const handleOffset = async () => {
     const offset = Number(offsetAmount);
@@ -60,25 +72,31 @@ export default function DebtDetailsScreen() {
     }
 
     if (offset > debt.amount) {
-      Alert.alert(
-        "Too much",
-        "Offset amount cannot be greater than remaining debt."
-      );
+      Alert.alert("Too much", "Offset amount cannot be greater than remaining debt.");
       return;
     }
 
-    const remaining = debt.amount - offset;
+    try {
+      const result = await offsetDebt(db, {
+        debt_uuid: debt.uuid,
+        offset_amount: offset,
+        note: "Offset from details screen",
+      });
 
-    const updatedDebt = {
-      ...debt,
-      amount: remaining,
-      is_paid: remaining === 0 ? 1 : 0,
-    };
+      setDebt((prev) => ({
+        ...prev,
+        amount: result.remaining,
+        is_paid: result.is_paid ? 1 : 0,
+      }));
 
-    setDebt(updatedDebt);
-    setOffsetAmount("");
-    setShowOffsetModal(false);
-  };
+      setOffsetAmount("");
+      setShowOffsetModal(false);
+
+      Alert.alert("Success", "Offset applied successfully!");
+  } catch (err) {
+      Alert.alert("Error", err.message);
+  }
+};
 
   const handleDelete = () => {
     Alert.alert(
@@ -147,7 +165,7 @@ export default function DebtDetailsScreen() {
         </TouchableOpacity>
       )}
 
-      <TouchableOpacity
+      {!debt.is_paid && <TouchableOpacity
         style={[
           globalStyles.primaryBtn,
           {marginTop:12,marginBottom:12},
@@ -158,15 +176,15 @@ export default function DebtDetailsScreen() {
         <Text style={styles.actionText}>
           {debt.is_paid ? "Mark as Unpaid" : "Mark as Paid"}
         </Text>
-      </TouchableOpacity>
+      </TouchableOpacity>}
 
       
-      <TouchableOpacity
+      {!debt.is_paid &&  <TouchableOpacity
         style={{...globalStyles.secondaryBtn,marginBottom:12}}
         onPress={() =>router.push(`/debts/${uuid}/edit`)}
       >
         <Text style={globalStyles.secondaryBtnText}>Edit Debt</Text>
-      </TouchableOpacity>
+      </TouchableOpacity>}
 
       <DeleteButton 
         handleOk={handleDelete} 

@@ -12,9 +12,10 @@ export const upsertDebt = async (db, debt) => {
     due_date,
     note,
     is_paid = 0,
+    original_amount = amount, 
   } = debt;
 
-  const dueDate = due_date.toISOString() 
+  const dueDate = due_date.toISOString();
 
   await db.runAsync(
     `
@@ -24,6 +25,7 @@ export const upsertDebt = async (db, debt) => {
       counterparty_name,
       counterparty_type,
       amount,
+      original_amount,   
       type,
       due_date,
       note,
@@ -32,7 +34,7 @@ export const upsertDebt = async (db, debt) => {
       created_at,
       updated_at
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, datetime('now'), datetime('now'))
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, datetime('now'), datetime('now'))
     ON CONFLICT(uuid) DO UPDATE SET
       title = excluded.title,
       counterparty_name = excluded.counterparty_name,
@@ -51,6 +53,7 @@ export const upsertDebt = async (db, debt) => {
       counterparty_name,
       counterparty_type,
       amount,
+      original_amount, 
       type,
       dueDate,
       note,
@@ -116,11 +119,87 @@ export const getUnsyncedDebts = async (db) => {
   );
 };
 
-/* -------------------- Debt Payments -------------------- */
+export const offsetDebt = async (db, { debt_uuid, offset_amount, note }) => {
+  const debt = await getDebtByUuid(db, debt_uuid);
 
-/**
- * Add a partial payment / offset for a debt
- */
+  if (!debt) throw new Error("Debt not found");
+
+  const remaining = debt.amount - offset_amount;
+
+  if (remaining < 0) {
+    throw new Error("Offset cannot exceed remaining debt");
+  }
+
+  await addDebtPayment(db, {
+    debt_uuid,
+    amount: offset_amount,
+    note: note || "Offset payment",
+  });
+
+  await db.runAsync(
+    `
+    UPDATE debts
+    SET amount = ?,
+        is_paid = ?,
+        is_synced = 0,
+        updated_at = datetime('now')
+    WHERE uuid = ?
+    `,
+    [remaining, remaining === 0 ? 1 : 0, debt_uuid]
+  );
+
+  return {
+    remaining,
+    is_paid: remaining === 0,
+  };
+};
+
+export const markDebtAsPaid = async (db, debt_uuid) => {
+  const debt = await getDebtByUuid(db, debt_uuid);
+
+  if (!debt) throw new Error("Debt not found");
+
+  if (debt.is_paid) return true;
+
+  // Record final payment
+  await addDebtPayment(db, {
+    debt_uuid,
+    amount: debt.amount,
+    note: "Marked as fully paid",
+  });
+
+  await db.runAsync(
+    `
+    UPDATE debts
+    SET amount = 0,
+        is_paid = 1,
+        is_synced = 0,
+        updated_at = datetime('now')
+    WHERE uuid = ?
+    `,
+    [debt_uuid]
+  );
+
+  return true;
+};
+
+export const markDebtAsUnpaid = async (db, debt_uuid, restoredAmount) => {
+  await db.runAsync(
+    `
+    UPDATE debts
+    SET amount = ?,
+        is_paid = 0,
+        is_synced = 0,
+        updated_at = datetime('now')
+    WHERE uuid = ?
+    `,
+    [restoredAmount, debt_uuid]
+  );
+
+  return true;
+};
+
+
 export const addDebtPayment = async (db, { debt_uuid, amount, note }) => {
   const uuid =  newUuid();
 
