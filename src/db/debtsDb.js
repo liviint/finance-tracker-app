@@ -119,6 +119,117 @@ export const getUnsyncedDebts = async (db) => {
   );
 };
 
+/**
+ * Sync debts coming from API into local SQLite
+ */
+export const syncDebtsFromApi = async (db, debts = []) => {
+  if (!debts || debts.length === 0) return;
+
+  for (let debt of debts) {
+    await db.runAsync(
+      `
+      INSERT INTO debts (
+        uuid,
+        title,
+        counterparty_name,
+        counterparty_type,
+        amount,
+        original_amount,
+        type,
+        due_date,
+        note,
+        is_paid,
+        is_synced,
+        deleted_at,
+        created_at,
+        updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
+      ON CONFLICT(uuid) DO UPDATE SET
+        title = excluded.title,
+        counterparty_name = excluded.counterparty_name,
+        counterparty_type = excluded.counterparty_type,
+        amount = excluded.amount,
+        original_amount = excluded.original_amount,
+        type = excluded.type,
+        due_date = excluded.due_date,
+        note = excluded.note,
+        is_paid = excluded.is_paid,
+        deleted_at = excluded.deleted_at,
+        is_synced = 1,
+        updated_at = excluded.updated_at;
+      `,
+      [
+        debt.uuid,
+        debt.title,
+        debt.counterparty_name,
+        debt.counterparty_type,
+        debt.amount,
+        debt.original_amount,
+        debt.type,
+        debt.due_date,
+        debt.note,
+        debt.is_paid ? 1 : 0,
+        debt.deleted_at,
+        debt.created_at,
+        debt.updated_at,
+      ]
+    );
+  }
+};
+
+
+/**
+ * Get all unsynced debt payments (local → API)
+ */
+export const getUnsyncedDebtPayments = async (db) => {
+  return await db.getAllAsync(
+    `
+    SELECT * FROM debt_payments
+    WHERE is_synced = 0
+    `
+  );
+};
+
+
+
+/**
+ * Sync debt payments coming from API into local SQLite
+ */
+export const syncDebtPaymentsFromApi = async (db, payments = []) => {
+  if (!payments || payments.length === 0) return;
+
+  for (let payment of payments) {
+    await db.runAsync(
+      `
+      INSERT INTO debt_payments (
+        uuid,
+        debt_uuid,
+        amount,
+        note,
+        created_at,
+        is_synced
+      )
+      VALUES (?, ?, ?, ?, ?, 1)
+      ON CONFLICT(uuid) DO UPDATE SET
+        debt_uuid = excluded.debt_uuid,
+        amount = excluded.amount,
+        note = excluded.note,
+        created_at = excluded.created_at,
+        is_synced = 1;
+      `,
+      [
+        payment.uuid,
+        payment.debt,
+        payment.amount,
+        payment.note,
+        payment.created_at,
+      ]
+    );
+  }
+};
+
+
 export const offsetDebt = async (db, { debt_uuid, offset_amount, note }) => {
   const debt = await getDebtByUuid(db, debt_uuid);
 
