@@ -10,10 +10,12 @@ export const seedCategoriesIfEmpty = async (db,apiData=[]) => {
   const rows = await db.getAllAsync(
     "SELECT COUNT(*) as count FROM finance_categories"
   );
+  console.log(rows,"hello rows")
+  if (rows[0].count > 0) return;
 
-  if (rows[0].count > 0 || apiData.length) return;
+  let defaults = apiData?.length ? apiData : DEFAULT_CATEGORIES
 
-  for (const cat of DEFAULT_CATEGORIES) {
+  for (const cat of defaults) {
     await db.runAsync(
       `INSERT INTO finance_categories 
         (uuid, name, type, color, icon, created_at, updated_at)

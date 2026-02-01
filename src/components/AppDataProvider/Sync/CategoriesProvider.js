@@ -14,7 +14,6 @@ import { useSyncEngine } from "../../../../src/hooks/useSyncEngine";
 export default function CategoriesProvider({ children }) {
   const db = useSQLiteContext();
   const userDetails = useSelector((state) => state?.user?.userDetails);
-  const enabled = !!userDetails;
 
   const syncFromLocalToApi = async() => {
     try {
@@ -41,21 +40,31 @@ export default function CategoriesProvider({ children }) {
   }
 
   const handleDefaultCategoriesSync = async() => {
-    const res = await api.post("/finances/categories/sync/", {
-      last_synced_at: null,
-    });
-    seedCategoriesIfEmpty(db,res.data.results)
+    try {
+      const res = await api.post("/finances/categories/sync/", {
+        last_synced_at: null,
+      });
+      seedCategoriesIfEmpty(db,res?.data?.results)
+    } catch (error) {
+      console.log(error,"hello error")
+    }
   }
 
   const bootstrap = async () => {
-    await handleDefaultCategoriesSync()
-    await syncFromLocalToApi()
-    await syncFromApiToLocal()
+    if(userDetails){
+      await handleDefaultCategoriesSync()
+      await syncFromLocalToApi()
+      await syncFromApiToLocal()
+    }
+    else{
+      seedCategoriesIfEmpty(db)
+    }
+    
     syncManager.emit("categories_updated");
   };
 
   useSyncEngine({
-    enabled,
+    enabled:true,
     name: "categories",
     bootstrap,
   });
