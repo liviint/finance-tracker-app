@@ -7,7 +7,7 @@ export default {
     slug: "zeniamoney",
     version: "1.0.9",
     orientation: "portrait",
-    icon: "./assets/images/icon.png",
+    icon: "./assets/images/logo.png",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
 
@@ -20,9 +20,7 @@ export default {
     android: {
       package: "com.zeniahub.zeniamoney",
       adaptiveIcon: {
-        foregroundImage: "./assets/images/android-icon-foreground.png",
-        backgroundColor: "#E6F4FE",
-        monochromeImage: "./assets/images/android-icon-monochrome.png",
+        foregroundImage: "./assets/images/logo.png",
       },
 
       edgeToEdgeEnabled: true,
@@ -55,7 +53,7 @@ export default {
 
     web: {
       output: "static",
-      favicon: "./assets/images/favicon.png",
+      favicon: "./assets/images/logo.png",
     },
 
     plugins: [
@@ -65,7 +63,7 @@ export default {
       [
         "expo-splash-screen",
         {
-          image: "./assets/images/splash-icon.png",
+          image: "./assets/images/logo.png",
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: "#ffffff",
