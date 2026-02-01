@@ -7,15 +7,15 @@ import CategoriesProvider from "./Sync/CategoriesProvider"
 import DebtsProvider from "./Sync/DebtsProvider"
 
 const migrateDbIfNeeded = async (db) => {
-  await db.execAsync(`DROP TABLE IF EXISTS finance_transactions;`);
-  await db.execAsync(`DROP TABLE IF EXISTS finance_categories;`);
-  await db.execAsync(`DROP TABLE IF EXISTS savings_goals;`);
-  await db.execAsync(`DROP TABLE IF EXISTS budgets;`);
-  await db.execAsync(`DROP TABLE IF EXISTS savings_transactions;`);
-  await db.execAsync(`DROP TABLE IF EXISTS  app_settings;`);
-  await db.execAsync(`DROP TABLE IF EXISTS  debts;`);
-  await db.execAsync(`DROP TABLE IF EXISTS  debt_payments;`);
-  await db.execAsync(`PRAGMA user_version = 0;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS finance_transactions;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS finance_categories;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS savings_goals;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS budgets;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS savings_transactions;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS  app_settings;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS  debts;`);
+  // await db.execAsync(`DROP TABLE IF EXISTS  debt_payments;`);
+  // await db.execAsync(`PRAGMA user_version = 0;`);
 
 
   await db.execAsync(`PRAGMA foreign_keys = ON;`);
