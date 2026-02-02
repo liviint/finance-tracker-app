@@ -121,4 +121,11 @@ export const createGlobalStyles = (colors) =>
       borderColor:colors.border,
       borderRadius: 10,
     },
+    switchRow: {
+      flexDirection: "row",
+      justifyContent: "left",
+      alignItems: "center",
+      gap:10,
+    },
+
   });

@@ -13,6 +13,8 @@ import {
     FormLabel,
     Input,
     Card,
+    SecondaryText,
+    CustomSwitch,
 } from "../ThemeProvider/components";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import uuid from "react-native-uuid";
@@ -119,6 +121,22 @@ export default function AddEditBudget() {
                     onChangeText={(v) => handleFormChange("amount", v)}
                     placeholder="e.g. 5000"
                 />
+            </View>
+
+            <View style={globalStyles.formGroup}>
+                <FormLabel>Recurring</FormLabel>
+                <View style={globalStyles.switchRow}>
+                    <CustomSwitch
+                        value={form.recurring}
+                        onValueChange={(val) => handleFormChange("recurring", val)}
+                    />
+                    <SecondaryText style={{ fontWeight: "600" }}>
+                        {form.recurring ? "Yes" : "No"}
+                    </SecondaryText>
+                </View>
+                <SecondaryText style={{ color: "#777" }}>
+                    Repeat this budget every month automatically
+                </SecondaryText>
             </View>
 
             <TouchableOpacity

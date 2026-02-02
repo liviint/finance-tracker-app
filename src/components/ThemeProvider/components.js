@@ -1,5 +1,6 @@
 import styled from "styled-components/native";
 import { Picker } from "@react-native-picker/picker";
+import { Switch } from "react-native";
 
 export const BodyText = styled.Text`
     font-family: ${props => props.theme.fonts.body};
@@ -53,6 +54,17 @@ export const CustomPicker = styled(Picker).attrs(({ theme }) => ({
   color: ${({ theme }) => theme.colors.text};
   border-radius: 10px;
 `;
+
+export const CustomSwitch = styled(Switch).attrs(({ theme }) => ({
+  trackColor: {
+    false: theme.colors.border,
+    true: theme.colors.border,
+  },
+  thumbColor: theme.colors.primary,
+}))`
+  transform: scale(1.25);
+`;
+
 
 
 export const FormLabel = styled(BodyText)`
