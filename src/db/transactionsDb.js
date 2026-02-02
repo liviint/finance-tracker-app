@@ -146,7 +146,7 @@ export async function getTransactions(db) {
     return await db.getAllAsync(`
         SELECT * FROM finance_transactions
         WHERE deleted_at IS NULL
-        ORDER BY datetime(created_at) DESC
+        ORDER BY datetime(date) DESC
     `);
 }
 
