@@ -7,55 +7,59 @@ export async function upsertTransaction(db, {
     title,
     amount,
     type,
+    payee,
     category,
     category_uuid,
     note = null,
     date,
     source = "manual",
 }) {
-  const now = new Date().toISOString();
-  const transactionDate = date ? date.toISOString() : now;
+    const now = new Date().toISOString();
+    const transactionDate = date ? date.toISOString() : now;
+    amount = parseFloat(amount) || 0;
 
-  try {
-    const localUuid = uuid ? uuid :  newUuid()
+    try {
+        const localUuid = uuid ? uuid :  newUuid()
 
-    await db.runAsync(
-      `
-      INSERT INTO finance_transactions (
-        uuid, title, amount, type, category,category_uuid, note, source,
-        created_at, updated_at, date
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?)
-      ON CONFLICT(uuid) DO UPDATE SET
-        title = excluded.title,
-        amount = excluded.amount,
-        type = excluded.type,
-        category = excluded.category,
-        category_uuid = excluded.category_uuid,
-        note = excluded.note,
-        updated_at = excluded.updated_at,
-        date = excluded.date
-      `,
-      [
-        localUuid,
-        title,
-        amount,
-        type,
-        category,
-        category_uuid,
-        note,
-        source,
-        now,
-        now,
-        transactionDate
-      ]
-    );
+        await db.runAsync(
+        `
+        INSERT INTO finance_transactions (
+            uuid, title, amount,payee, type, category,category_uuid, note, source,
+            created_at, updated_at, date
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?)
+        ON CONFLICT(uuid) DO UPDATE SET
+            title = excluded.title,
+            amount = excluded.amount,
+            payee = excluded.payee,
+            type = excluded.type,
+            category = excluded.category,
+            category_uuid = excluded.category_uuid,
+            note = excluded.note,
+            updated_at = excluded.updated_at,
+            date = excluded.date
+        `,
+        [
+            localUuid,
+            title,
+            amount,
+            payee,
+            type,
+            category,
+            category_uuid,
+            note,
+            source,
+            now,
+            now,
+            transactionDate
+        ]
+        );
 
-    return localUuid; 
-  } catch (error) {
-    console.error("❌ Failed to upsert transaction:", error);
-    throw error;
-  }
+        return localUuid; 
+    } catch (error) {
+        console.error("❌ Failed to upsert transaction:", error);
+        throw error;
+    }
 }
 
 export const syncTransactionsFromApi = async (db, transactions = []) => {

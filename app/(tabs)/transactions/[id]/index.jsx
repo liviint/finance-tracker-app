@@ -50,6 +50,10 @@ export default function FinanceEntryViewPage() {
       <Card style={styles.detailsCard}>
         <DetailRow label="Title" value={transaction.title} />
         <DetailRow label="Category" value={transaction.category} />
+        {transaction.payee ? 
+          <DetailRow label="Payee" value={transaction.payee} />
+          : ""
+        }
         <DetailRow label="Date" value={dateFormat(transaction.created_at)} />
 
         {transaction.note ? (

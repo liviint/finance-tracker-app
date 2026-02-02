@@ -5,6 +5,7 @@ import SavingsProvider from "./Sync/SavingsProvider"
 import BudgetsProvider from "./Sync/BudgetsProvider"
 import CategoriesProvider from "./Sync/CategoriesProvider"
 import DebtsProvider from "./Sync/DebtsProvider"
+import { extraMigrations } from "./migrations"
 
 const migrateDbIfNeeded = async (db) => {
   // await db.execAsync(`DROP TABLE IF EXISTS finance_transactions;`);
@@ -41,6 +42,7 @@ const migrateDbIfNeeded = async (db) => {
       category TEXT,
       category_uuid TEXT,
       note TEXT,
+      payee Text,
 
       source TEXT DEFAULT 'manual',
 
@@ -182,6 +184,8 @@ const migrateDbIfNeeded = async (db) => {
   await db.execAsync(
     `PRAGMA user_version = ${nextVersion};`
   );
+
+  extraMigrations(db)
 
 };
 

@@ -23,6 +23,7 @@ export default function AddEdit() {
     type: "expense", 
     note: "",
     uuid:"",
+    payee:"",
     date:new Date(),
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -36,16 +37,16 @@ export default function AddEdit() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-    const handleDateChange = (event, selectedDate) => {
-      setShowDatePicker(false);
-      if (selectedDate) {
-        const updated = new Date(transactionDate);
-        updated.setFullYear(selectedDate.getFullYear());
-        updated.setMonth(selectedDate.getMonth());
-        updated.setDate(selectedDate.getDate());
-        setTransactionDate(updated);
-        setForm(prev => ({...prev,date:updated}))
-      }
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      const updated = new Date(transactionDate);
+      updated.setFullYear(selectedDate.getFullYear());
+      updated.setMonth(selectedDate.getMonth());
+      updated.setDate(selectedDate.getDate());
+      setTransactionDate(updated);
+      setForm(prev => ({...prev,date:updated}))
+    }
   };
 
   const handleTimeChange = (event, selectedTime) => {
@@ -138,7 +139,6 @@ const isFormValid = () => {
           handleCategoryChange={handleCategoryChange}
         />
 
-        {/* Amount */}
         <View style={globalStyles.formGroup}>
           <FormLabel >Amount</FormLabel>
           <Input
@@ -146,6 +146,15 @@ const isFormValid = () => {
             keyboardType="numeric"
             value={String(form.amount)}
             onChangeText={(v) => handleChange("amount", v)}
+          />
+        </View>
+
+        <View style={globalStyles.formGroup}>
+          <FormLabel >Payee</FormLabel>
+          <Input
+            placeholder="Payee (e.g Landlord)"
+            value={form.payee || ""}
+            onChangeText={(v) => handleChange("payee", v)}
           />
         </View>
 

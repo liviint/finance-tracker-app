@@ -37,8 +37,13 @@ export default function FinanceListPage() {
         <Card >
             <View style={styles.row}>
                 <View>
-                <BodyText style={styles.title}>{item.title}</BodyText>
-                <SecondaryText style={styles.meta}>{item.category} • {dateFormat(item?.date)}</SecondaryText>
+                  <BodyText style={styles.title}>{item.title}</BodyText>
+                  
+                  <SecondaryText style={styles.meta}>
+                    {item.category} {" • "}
+                    {dateFormat(item?.date)} {item.payee ? " • " : ""} 
+                    {item.payee}
+                  </SecondaryText>
                 </View>
                 <BodyText style={[styles.amount, item.type === "expense"  ? styles.expense : styles.income]}>
                   {item.type === "expense" ? "-" : "+"}KES {Math.abs(item.amount).toLocaleString()}
