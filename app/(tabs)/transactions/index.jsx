@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useIsFocused } from "@react-navigation/native";
 import { View, Text, FlatList, StyleSheet, Pressable } from "react-native";
 import { Card, BodyText, SecondaryText } from "../../../src/components/ThemeProvider/components";
+import { AddButton } from "../../../src/components/common/AddButton";
 import { useRouter } from "expo-router";
 import { getTransactions } from "../../../src/db/transactionsDb";
 import { useSQLiteContext } from "expo-sqlite";
@@ -75,13 +76,7 @@ export default function FinanceListPage() {
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 96 }}
       />
-
-      <Pressable
-        onPress={() => router.push("/transactions/add")}
-        style={globalStyles.addButton}
-      >
-        <Text style={globalStyles.addText}>＋</Text>
-      </Pressable>
+      <AddButton to="/transactions/add"/>
     </View>
   );
 }

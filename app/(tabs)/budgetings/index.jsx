@@ -10,6 +10,7 @@ import {
 import { BodyText, Card } from "../../../src/components/ThemeProvider/components";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 import { syncManager } from "../../../utils/syncManager";
+import { AddButton } from "../../../src/components/common/AddButton";
 
 export default function BudgetsListScreen() {
   const router = useRouter();
@@ -118,15 +119,7 @@ export default function BudgetsListScreen() {
       <BodyText style={globalStyles.title}>
         My Monthly budegt
       </BodyText>
-      <Pressable
-        onPress={() => router.push(`/budgetings/add?period=${period}`)}
-        style={{ ...globalStyles.primaryBtn, marginBottom: 16 }}
-      >
-        <BodyText style={globalStyles.primaryBtnText}>
-          + Add {period} Budget
-        </BodyText>
-      </Pressable>
-
+      
       <FlatList
         data={budgets}
         keyExtractor={(item) => item.uuid}
@@ -137,6 +130,7 @@ export default function BudgetsListScreen() {
           </BodyText>
         }
       />
+      <AddButton to={`/budgetings/add?period=${period}`}/>
     </View>
   );
 }

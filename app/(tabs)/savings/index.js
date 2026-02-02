@@ -7,6 +7,7 @@ import { Card, BodyText } from "../../../src/components/ThemeProvider/components
 import { getSavingsGoals } from "../../../src/db/savingsDb";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 import { syncManager } from "../../../utils/syncManager";
+import { AddButton } from "../../../src/components/common/AddButton";
 
 export default function SavingsList() {
   const { globalStyles } = useThemeStyles();
@@ -80,15 +81,6 @@ export default function SavingsList() {
     <View style={globalStyles.container}>
       <BodyText style={globalStyles.title}>My Savings</BodyText>
 
-      <TouchableOpacity
-        onPress={() => router.push("/savings/add")}
-        style={{ ...globalStyles.primaryBtn, marginBottom: 16 }}
-      >
-        <BodyText style={globalStyles.primaryBtnText}>
-          + Add savings goal
-        </BodyText>
-      </TouchableOpacity>
-
       {goals.length === 0 ? (
         <Card>
           <BodyText style={{ textAlign: "center", opacity: 0.7 }}>
@@ -106,6 +98,7 @@ export default function SavingsList() {
           showsVerticalScrollIndicator={false}
         />
       )}
+      <AddButton to="/savings/add"/>
     </View>
   );
 }

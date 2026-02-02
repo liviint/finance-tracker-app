@@ -13,6 +13,7 @@ import { useSQLiteContext } from "expo-sqlite";
 import { dateFormat } from "../../../utils/dateFormat";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles"
 import { getAllDebts } from "../../../src/db/debtsDb";
+import { AddButton } from "../../../src/components/common/AddButton";
 
 export default function DebtsListScreen() {
   const isFocused = useIsFocused()
@@ -80,13 +81,9 @@ export default function DebtsListScreen() {
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 24 }}
       />
+      
+      <AddButton to={"/debts/add"} />
 
-      <Pressable
-        onPress={() => router.push("/debts/add")}
-        style={globalStyles.addButton}
-      >
-        <Text style={globalStyles.addText}>＋</Text>
-      </Pressable>
     </View>
   );
 }

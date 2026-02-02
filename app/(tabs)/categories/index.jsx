@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 import { SecondaryText , BodyText} from "../../../src/components/ThemeProvider/components";
 import { syncManager } from "../../../utils/syncManager";
+import { AddButton } from "../../../src/components/common/AddButton";
 
 export default function CategoriesListScreen({ navigation }) {
   const db = useSQLiteContext();
@@ -125,19 +126,10 @@ export default function CategoriesListScreen({ navigation }) {
         My Categories
       </BodyText>
 
-      <TouchableOpacity
-        onPress={() => router.push("/categories/add")}
-        style={{
-          ...globalStyles.primaryBtn, marginBottom:20
-        }}
-      >
-        <Text style={globalStyles.primaryBtnText}>
-          + Add Category
-        </Text>
-      </TouchableOpacity>
-
       <Section title="Income" data={incomeCategories} />
       <Section title="Expenses" data={expenseCategories} />
+
+      <AddButton to="/categories/add"/>
     </ScrollView>
   );
 }
