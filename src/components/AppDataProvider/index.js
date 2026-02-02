@@ -65,6 +65,7 @@ const migrateDbIfNeeded = async (db) => {
 
       name TEXT NOT NULL,
       type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
+      spendingType TEXT DEFAULT 'neutral' CHECK(spendingType IN ('neutral', 'needs', 'wants','savings')),
 
       color TEXT,
       icon TEXT,
@@ -186,7 +187,6 @@ const migrateDbIfNeeded = async (db) => {
   );
 
   extraMigrations(db)
-
 };
 
 

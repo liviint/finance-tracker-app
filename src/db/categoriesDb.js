@@ -3,14 +3,10 @@ import { DEFAULT_CATEGORIES } from "../../utils/categoriesSeeder";
 
 const newUuid = () => uuid.v4();
 
-/**
- * Seed default categories if table is empty
- */
 export const seedCategoriesIfEmpty = async (db,apiData=[]) => {
   const rows = await db.getAllAsync(
     "SELECT COUNT(*) as count FROM finance_categories"
   );
-  console.log(rows,"hello rows")
   if (rows[0].count > 0) return;
 
   let defaults = apiData?.length ? apiData : DEFAULT_CATEGORIES

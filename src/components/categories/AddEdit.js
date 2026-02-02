@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  Alert,
-  ScrollView
+    View,
+    Text,
+    TouchableOpacity,
+    Alert,
+    ScrollView
 } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
 import { useThemeStyles } from "../../hooks/useThemeStyles";
-import { BodyText, FormLabel, Input , Card} from "../ThemeProvider/components";
+import { Picker } from "@react-native-picker/picker";
+import { BodyText, FormLabel, Input , Card, CustomPicker} from "../ThemeProvider/components";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { getCategories, upsertCategory } from "../../db/transactionsDb";
 import uuid from 'react-native-uuid';
@@ -25,6 +26,7 @@ export default function AddEdit() {
     color:COLORS[1],
     icon:"🛒",
     uuid:"",
+    spendingType:"",
   }
   const [form,setForm] = useState(initialForm)
 
@@ -39,8 +41,8 @@ export default function AddEdit() {
   useEffect(() => {
     if (!categoryUuid) return;
     let fetchCategory = async() => {
-      let category = await getCategories(db,categoryUuid)
-    setForm(category)
+        let category = await getCategories(db,categoryUuid)
+        setForm(category)
     }
     fetchCategory()
   }, [categoryUuid]);
@@ -79,35 +81,49 @@ export default function AddEdit() {
 
         <View style={globalStyles.formGroup}>
         <>
-            <FormLabel >Type</FormLabel>
+            <FormLabel>Type</FormLabel>
             <View style={{ flexDirection: "row", marginBottom: 16 }}>
                 {["expense", "income"].map((t) => (
-                <TouchableOpacity
-                    key={t}
-                    onPress={() => handleFormChange("type",t)}
-                    style={{
-                    flex: 1,
-                    padding: 12,
-                    borderRadius: 10,
-                    backgroundColor:
-                        form.type === t ? "#2E8B8B" : "#EEE",
-                    marginRight: t === "expense" ? 8 : 0,
-                    }}
-                >
-                    <Text
-                    style={{
-                        textAlign: "center",
-                        color: form.type === t ? "#FFF" : "#333",
-                        fontWeight: "600",
-                    }}
+                    <TouchableOpacity
+                        key={t}
+                        onPress={() => handleFormChange("type",t)}
+                        style={{
+                        flex: 1,
+                        padding: 12,
+                        borderRadius: 10,
+                        backgroundColor:
+                            form.type === t ? "#2E8B8B" : "#EEE",
+                        marginRight: t === "expense" ? 8 : 0,
+                        }}
                     >
-                    {t === "expense" ? "expense" : "income"}
-                    </Text>
-                </TouchableOpacity>
+                        <Text
+                        style={{
+                            textAlign: "center",
+                            color: form.type === t ? "#FFF" : "#333",
+                            fontWeight: "600",
+                        }}
+                        >
+                        {t === "expense" ? "expense" : "income"}
+                        </Text>
+                    </TouchableOpacity>
                 ))}
             </View>
         </>
       
+        </View>
+
+        <View style={globalStyles.formGroup}>
+            <FormLabel>Spending Type (Optional)</FormLabel>
+            <CustomPicker
+                selectedValue={form.spendingType || ""}
+                onValueChange={(v) => handleFormChange("spendingType", v)}
+            >
+                <Picker.Item label="Neutral" value="neutral" />
+                <Picker.Item label="Needs" value="needs" />
+                <Picker.Item label="Wants" value="wants" />
+                <Picker.Item label="Savings" value="savings" />
+            </CustomPicker>
+
         </View>
 
         <View style={globalStyles.formGroup}>

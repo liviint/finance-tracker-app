@@ -277,11 +277,9 @@ export const getCategories = async (db, uuid = null) => {
     );
 };
 
-
-
 export const upsertCategory = async (
   db,
-  { id = null, uuid, name, type, color, icon }
+  { id = null, uuid, name, type, spendingType, color, icon }
 ) => {
   const now = new Date().toISOString();
 
@@ -293,14 +291,16 @@ export const upsertCategory = async (
         uuid,
         name,
         type,
+        spendingType,
         color,
         icon,
         created_at,
         updated_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(uuid) DO UPDATE SET
         name = excluded.name,
+        spendingType = excluded.spendingType,
         color = excluded.color,
         icon = excluded.icon,
         updated_at = excluded.updated_at
@@ -310,6 +310,7 @@ export const upsertCategory = async (
         uuid,
         name,
         type,
+        spendingType,
         color,
         icon,
         now,
