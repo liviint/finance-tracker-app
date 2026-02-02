@@ -105,6 +105,7 @@ const migrateDbIfNeeded = async (db) => {
       amount REAL NOT NULL,
 
       period TEXT NOT NULL CHECK (period IN ('daily', 'weekly', 'monthly')),
+      recurring INTEGER DEFAULT 0,
       start_date TEXT NOT NULL, 
 
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,

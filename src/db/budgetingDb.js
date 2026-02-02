@@ -3,7 +3,16 @@ import uuid from "react-native-uuid";
 
 const newUuid = () => uuid.v4();
 
-export const upsertBudget = async ({ db, categoryUUID, amount, period, date = new Date(), uuid=newUuid() }) => {
+export const upsertBudget = async (
+  { 
+    db, 
+    categoryUUID, 
+    amount, 
+    period, 
+    recurring,
+    date = new Date(), 
+    uuid=newUuid() 
+  }) => {
   if (!["daily", "weekly", "monthly"].includes(period)) {
     throw new Error("Invalid budget period");
   }
@@ -21,19 +30,21 @@ export const upsertBudget = async ({ db, categoryUUID, amount, period, date = ne
       category_uuid,
       amount,
       period,
+      recurring,
       start_date,
       created_at,
       updated_at,
       is_synced
     )
-    VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0)
+    VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0)
     ON CONFLICT(uuid)
     DO UPDATE SET
       amount = excluded.amount,
       updated_at = CURRENT_TIMESTAMP,
+      recurring = excluded.recurring,
       is_synced = 0;
     `,
-    [uuid, categoryUUID, amount, period, startDate]
+    [uuid, categoryUUID, amount, period, recurring, startDate]
   );
 };
 
@@ -101,6 +112,7 @@ export const getBudgetsForPeriod = async (db, period, date = new Date()) => {
       b.uuid,
       b.amount AS budget_amount,
       b.period,
+      b.recurring,
       b.start_date,
       c.uuid AS category_uuid,
       c.name AS category_name,
@@ -126,9 +138,6 @@ export const getBudgetsForPeriod = async (db, period, date = new Date()) => {
   );
 };
 
-/**
- * Get a single budget by UUID
- */
 export const getBudgetByUUID = async (db, uuid) => {
   const rows = await db.getAllAsync(
     `
@@ -136,6 +145,7 @@ export const getBudgetByUUID = async (db, uuid) => {
       b.uuid,
       b.amount AS budget_amount,
       b.period,
+      b.recurring,
       b.start_date,
       c.uuid AS category_uuid,
       c.name AS category_name,

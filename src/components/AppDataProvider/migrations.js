@@ -29,7 +29,26 @@ const addSpendingTypeColumnToCategories = async (db) => {
     } 
 };
 
+const addRecurringColumnToBudgets = async (db) => {
+    const columns = await db.getAllAsync(
+        `PRAGMA table_info(budgets);`
+    );
+
+    const hasRecurring = columns.some(
+        (col) => col.name === "recurring"
+    );
+
+    if (!hasRecurring) {
+        await db.execAsync(`
+        ALTER TABLE budgets
+        ADD COLUMN recurring INTEGER DEFAULT 0;
+        `);
+    } 
+};
+
+
 export const extraMigrations = async (db) => {
     await addPayeeColumnToTransactions(db);
     await addSpendingTypeColumnToCategories(db);
+    await addRecurringColumnToBudgets(db)
 };

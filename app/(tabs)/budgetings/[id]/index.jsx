@@ -70,6 +70,32 @@ export default function BudgetDetailsScreen() {
 
         <View style={styles.divider} />
 
+          <View style={styles.row}>
+            <Text style={styles.metaLabel}>Recurring</Text>
+            <View
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 999,
+                backgroundColor: budget.recurring === 1 ? "#E6F2F2" : "#F2F2F2",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: "700",
+                  color: budget.recurring === 1 ? "#2E8B8B" : "#777",
+                }}
+              >
+                {budget.recurring === 1 ? "Recurring" : "One-time"}
+              </Text>
+            </View>
+
+          </View>
+
+
+        <View style={styles.divider} />
+
         <View style={styles.row}>
           <Text style={styles.metaLabel}>Start Date</Text>
           <BodyText style={styles.metaValue}>

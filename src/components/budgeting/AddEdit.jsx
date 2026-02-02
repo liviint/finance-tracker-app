@@ -25,6 +25,7 @@ import {
 } from "../../db/budgetingDb";
 import { normalizeStartDate } from "../../helpers";
 import CategoriesPicker from "../common/CategoriesPicker";
+import { SwitchField } from "../common/SwitchField";
 
 export default function AddEditBudget() {
     const router = useRouter();
@@ -38,6 +39,7 @@ export default function AddEditBudget() {
         period: period || "monthly",
         date: new Date(),
         uuid: "",
+        recurring:false,
     };
 
     const [form, setForm] = useState(initialForm);
@@ -61,6 +63,7 @@ export default function AddEditBudget() {
             amount: String(budget.budget_amount),
             period: budget.period,
             date: new Date(budget.start_date),
+            recurring:budget.recurring === 1,
         });
         };
 
@@ -89,6 +92,7 @@ export default function AddEditBudget() {
                 amount: Number(form.amount),
                 period: form.period,
                 startDate,
+                recurring:form.recurring,
             });
 
             router.back();
@@ -124,19 +128,14 @@ export default function AddEditBudget() {
             </View>
 
             <View style={globalStyles.formGroup}>
-                <FormLabel>Recurring</FormLabel>
-                <View style={globalStyles.switchRow}>
-                    <CustomSwitch
-                        value={form.recurring}
-                        onValueChange={(val) => handleFormChange("recurring", val)}
-                    />
-                    <SecondaryText style={{ fontWeight: "600" }}>
-                        {form.recurring ? "Yes" : "No"}
-                    </SecondaryText>
-                </View>
+                <SwitchField 
+                    label="Recurring"
+                    value={form.recurring}
+                    onChange={val => handleFormChange("recurring", val)}
+                />
                 <SecondaryText style={{ color: "#777" }}>
-                    Repeat this budget every month automatically
-                </SecondaryText>
+                        Repeat this budget every month automatically
+                    </SecondaryText>
             </View>
 
             <TouchableOpacity
