@@ -84,6 +84,27 @@ const migrateDbIfNeeded = async (db) => {
       value TEXT
     );
 
+    CREATE TABLE IF NOT EXISTS transaction_templates (
+      uuid TEXT PRIMARY KEY,
+
+      title TEXT NOT NULL,
+      amount REAL,
+      type TEXT NOT NULL CHECK(type IN ('income','expense')),
+
+      category TEXT,
+      category_uuid TEXT,
+
+      payee TEXT,
+      note TEXT,
+
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      deleted_at TEXT,
+      is_synced INTEGER DEFAULT 0
+    );
+
+
+
     CREATE TABLE IF NOT EXISTS savings_goals (
       uuid TEXT PRIMARY KEY,
       name TEXT NOT NULL,
