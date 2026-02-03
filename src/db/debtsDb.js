@@ -220,7 +220,7 @@ export const syncDebtPaymentsFromApi = async (db, payments = []) => {
       `,
       [
         payment.uuid,
-        payment.debt,
+        payment.debt_uuid,
         payment.amount,
         payment.note,
         payment.created_at,

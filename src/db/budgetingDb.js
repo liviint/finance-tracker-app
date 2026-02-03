@@ -52,7 +52,6 @@ export const syncBudgetsFromApi = async (db, apiBudgets = []) => {
   if (!Array.isArray(apiBudgets) || apiBudgets.length === 0) {
     return;
   }
-  console.log(apiBudgets,"hello api budgets")
   try {
     for (const budget of apiBudgets) {
       const {

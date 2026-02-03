@@ -62,15 +62,14 @@ export default function DebtsProvider({ children }) {
         try {
             const lastPaymentsSyncedAt = await getLastSyncedAt(db,"debt_payments");
 
-            const paymentsRes = await api.post("/finances/debt-payments/sync/", {
+            const paymentsRes = await api.post("/finances/debts/payments/sync/", {
                 last_synced_at: lastPaymentsSyncedAt,
             });
-
             await syncDebtPaymentsFromApi(db, paymentsRes.data.results);
 
             await saveLastSyncedAt(db,paymentsRes.data.server_time,"debt_payments");
         } catch (error) {
-        console.log("Debt API → Local Sync Error:", error);
+        console.log("Debt Payments API → Local Sync Error:", error);
         }
     };
 

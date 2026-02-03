@@ -119,7 +119,6 @@ export default function DebtDetailsScreen() {
       let getDebt = async() => {
         let res = await getDebtByUuid(db,uuid)
         setDebt(res)
-        console.log(res,"hello debt")
         setIsOwed(res.type === "owed")
       }
       getDebt()
