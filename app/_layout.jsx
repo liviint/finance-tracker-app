@@ -46,6 +46,13 @@ export default function RootLayout() {
 
               {/* Modal screen */}
               <Stack.Screen
+                name="categories/add/modal"
+                options={{
+                  presentation: "modal",
+                  title: "New Category",
+                }}
+              />
+              <Stack.Screen
                 name="modal"
                 options={{
                   presentation: 'modal',
