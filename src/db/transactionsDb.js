@@ -2,7 +2,9 @@ import uuid from "react-native-uuid";
 
 const newUuid = () => uuid.v4();
 
-export async function upsertTransaction(db, {
+export async function upsertTransaction(
+  db,
+  {
     uuid,
     title,
     amount,
@@ -13,54 +15,69 @@ export async function upsertTransaction(db, {
     note = null,
     date,
     source = "manual",
-}) {
-    const now = new Date().toISOString();
-    const transactionDate = date ? date.toISOString() : now;
-    amount = parseFloat(amount) || 0;
+  }
+) {
+  const now = new Date().toISOString();
+  const transactionDate = date ? date.toISOString() : now;
+  amount = parseFloat(amount) || 0;
 
-    try {
-        const localUuid = uuid ? uuid :  newUuid()
+  try {
+    const localUuid = uuid ? uuid : newUuid();
 
-        await db.runAsync(
-        `
-        INSERT INTO finance_transactions (
-            uuid, title, amount,payee, type, category,category_uuid, note, source,
-            created_at, updated_at, date
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?)
-        ON CONFLICT(uuid) DO UPDATE SET
-            title = excluded.title,
-            amount = excluded.amount,
-            payee = excluded.payee,
-            type = excluded.type,
-            category = excluded.category,
-            category_uuid = excluded.category_uuid,
-            note = excluded.note,
-            updated_at = excluded.updated_at,
-            date = excluded.date
-        `,
-        [
-            localUuid,
-            title,
-            amount,
-            payee,
-            type,
-            category,
-            category_uuid,
-            note,
-            source,
-            now,
-            now,
-            transactionDate
-        ]
-        );
+    await db.runAsync(
+      `
+      INSERT INTO finance_transactions (
+        uuid,
+        title,
+        amount,
+        payee,
+        type,
+        category,
+        category_uuid,
+        note,
+        source,
+        created_at,
+        updated_at,
+        date,
+        is_synced
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
 
-        return localUuid; 
-    } catch (error) {
-        console.error("❌ Failed to upsert transaction:", error);
-        throw error;
-    }
+      ON CONFLICT(uuid) DO UPDATE SET
+        title = excluded.title,
+        amount = excluded.amount,
+        payee = excluded.payee,
+        type = excluded.type,
+        category = excluded.category,
+        category_uuid = excluded.category_uuid,
+        note = excluded.note,
+        updated_at = excluded.updated_at,
+        date = excluded.date,
+        is_synced = 0
+      `,
+      [
+        localUuid,
+        title,
+        amount,
+        payee,
+        type,
+        category,
+        category_uuid,
+        note,
+        source,
+        now,
+        now,
+        transactionDate,
+      ]
+    );
+
+    return localUuid;
+  } catch (error) {
+    console.error("❌ Failed to upsert transaction:", error);
+    throw error;
+  }
 }
+
 
 export const syncTransactionsFromApi = async (db, transactions = []) => {
     if (!Array.isArray(transactions) || transactions.length === 0) {
