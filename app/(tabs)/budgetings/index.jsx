@@ -141,7 +141,9 @@ export default function BudgetsListScreen() {
         }
       />
       <AddButton
-          primaryAction={{route:`/budgetings/add`,label:"Add Budget"}}/>
+          primaryAction={{route:`/budgetings/add`,label:"Add Budget"}}
+          secondaryActions={[{route:"/categories/add/modal",label:"Add Category"}]}
+      />
     </View>
   );
 }
