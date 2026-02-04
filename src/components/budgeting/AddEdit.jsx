@@ -14,7 +14,6 @@ import {
     Input,
     Card,
     SecondaryText,
-    CustomSwitch,
 } from "../ThemeProvider/components";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import uuid from "react-native-uuid";
@@ -31,12 +30,11 @@ export default function AddEditBudget() {
     const router = useRouter();
     const db = useSQLiteContext();
     const { globalStyles } = useThemeStyles();
-    const { id: budgetUUID, period } = useLocalSearchParams();
+    const { id: budgetUUID} = useLocalSearchParams();
 
     const initialForm = {
         category_uuid: "",
         amount: "",
-        period: period || "monthly",
         date: new Date(),
         uuid: "",
         recurring:false,
@@ -61,7 +59,6 @@ export default function AddEditBudget() {
             uuid: budget.uuid,
             category_uuid: budget.category_uuid,
             amount: String(budget.budget_amount),
-            period: budget.period,
             date: new Date(budget.start_date),
             recurring:budget.recurring === 1,
         });
@@ -83,14 +80,13 @@ export default function AddEditBudget() {
 
         try {
             const budgetUuid = form.uuid || uuid.v4();
-            const startDate = normalizeStartDate(form.date, form.period);
+            const startDate = normalizeStartDate(form.date);
 
             await upsertBudget({
                 db,
                 uuid: budgetUuid,
                 categoryUUID: form.category_uuid,
                 amount: Number(form.amount),
-                period: form.period,
                 startDate,
                 recurring:form.recurring,
             });

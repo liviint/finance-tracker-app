@@ -3,25 +3,20 @@ import uuid from "react-native-uuid";
 
 const newUuid = () => uuid.v4();
 
-export const upsertBudget = async (
-  { 
-    db, 
-    categoryUUID, 
-    amount, 
-    period, 
-    recurring,
-    date = new Date(), 
-    uuid=newUuid() 
-  }) => {
-  if (!["daily", "weekly", "monthly"].includes(period)) {
-    throw new Error("Invalid budget period");
-  }
-
+export const upsertBudget = async ({
+  db,
+  categoryUUID,
+  amount,
+  recurring,
+  date = new Date(),
+  uuid = newUuid(),
+}) => {
   if (amount <= 0) {
     throw new Error("Budget amount must be greater than zero");
   }
 
-  const startDate = normalizeStartDate(date, period);
+
+  const startDate = normalizeStartDate(date, "monthly");
 
   await db.runAsync(
     `
@@ -36,16 +31,48 @@ export const upsertBudget = async (
       updated_at,
       is_synced
     )
-    VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0)
+    VALUES (?, ?, ?, 'monthly', ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0)
     ON CONFLICT(uuid)
     DO UPDATE SET
       amount = excluded.amount,
-      updated_at = CURRENT_TIMESTAMP,
       recurring = excluded.recurring,
+      updated_at = CURRENT_TIMESTAMP,
       is_synced = 0;
     `,
-    [uuid, categoryUUID, amount, period, recurring, startDate]
+    [uuid, categoryUUID, amount, recurring, startDate]
   );
+};
+
+export const ensureRecurringBudgetsForMonth = async (db, date = new Date()) => {
+  const monthStart = normalizeStartDate(date, "monthly");
+
+  const existing = await db.getAllAsync(
+    `SELECT uuid FROM budgets WHERE start_date = ?`,
+    [monthStart]
+  );
+
+  if (existing.length > 0) return;
+
+  console.log("📌 Creating recurring budgets for", monthStart);
+
+  const recurringBudgets = await db.getAllAsync(
+    `
+    SELECT category_uuid, amount
+    FROM budgets
+    WHERE recurring = 1
+    GROUP BY category_uuid
+    `
+  );
+
+  for (const b of recurringBudgets) {
+    await upsertBudget({
+      db,
+      categoryUUID: b.category_uuid,
+      amount: b.amount,
+      recurring: 1,
+      date,
+    });
+  }
 };
 
 export const syncBudgetsFromApi = async (db, apiBudgets = []) => {
@@ -102,15 +129,14 @@ export const syncBudgetsFromApi = async (db, apiBudgets = []) => {
   }
 };
 
-export const getBudgetsForPeriod = async (db, period, date = new Date()) => {
-  const startDate = normalizeStartDate(date, period);
+export const getMonthlyBudgets = async (db, date = new Date()) => {
+  const startDate = normalizeStartDate(date, "monthly");
 
   return db.getAllAsync(
     `
     SELECT 
       b.uuid,
       b.amount AS budget_amount,
-      b.period,
       b.recurring,
       b.start_date,
       c.uuid AS category_uuid,
@@ -123,19 +149,16 @@ export const getBudgetsForPeriod = async (db, period, date = new Date()) => {
     LEFT JOIN finance_transactions t
       ON t.category_uuid = b.category_uuid
       AND t.type = 'expense'
-      AND t.created_at BETWEEN b.start_date AND
-        CASE
-          WHEN b.period = 'daily' THEN b.start_date
-          WHEN b.period = 'weekly' THEN date(b.start_date, '+6 days')
-          WHEN b.period = 'monthly' THEN date(b.start_date, '+1 month', '-1 day')
-        END
-    WHERE b.period = ? AND b.start_date = ?
+      AND t.created_at BETWEEN b.start_date
+          AND date(b.start_date, '+1 month', '-1 day')
+    WHERE b.start_date = ?
     GROUP BY b.uuid
     ORDER BY c.name ASC;
     `,
-    [period, startDate]
+    [startDate]
   );
 };
+
 
 export const getBudgetByUUID = async (db, uuid) => {
   const rows = await db.getAllAsync(

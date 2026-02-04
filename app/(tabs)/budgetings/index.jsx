@@ -1,10 +1,11 @@
-import { View, FlatList, Pressable } from "react-native";
+import { View, FlatList, Pressable , Text} from "react-native";
 import { useRouter } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import { useSQLiteContext } from "expo-sqlite";
 import {
-  getBudgetsForPeriod,
+  ensureRecurringBudgetsForMonth,
+  getMonthlyBudgets,
   getBudgetStatus,
 } from "../../../src/db/budgetingDb";
 import { BodyText, Card } from "../../../src/components/ThemeProvider/components";
@@ -19,16 +20,16 @@ export default function BudgetsListScreen() {
   const db = useSQLiteContext();
 
   const [budgets, setBudgets] = useState([]);
-  const [period, setPeriod] = useState("monthly");
 
   const loadBudgets = async () => {
-    const data = await getBudgetsForPeriod(db, period);
+    await ensureRecurringBudgetsForMonth(db)
+    const data = await getMonthlyBudgets(db);
     setBudgets(data);
   };
 
   useEffect(() => {
     loadBudgets();
-  }, [period,isFocused]);
+  }, [isFocused]);
 
   useEffect(() => {
     const unsub = syncManager.on("transactions_updated", async () => {
@@ -38,81 +39,91 @@ export default function BudgetsListScreen() {
   }, []);
 
   const renderItem = ({ item }) => {
-    const status = getBudgetStatus(item.spent, item.budget_amount);
     const percent = Math.min(
       Math.round((item.spent / item.budget_amount) * 100),
       100
     );
 
+    const progressColor =
+      percent < 70
+        ? "#2E8B8B"
+        : percent < 90
+        ? "#F4B400"
+        : "#E53935";
+
     return (
-      <Pressable
-        onPress={() => router.push(`/budgetings/${item.uuid}`)}
-      >
-        <Card>
-          <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 8,
-          }}
-        >
-          <BodyText style={{ fontWeight: "700", fontSize: 16 }}>
-            {item.category_name}
-          </BodyText>
-
-          <BodyText style={{ fontSize: 12, color: "#777" }}>
-            {percent}%
-          </BodyText>
-        </View>
-
-        <BodyText style={{ marginBottom: 10, color: "#555" }}>
-          {item.spent} / {item.budget_amount}
-        </BodyText>
-
-        <View
-          style={{
-            height: 10,
-            backgroundColor: "#EEE",
-            borderRadius: 8,
-            overflow: "hidden",
-            marginBottom: 8,
-          }}
-        >
+      <Pressable onPress={() => router.push(`/budgetings/${item.uuid}`)}>
+        <Card style={{ padding: 16 }}>
+          
           <View
             style={{
-              height: "100%",
-              width: `${Math.min(percent, 100)}%`,
-              backgroundColor:
-                percent < 70
-                  ? "#2E8B8B"
-                  : percent < 90
-                  ? "#F4B400"
-                  : "#E53935",
-              borderRadius: 8,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              marginBottom: 10,
             }}
-          />
-        </View>
+          >
+      
+            <View style={{ flex: 1 }}>
+              <BodyText style={{ fontWeight: "700", fontSize: 16 }}>
+                {item.category_name}
+              </BodyText>
 
-        <BodyText
-          style={{
-            fontSize: 12,
-            fontWeight: "600",
-            color:
-              percent < 70
-                ? "#2E8B8B"
-                : percent < 90
-                ? "#F4B400"
-                : "#E53935",
-          }}
-        >
-          {status.toUpperCase()}
-        </BodyText>
+              {item.recurring === 1 && (
+                <View
+                  style={{
+                    marginTop: 6,
+                    alignSelf: "flex-start",
+                    paddingHorizontal: 10,
+                    paddingVertical: 3,
+                    borderRadius: 999,
+                    backgroundColor: "#E6F2F2",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      fontWeight: "700",
+                      color: "#2E8B8B",
+                    }}
+                  >
+                    Recurring
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            <BodyText style={{ fontSize: 12, color: "#777" }}>
+              {percent}%
+            </BodyText>
+          </View>
+
+          <BodyText style={{ fontSize: 13, color: "#555", marginBottom: 10 }}>
+            {item.spent} spent • {item.budget_amount} limit
+          </BodyText>
+
+          <View
+            style={{
+              height: 8,
+              backgroundColor: "#EEE",
+              borderRadius: 999,
+              overflow: "hidden",
+            }}
+          >
+            <View
+              style={{
+                height: "100%",
+                width: `${percent}%`,
+                backgroundColor: progressColor,
+                borderRadius: 999,
+              }}
+            />
+          </View>
         </Card>
       </Pressable>
     );
+};
 
-  };
 
   return (
     <View style={globalStyles.container}>
@@ -126,11 +137,11 @@ export default function BudgetsListScreen() {
         renderItem={renderItem}
         ListEmptyComponent={
           <BodyText style={{ textAlign: "center", marginTop: 32 }}>
-            No {period} budgets yet
+            No monthly budgets yet
           </BodyText>
         }
       />
-      <AddButton to={`/budgetings/add?period=${period}`}/>
+      <AddButton to={`/budgetings/add`}/>
     </View>
   );
 }
