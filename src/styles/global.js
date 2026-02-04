@@ -62,39 +62,6 @@ export const createGlobalStyles = (colors) =>
       fontSize: 16,
     },
 
-    addButton: {
-      position: "absolute",
-      right: 20,
-      bottom: 24,
-      width: 56,
-      height: 56,
-      borderRadius: 28,
-      backgroundColor: "#333333",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    addText: {
-      color: "#FFFFFF",
-      fontSize: 28,
-      fontWeight: "700",
-      marginTop: -2,
-    },
-    trackButton: {
-      flex: 1,
-      borderColor: colors.secondary,
-      borderWidth: 2,
-      paddingVertical: 12,
-      borderRadius: 12,
-      marginLeft: 8,
-      alignItems: "center",
-    },
-
-    trackButtonText: {
-      color: colors.secondary,
-      fontWeight: "bold",
-      fontSize: 16,
-    },
-
     passwordWrapper: {
       position: "relative",
       width: "100%",

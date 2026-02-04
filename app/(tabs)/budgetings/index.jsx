@@ -6,7 +6,6 @@ import { useSQLiteContext } from "expo-sqlite";
 import {
   ensureRecurringBudgetsForMonth,
   getMonthlyBudgets,
-  getBudgetStatus,
 } from "../../../src/db/budgetingDb";
 import { BodyText, Card } from "../../../src/components/ThemeProvider/components";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
@@ -141,7 +140,8 @@ export default function BudgetsListScreen() {
           </BodyText>
         }
       />
-      <AddButton to={`/budgetings/add`}/>
+      <AddButton
+          primaryAction={{route:`/budgetings/add`,label:"Add Budget"}}/>
     </View>
   );
 }

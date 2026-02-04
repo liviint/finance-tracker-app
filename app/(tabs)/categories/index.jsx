@@ -129,7 +129,9 @@ export default function CategoriesListScreen({ navigation }) {
       <Section title="Income" data={incomeCategories} />
       <Section title="Expenses" data={expenseCategories} />
 
-      <AddButton to="/categories/add"/>
+      <AddButton 
+        primaryAction={{route:`/categories/add`,label:"Add Category"}}
+      />
     </ScrollView>
   );
 }

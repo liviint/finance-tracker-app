@@ -98,7 +98,9 @@ export default function SavingsList() {
           showsVerticalScrollIndicator={false}
         />
       )}
-      <AddButton to="/savings/add"/>
+      <AddButton 
+        primaryAction={{route:"/savings/add",label:"Add Saving"}}
+      />
     </View>
   );
 }

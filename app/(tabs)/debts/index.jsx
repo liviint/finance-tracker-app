@@ -81,8 +81,10 @@ export default function DebtsListScreen() {
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 24 }}
       />
-      
-      <AddButton to={"/debts/add"} />
+
+      <AddButton 
+        primaryAction={{route:"/debts/add",label:"Add Debt"}}
+      />
 
     </View>
   );

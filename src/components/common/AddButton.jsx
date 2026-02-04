@@ -1,18 +1,80 @@
-import { Pressable, Text, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import {
+  Pressable,
+  Text,
+  StyleSheet,
+  View,
+  Modal,
+} from "react-native";
 import { useRouter } from "expo-router";
 
-export const AddButton = ({to}) => {
-    const router = useRouter();
+export const AddButton = ({
+  primaryAction,
+  secondaryActions = [],
+}) => {
+  const router = useRouter();
+  const [menuVisible, setMenuVisible] = useState(false);
 
-    return (
-        <Pressable
-        style={styles.button}
-        onPress={() => router.push(to)}
-        >
+  const hasSecondary = secondaryActions.length > 0;
+
+  const handleMainPress = () => {
+    if (hasSecondary) {
+      setMenuVisible(true);
+    } else {
+      router.push(primaryAction.route);
+    }
+  };
+
+  const handleSelectAction = (route) => {
+    setMenuVisible(false);
+    router.push(route);
+  };
+
+  return (
+    <>
+      {/* Floating Button */}
+      <Pressable style={styles.button} onPress={handleMainPress}>
         <Text style={styles.text}>＋</Text>
+      </Pressable>
+
+      {/* Popup Menu */}
+      <Modal
+        visible={menuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMenuVisible(false)}
+      >
+        
+        <Pressable
+          style={styles.overlay}
+          onPress={() => setMenuVisible(false)}
+        >
+          <View style={styles.popup}>
+            <Pressable
+              style={styles.menuItem}
+              onPress={() => handleSelectAction(primaryAction.route)}
+            >
+              <Text style={styles.menuText}>
+                {primaryAction.label}
+              </Text>
+            </Pressable>
+
+            {secondaryActions.map((action) => (
+              <Pressable
+                key={action.route}
+                style={styles.menuItem}
+                onPress={() => handleSelectAction(action.route)}
+              >
+                <Text style={styles.menuText}>{action.label}</Text>
+              </Pressable>
+            ))}
+          </View>
         </Pressable>
-    );
+      </Modal>
+    </>
+  );
 };
+
 
 const styles = StyleSheet.create({
     button: {

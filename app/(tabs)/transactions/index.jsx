@@ -76,7 +76,9 @@ export default function FinanceListPage() {
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 96 }}
       />
-      <AddButton to="/transactions/add"/>
+      <AddButton 
+          primaryAction={{route:"/transactions/add",label:"Add Transaction"}}
+        />
     </View>
   );
 }
