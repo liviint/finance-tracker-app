@@ -46,6 +46,7 @@ export default function AddEditBudget() {
         setForm((prev) => ({ ...prev, [key]: value }));
     };
     const handleCategoryChange = (selected) => {
+        console.log(selected,"hello selected here")
         setForm((prev) => ({ ...prev, category_uuid: selected.uuid, category:selected.name, type:selected.type }))
     } 
 
@@ -68,6 +69,7 @@ export default function AddEditBudget() {
     }, [budgetUUID]);
 
     const saveBudget = async () => {
+        console.log(form.category_uuid,"hello form.category_uuid")
         if (!form.category_uuid) {
             Alert.alert("Validation", "Please select a category");
             return;
