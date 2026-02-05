@@ -20,7 +20,7 @@ export default function AddTransactionTemplateScreen() {
   const db = useSQLiteContext();
   const router = useRouter()
 
-  const [form, setForm] = useState({
+  const initialForm = {
     title: "",
     amount: "",
     type: "expense",
@@ -29,7 +29,9 @@ export default function AddTransactionTemplateScreen() {
     payee: "",
     note: "",
     uuid:"",
-  });
+  }
+
+  const [form, setForm] = useState(initialForm);
 
   const handleCategoryChange = (selected) => {
     setForm((prev) => ({ ...prev, category_uuid: selected.uuid, category:selected.name, type:selected.type }))
@@ -65,7 +67,7 @@ export default function AddTransactionTemplateScreen() {
     });
 
     Alert.alert("Success ✅", "Template saved successfully!");
-
+    setForm(initialForm)
     router.back();
   };
   
