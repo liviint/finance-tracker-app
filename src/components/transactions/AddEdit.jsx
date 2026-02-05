@@ -158,7 +158,8 @@ const isFormValid = () => {
 
       <Card >
 
-      <UseTemlateComponent 
+      <UseTemplateComponent 
+        uuid={uuid}
         templates={templates}
         showTemplates={showTemplates}
         setShowTemplates={setShowTemplates}
@@ -294,7 +295,7 @@ const isFormValid = () => {
   );
 }
 
-const UseTemlateComponent = ({uuid,templates, handleUseTemplate,showTemplates, setShowTemplates, globalStyles}) => {
+const UseTemplateComponent = ({uuid,templates, handleUseTemplate,showTemplates, setShowTemplates, globalStyles}) => {
   const router = useRouter()
   return (
     <>
