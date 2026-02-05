@@ -1,19 +1,20 @@
 import { useState, useEffect } from "react";
-import { View, Alert, ScrollView } from "react-native";
+import { View, Alert, ScrollView , TouchableOpacity, StyleSheet, Pressable} from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
 import { useNavigation } from "@react-navigation/native";
-
 import {
   FormLabel,
-  CustomInput,
-  CustomButton,
-  CustomPicker,
+  Input,
+  BodyText
 } from "../ThemeProvider/components";
-
-import { upsertTransactionTemplate } from "../../db/transactionTemplatesDb";
-import { getCategories } from "../../db/transactionsDb";
+import { upsertTransactionTemplate } from "../../db/transactionsTempsDb"
+import { useThemeStyles } from '../../hooks/useThemeStyles';
+import CategoriesPicker from "../common/CategoriesPicker";
+import { useLocalSearchParams } from "expo-router";
 
 export default function AddTransactionTemplateScreen() {
+  const {globalStyles} = useThemeStyles()
+  const {id:uuid} = useLocalSearchParams()
   const db = useSQLiteContext();
   const navigation = useNavigation();
 
@@ -27,23 +28,10 @@ export default function AddTransactionTemplateScreen() {
     note: "",
   });
 
-  const [categories, setCategories] = useState([]);
+  const handleCategoryChange = (selected) => {
+    setForm((prev) => ({ ...prev, category_uuid: selected.uuid, category:selected.name, type:selected.type }))
+  } 
 
-  /* ============================================================
-     ✅ Load Categories for Picker
-  ============================================================ */
-  useEffect(() => {
-    const loadCategories = async () => {
-      const result = await getCategories(db);
-      setCategories(result);
-    };
-
-    loadCategories();
-  }, []);
-
-  /* ============================================================
-     ✅ Handle Form Change
-  ============================================================ */
   const handleChange = (field, value) => {
     setForm((prev) => ({
       ...prev,
@@ -51,9 +39,6 @@ export default function AddTransactionTemplateScreen() {
     }));
   };
 
-  /* ============================================================
-     ✅ Save Template
-  ============================================================ */
   const handleSave = async () => {
     if (!form.title.trim()) {
       return Alert.alert("Validation Error", "Template title is required.");
@@ -80,25 +65,20 @@ export default function AddTransactionTemplateScreen() {
     navigation.goBack();
   };
 
-  /* ============================================================
-     ✅ UI
-  ============================================================ */
   return (
-    <ScrollView style={{ flex: 1, padding: 16 }}>
-      {/* Title */}
+    <ScrollView style={globalStyles.container}>
       <View style={{ marginBottom: 16 }}>
         <FormLabel>Template Title</FormLabel>
-        <CustomInput
+        <Input
           placeholder="e.g. Rent Payment"
           value={form.title}
           onChangeText={(text) => handleChange("title", text)}
         />
       </View>
 
-      {/* Amount */}
       <View style={{ marginBottom: 16 }}>
         <FormLabel>Amount (Optional)</FormLabel>
-        <CustomInput
+        <Input
           placeholder="e.g. 25000"
           keyboardType="numeric"
           value={form.amount}
@@ -106,54 +86,41 @@ export default function AddTransactionTemplateScreen() {
         />
       </View>
 
-      {/* Type */}
-      <View style={{ marginBottom: 16 }}>
-        <FormLabel>Type</FormLabel>
-        <CustomPicker
-          selectedValue={form.type}
-          onValueChange={(value) => handleChange("type", value)}
-          items={[
-            { label: "Expense", value: "expense" },
-            { label: "Income", value: "income" },
-          ]}
-        />
+      <CategoriesPicker
+        form={form}
+        handleCategoryChange={handleCategoryChange}
+      />
+
+      <View style={styles.typeRow}>
+        <Pressable
+          disabled={form.category_uuid !== ""}
+          onPress={() => handleChange("type", "expense")}
+          style={[styles.typeButton, form.type === "expense" && styles.expenseActive]}
+        >
+          <BodyText style={[styles.typeText, form.type === "expense" && styles.activeText]}>Expense</BodyText>
+        </Pressable>
+
+        <Pressable
+          disabled={form.category_uuid !== ""}
+          onPress={() => handleChange("type", "income")}
+          style={[styles.typeButton, form.type === "income" && styles.incomeActive]}
+        >
+          <BodyText style={[styles.typeText, form.type === "income" && styles.activeText]}>Income</BodyText>
+        </Pressable>
       </View>
 
-      {/* Category */}
-      <View style={{ marginBottom: 16 }}>
-        <FormLabel>Category</FormLabel>
-        <CustomPicker
-          selectedValue={form.category_uuid}
-          onValueChange={(value) => {
-            const selected = categories.find((c) => c.uuid === value);
-
-            handleChange("category_uuid", value);
-            handleChange("category", selected?.name || "");
-          }}
-          items={[
-            { label: "Select Category", value: "" },
-            ...categories.map((cat) => ({
-              label: cat.name,
-              value: cat.uuid,
-            })),
-          ]}
-        />
-      </View>
-
-      {/* Payee */}
       <View style={{ marginBottom: 16 }}>
         <FormLabel>Payee (Optional)</FormLabel>
-        <CustomInput
+        <Input
           placeholder="e.g. Landlord, Safaricom"
           value={form.payee}
           onChangeText={(text) => handleChange("payee", text)}
         />
       </View>
 
-      {/* Note */}
       <View style={{ marginBottom: 16 }}>
         <FormLabel>Note (Optional)</FormLabel>
-        <CustomInput
+        <Input
           placeholder="Extra details..."
           value={form.note}
           onChangeText={(text) => handleChange("note", text)}
@@ -161,8 +128,42 @@ export default function AddTransactionTemplateScreen() {
         />
       </View>
 
-      {/* Save Button */}
-      <CustomButton title="Save Template" onPress={handleSave} />
+      <TouchableOpacity style={globalStyles.primaryBtn} onPress={handleSave}>
+          <BodyText style={globalStyles.primaryBtnText}>
+            {uuid ? "Update Transaction" : "Save Transaction"}
+          </BodyText>
+      </TouchableOpacity>
+
     </ScrollView>
   );
 }
+
+
+const styles = StyleSheet.create({
+  typeRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 16,
+  },
+  typeButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 14,
+    backgroundColor: "#F0F0F0",
+    alignItems: "center",
+  },
+  typeText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#666",
+  },
+  expenseActive: {
+    backgroundColor: "#FF6B6B",
+  },
+  incomeActive: {
+    backgroundColor: "#2E8B8B",
+  },
+  activeText: {
+    color: "#FFFFFF",
+  },
+});

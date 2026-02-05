@@ -2,16 +2,8 @@ import { useEffect, useState } from "react";
 import { View, Text, Alert, StyleSheet } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { useSQLiteContext } from "expo-sqlite";
-
-import {
-  CustomButton,
-  LoadingSpinner,
-} from "../ThemeProvider/components";
-
-import {
-  getTransactionTemplateByUuid,
-  deleteTransactionTemplate,
-} from "../../db/transactionTemplatesDb";
+import { CustomButton, LoadingSpinner } from "../../../../src/components/ThemeProvider/components";
+import { getTransactionTemplateByUuid, deleteTransactionTemplate,  } from "../../../../src/db/transactionsTempsDb";
 
 export default function TransactionTemplateDetailsScreen() {
   const db = useSQLiteContext();

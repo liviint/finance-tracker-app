@@ -1,11 +1,13 @@
-import { v4 as uuidv4 } from "uuid";
+import uuid from "react-native-uuid";
+
+const newUuid = () => uuid.v4();
 
 /* ============================================================
    ✅ UPSERT Template (Create or Update)
 ============================================================ */
 export const upsertTransactionTemplate = async (db, template) => {
   const {
-    uuid = uuidv4(),
+    uuid = newUuid(),
 
     title,
     amount,
