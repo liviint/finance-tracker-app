@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Pressable, TouchableOpacity, Alert, ScrollView , Modal} from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { Card, BodyText,Input,TextArea , FormLabel} from "../ThemeProvider/components";
+import { Card, BodyText,Input,TextArea , FormLabel, SecondaryText} from "../ThemeProvider/components";
 import { useSQLiteContext } from "expo-sqlite";
 import { getTransactionByUuid, upsertTransaction } from "../../db/transactionsDb";
 import { getTransactionTemplates } from "../../db/transactionsTempsDb";
@@ -163,6 +163,7 @@ const isFormValid = () => {
         showTemplates={showTemplates}
         setShowTemplates={setShowTemplates}
         handleUseTemplate={handleUseTemplate}
+        globalStyles={globalStyles}
       />
         <View style={globalStyles.formGroup}>
           <FormLabel style={styles.label}>Title</FormLabel>
@@ -293,21 +294,16 @@ const isFormValid = () => {
   );
 }
 
-const UseTemlateComponent = ({uuid,templates, handleUseTemplate,showTemplates, setShowTemplates}) => {
+const UseTemlateComponent = ({uuid,templates, handleUseTemplate,showTemplates, setShowTemplates, globalStyles}) => {
+  const router = useRouter()
   return (
     <>
-      {!uuid && templates.length > 0 && (
+      {!uuid &&  (
         <Pressable
           onPress={() => setShowTemplates(true)}
-          style={{
-            paddingVertical: 10,
-            marginBottom: 16,
-            alignItems: "center",
-            borderRadius: 12,
-            backgroundColor: "#F4E1D2",
-          }}
+          style={{...globalStyles.secondaryBtn, marginBottom:10}}
         >
-          <BodyText style={{ fontWeight: "600" }}>
+          <BodyText style={globalStyles.secondaryBtnTxt}>
             📋 Use Template
           </BodyText>
         </Pressable>
@@ -321,10 +317,28 @@ const UseTemlateComponent = ({uuid,templates, handleUseTemplate,showTemplates, s
       onRequestClose={() => setShowTemplates(false)}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
+        <Card style={styles.modalContent}>
           <BodyText style={styles.modalTitle}>
             Select a Template
           </BodyText>
+
+          <Pressable
+            onPress={() => {
+              setShowTemplates(false);
+              router.push("/transactions-templates/add");
+            }}
+            style={globalStyles.primaryBtn}
+          >
+            <BodyText style={globalStyles.primaryBtnText}>
+              + Add New Template
+            </BodyText>
+          </Pressable>
+
+          {templates.length === 0 && (
+            <SecondaryText style={{ textAlign: "center", marginVertical: 20 }}>
+              No templates yet. Create one to save time.
+            </SecondaryText>
+          )}
 
           <ScrollView>
             {templates.map((tpl) => (
@@ -336,22 +350,22 @@ const UseTemlateComponent = ({uuid,templates, handleUseTemplate,showTemplates, s
                 <BodyText style={styles.templateTitle}>
                   {tpl.title}
                 </BodyText>
-                <BodyText style={styles.templateMeta}>
+                <SecondaryText style={styles.templateMeta}>
                   {tpl.category || "Uncategorized"} • {tpl.type}
-                </BodyText>
+                </SecondaryText>
               </Pressable>
             ))}
           </ScrollView>
 
           <Pressable
             onPress={() => setShowTemplates(false)}
-            style={styles.cancelBtn}
+            style={globalStyles.secondaryBtn}
           >
-            <BodyText style={styles.cancelText}>
+            <BodyText style={globalStyles.secondaryBtnTxt}>
               Cancel
             </BodyText>
           </Pressable>
-        </View>
+        </Card>
       </View>
     </Modal>
     </>
@@ -397,34 +411,25 @@ const styles = StyleSheet.create({
   },
   activeText: {
     color: "#FFFFFF",
-  },modalOverlay: {
-  flex: 1,
-  backgroundColor: "rgba(0,0,0,0.45)",
-  justifyContent: "center",
-  paddingHorizontal: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    paddingHorizontal: 20,
 },
 
 modalContent: {
-  backgroundColor: "#FFFFFF",
   borderRadius: 22,
   paddingVertical: 18,
   paddingHorizontal: 16,
   maxHeight: "75%",
-
-  // iOS shadow
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 8 },
-  shadowOpacity: 0.15,
-  shadowRadius: 20,
-
-  // Android elevation
   elevation: 10,
 },
 
 modalTitle: {
   fontSize: 17,
   fontWeight: "700",
-  color: "#333",
   textAlign: "center",
   marginBottom: 14,
 },
@@ -439,12 +444,10 @@ templateItem: {
 templateTitle: {
   fontSize: 15,
   fontWeight: "600",
-  color: "#333",
 },
 
 templateMeta: {
   fontSize: 12,
-  color: "#777",
   marginTop: 4,
 },
 
