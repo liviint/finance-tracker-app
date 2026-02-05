@@ -74,7 +74,7 @@ export default function AddTransactionTemplateScreen() {
       const result = await getTransactionTemplateByUuid(db, uuid);
       setForm(result);
     };
-    loadTemplate();
+    uuid && loadTemplate();
   }, [isFocused]);
 
   return (
@@ -148,7 +148,7 @@ export default function AddTransactionTemplateScreen() {
 
         <TouchableOpacity style={globalStyles.primaryBtn} onPress={handleSave}>
             <BodyText style={globalStyles.primaryBtnText}>
-              {uuid ? "Update Transaction" : "Save Transaction"}
+              {uuid ? "Update Template" : "Save Template"}
             </BodyText>
         </TouchableOpacity>
       </Card>

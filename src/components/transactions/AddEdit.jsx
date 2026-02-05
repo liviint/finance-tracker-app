@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Pressable, TouchableOpacity, Alert, ScrollView } from "react-native";
+import { View, Text, StyleSheet, Pressable, TouchableOpacity, Alert, ScrollView , Modal} from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Card, BodyText,Input,TextArea , FormLabel} from "../ThemeProvider/components";
 import { useSQLiteContext } from "expo-sqlite";
-import { getTransactionByUuid,
-        upsertTransaction,
-      } from "../../db/transactionsDb";
+import { getTransactionByUuid, upsertTransaction } from "../../db/transactionsDb";
+import { getTransactionTemplates } from "../../db/transactionsTempsDb";
 import { useThemeStyles } from "../../hooks/useThemeStyles";
 import CategoriesPicker from "../common/CategoriesPicker";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useIsFocused } from "@react-navigation/native";
 
 export default function AddEdit() {
+  const isFocused = useIsFocused()
   const {id:uuid} = useLocalSearchParams()
   const {globalStyles} = useThemeStyles()
   const db = useSQLiteContext()
@@ -31,7 +32,8 @@ export default function AddEdit() {
   const [transactionDate, setTransactionDate] = useState(
     form.created_at ? new Date(form.created_at) : new Date()
   );
-
+  const [templates, setTemplates] = useState([]);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   const handleChange = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -96,6 +98,22 @@ const isFormValid = () => {
   return true;
 };
 
+  const handleUseTemplate = (template) => {
+    setForm((prev) => ({
+      ...prev,
+      title: template.title || "",
+      amount: template.amount ? String(template.amount) : "",
+      category: template.category || "",
+      category_uuid: template.category_uuid || "",
+      type: template.type,
+      note: template.note || "",
+      payee: template.payee || "",
+    }));
+
+    setShowTemplates(false);
+  };
+
+
 
   const handleSave = async () => {
     if(!isFormValid()) return
@@ -117,6 +135,21 @@ const isFormValid = () => {
     getTransaction()
   },[uuid])
 
+  useEffect(() => {
+    const loadTemplates = async () => {
+      try {
+        const result = await getTransactionTemplates(db);
+        console.log(result,"hello res")
+        setTemplates(result);
+      } catch (error) {
+        console.log(error,"hello error")
+      }
+    };
+
+    loadTemplates();
+  }, [isFocused]);
+
+
   return (
     <ScrollView style={globalStyles.container}>
       <BodyText style={globalStyles.title}>
@@ -124,6 +157,13 @@ const isFormValid = () => {
       </BodyText>
 
       <Card >
+
+      <UseTemlateComponent 
+        templates={templates}
+        showTemplates={showTemplates}
+        setShowTemplates={setShowTemplates}
+        handleUseTemplate={handleUseTemplate}
+      />
         <View style={globalStyles.formGroup}>
           <FormLabel style={styles.label}>Title</FormLabel>
           <Input
@@ -146,6 +186,7 @@ const isFormValid = () => {
             keyboardType="numeric"
             value={String(form.amount)}
             onChangeText={(v) => handleChange("amount", v)}
+            uuid={uuid}
           />
         </View>
 
@@ -252,6 +293,72 @@ const isFormValid = () => {
   );
 }
 
+const UseTemlateComponent = ({uuid,templates, handleUseTemplate,showTemplates, setShowTemplates}) => {
+  return (
+    <>
+      {!uuid && templates.length > 0 && (
+        <Pressable
+          onPress={() => setShowTemplates(true)}
+          style={{
+            paddingVertical: 10,
+            marginBottom: 16,
+            alignItems: "center",
+            borderRadius: 12,
+            backgroundColor: "#F4E1D2",
+          }}
+        >
+          <BodyText style={{ fontWeight: "600" }}>
+            📋 Use Template
+          </BodyText>
+        </Pressable>
+      )}
+
+
+    <Modal
+      visible={showTemplates}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setShowTemplates(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <BodyText style={styles.modalTitle}>
+            Select a Template
+          </BodyText>
+
+          <ScrollView>
+            {templates.map((tpl) => (
+              <Pressable
+                key={tpl.uuid}
+                onPress={() => handleUseTemplate(tpl)}
+                style={styles.templateItem}
+              >
+                <BodyText style={styles.templateTitle}>
+                  {tpl.title}
+                </BodyText>
+                <BodyText style={styles.templateMeta}>
+                  {tpl.category || "Uncategorized"} • {tpl.type}
+                </BodyText>
+              </Pressable>
+            ))}
+          </ScrollView>
+
+          <Pressable
+            onPress={() => setShowTemplates(false)}
+            style={styles.cancelBtn}
+          >
+            <BodyText style={styles.cancelText}>
+              Cancel
+            </BodyText>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+    </>
+  )
+  
+}
+
 const styles = StyleSheet.create({
   header: {
     fontSize: 24,
@@ -290,5 +397,70 @@ const styles = StyleSheet.create({
   },
   activeText: {
     color: "#FFFFFF",
-  },
+  },modalOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.45)",
+  justifyContent: "center",
+  paddingHorizontal: 20,
+},
+
+modalContent: {
+  backgroundColor: "#FFFFFF",
+  borderRadius: 22,
+  paddingVertical: 18,
+  paddingHorizontal: 16,
+  maxHeight: "75%",
+
+  // iOS shadow
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 8 },
+  shadowOpacity: 0.15,
+  shadowRadius: 20,
+
+  // Android elevation
+  elevation: 10,
+},
+
+modalTitle: {
+  fontSize: 17,
+  fontWeight: "700",
+  color: "#333",
+  textAlign: "center",
+  marginBottom: 14,
+},
+
+templateItem: {
+  paddingVertical: 14,
+  paddingHorizontal: 6,
+  borderBottomWidth: 0.5,
+  borderBottomColor: "#EEE",
+},
+
+templateTitle: {
+  fontSize: 15,
+  fontWeight: "600",
+  color: "#333",
+},
+
+templateMeta: {
+  fontSize: 12,
+  color: "#777",
+  marginTop: 4,
+},
+
+cancelBtn: {
+  marginTop: 16,
+  paddingVertical: 12,
+  borderRadius: 14,
+  alignItems: "center",
+  backgroundColor: "#F4E1D2",
+},
+
+cancelText: {
+  fontSize: 14,
+  fontWeight: "600",
+  color: "#333",
+},
+
+
 });

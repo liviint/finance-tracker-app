@@ -38,6 +38,13 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
+        name="transactions-templates"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
         name="categories"
         options={{
           title: 'Categories',

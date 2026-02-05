@@ -78,7 +78,10 @@ export default function FinanceListPage() {
       />
       <AddButton 
           primaryAction={{route:"/transactions/add",label:"Add Transaction"}}
-          secondaryActions={[{route:"/categories/add/modal",label:"Add Category"}]}
+          secondaryActions={[
+            {route:"/categories/add/modal",label:"Add Category"},
+            {route:"/transactions-templates/add/",label:"Add Template"},
+          ]}
         />
     </View>
   );
