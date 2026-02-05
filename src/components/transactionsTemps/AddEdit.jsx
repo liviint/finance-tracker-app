@@ -1,22 +1,24 @@
 import { useState, useEffect } from "react";
 import { View, Alert, ScrollView , TouchableOpacity, StyleSheet, Pressable} from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
-import { useNavigation } from "@react-navigation/native";
 import {
   FormLabel,
   Input,
-  BodyText
+  BodyText,
+  Card
 } from "../ThemeProvider/components";
-import { upsertTransactionTemplate } from "../../db/transactionsTempsDb"
+import { upsertTransactionTemplate, getTransactionTemplateByUuid } from "../../db/transactionsTempsDb"
 import { useThemeStyles } from '../../hooks/useThemeStyles';
 import CategoriesPicker from "../common/CategoriesPicker";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams , useRouter} from "expo-router";
+import { useIsFocused } from "@react-navigation/native";
 
 export default function AddTransactionTemplateScreen() {
+  const isFocused = useIsFocused()
   const {globalStyles} = useThemeStyles()
   const {id:uuid} = useLocalSearchParams()
   const db = useSQLiteContext();
-  const navigation = useNavigation();
+  const router = useRouter()
 
   const [form, setForm] = useState({
     title: "",
@@ -26,6 +28,7 @@ export default function AddTransactionTemplateScreen() {
     category_uuid: "",
     payee: "",
     note: "",
+    uuid:"",
   });
 
   const handleCategoryChange = (selected) => {
@@ -58,82 +61,97 @@ export default function AddTransactionTemplateScreen() {
 
       payee: form.payee,
       note: form.note,
+      uuid:form.uuid,
     });
 
     Alert.alert("Success ✅", "Template saved successfully!");
 
-    navigation.goBack();
+    router.back();
   };
+  
+  useEffect(() => {
+    const loadTemplate = async () => {
+      const result = await getTransactionTemplateByUuid(db, uuid);
+      setForm(result);
+    };
+    loadTemplate();
+  }, [isFocused]);
 
   return (
     <ScrollView style={globalStyles.container}>
-      <View style={{ marginBottom: 16 }}>
-        <FormLabel>Template Title</FormLabel>
-        <Input
-          placeholder="e.g. Rent Payment"
-          value={form.title}
-          onChangeText={(text) => handleChange("title", text)}
+      <BodyText style={globalStyles.title}>
+        {
+          uuid ? "Edit Template" : "Add Template"
+        }
+      </BodyText>
+      <Card>
+        <View style={{ marginBottom: 16 }}>
+          <FormLabel>Template Title</FormLabel>
+          <Input
+            placeholder="e.g. Rent Payment"
+            value={form.title}
+            onChangeText={(text) => handleChange("title", text)}
+          />
+        </View>
+
+        <View style={{ marginBottom: 16 }}>
+          <FormLabel>Amount (Optional)</FormLabel>
+          <Input
+            placeholder="e.g. 25000"
+            keyboardType="numeric"
+            value={String(form.amount)}
+            onChangeText={(text) => handleChange("amount", text)}
+          />
+        </View>
+
+        <CategoriesPicker
+          form={form}
+          handleCategoryChange={handleCategoryChange}
         />
-      </View>
 
-      <View style={{ marginBottom: 16 }}>
-        <FormLabel>Amount (Optional)</FormLabel>
-        <Input
-          placeholder="e.g. 25000"
-          keyboardType="numeric"
-          value={form.amount}
-          onChangeText={(text) => handleChange("amount", text)}
-        />
-      </View>
+        <View style={styles.typeRow}>
+          <Pressable
+            disabled={form.category_uuid !== ""}
+            onPress={() => handleChange("type", "expense")}
+            style={[styles.typeButton, form.type === "expense" && styles.expenseActive]}
+          >
+            <BodyText style={[styles.typeText, form.type === "expense" && styles.activeText]}>Expense</BodyText>
+          </Pressable>
 
-      <CategoriesPicker
-        form={form}
-        handleCategoryChange={handleCategoryChange}
-      />
+          <Pressable
+            disabled={form.category_uuid !== ""}
+            onPress={() => handleChange("type", "income")}
+            style={[styles.typeButton, form.type === "income" && styles.incomeActive]}
+          >
+            <BodyText style={[styles.typeText, form.type === "income" && styles.activeText]}>Income</BodyText>
+          </Pressable>
+        </View>
 
-      <View style={styles.typeRow}>
-        <Pressable
-          disabled={form.category_uuid !== ""}
-          onPress={() => handleChange("type", "expense")}
-          style={[styles.typeButton, form.type === "expense" && styles.expenseActive]}
-        >
-          <BodyText style={[styles.typeText, form.type === "expense" && styles.activeText]}>Expense</BodyText>
-        </Pressable>
+        <View style={{ marginBottom: 16 }}>
+          <FormLabel>Payee (Optional)</FormLabel>
+          <Input
+            placeholder="e.g. Landlord, Safaricom"
+            value={form.payee}
+            onChangeText={(text) => handleChange("payee", text)}
+          />
+        </View>
 
-        <Pressable
-          disabled={form.category_uuid !== ""}
-          onPress={() => handleChange("type", "income")}
-          style={[styles.typeButton, form.type === "income" && styles.incomeActive]}
-        >
-          <BodyText style={[styles.typeText, form.type === "income" && styles.activeText]}>Income</BodyText>
-        </Pressable>
-      </View>
+        <View style={{ marginBottom: 16 }}>
+          <FormLabel>Note (Optional)</FormLabel>
+          <Input
+            placeholder="Extra details..."
+            value={form.note}
+            onChangeText={(text) => handleChange("note", text)}
+            multiline
+          />
+        </View>
 
-      <View style={{ marginBottom: 16 }}>
-        <FormLabel>Payee (Optional)</FormLabel>
-        <Input
-          placeholder="e.g. Landlord, Safaricom"
-          value={form.payee}
-          onChangeText={(text) => handleChange("payee", text)}
-        />
-      </View>
-
-      <View style={{ marginBottom: 16 }}>
-        <FormLabel>Note (Optional)</FormLabel>
-        <Input
-          placeholder="Extra details..."
-          value={form.note}
-          onChangeText={(text) => handleChange("note", text)}
-          multiline
-        />
-      </View>
-
-      <TouchableOpacity style={globalStyles.primaryBtn} onPress={handleSave}>
-          <BodyText style={globalStyles.primaryBtnText}>
-            {uuid ? "Update Transaction" : "Save Transaction"}
-          </BodyText>
-      </TouchableOpacity>
-
+        <TouchableOpacity style={globalStyles.primaryBtn} onPress={handleSave}>
+            <BodyText style={globalStyles.primaryBtnText}>
+              {uuid ? "Update Transaction" : "Save Transaction"}
+            </BodyText>
+        </TouchableOpacity>
+      </Card>
     </ScrollView>
   );
 }

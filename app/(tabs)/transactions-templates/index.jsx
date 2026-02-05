@@ -7,89 +7,90 @@ import {
   StyleSheet,
 } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
+import { BodyText, Card, SecondaryText } from "../../../src/components/ThemeProvider/components";
+import { getTransactionTemplates } from "../../../src/db/transactionsTempsDb";
+import { useIsFocused } from "@react-navigation/native";
 
 export default function TransactionTemplatesListScreen() {
+  const isFocused = useIsFocused()
+  const {globalStyles} = useThemeStyles()
   const db = useSQLiteContext();
-  const navigation = useNavigation();
+  const router = useRouter()
 
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch Templates
   const loadTemplates = async () => {
     setLoading(true);
 
-    const result = await db.getAllAsync(`
-      SELECT *
-      FROM transaction_templates
-      WHERE deleted_at IS NULL
-      ORDER BY updated_at DESC
-    `);
+    const result = await getTransactionTemplates(db)
 
     setTemplates(result);
     setLoading(false);
+    
   };
 
   useEffect(() => {
     loadTemplates();
-  }, []);
+  }, [isFocused]);
 
-  // ✅ Render Template Item
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.card}
       onPress={() =>
-        navigation.navigate("TemplateDetails", { uuid: item.uuid })
+        router.push(`transactions-templates/${item.uuid}`)
       }
     >
-      <View style={styles.row}>
-        <Text style={styles.title}>{item.title}</Text>
+      <Card>
+        <View style={styles.row}>
+          <BodyText style={styles.title}>{item.title}</BodyText>
 
-        <Text
-          style={[
-            styles.amount,
-            item.type === "income"
-              ? styles.incomeAmount
-              : styles.expenseAmount,
-          ]}
-        >
-          {item.type === "income" ? "+" : "-"} KES {item.amount}
-        </Text>
-      </View>
+          <SecondaryText
+            style={[
+              styles.amount,
+              item.type === "income"
+                ? styles.incomeAmount
+                : styles.expenseAmount,
+            ]}
+          >
+            {item.type === "income" ? "+" : "-"} KES {item.amount}
+          </SecondaryText>
+        </View>
 
-      <View style={styles.metaRow}>
-        <Text style={styles.category}>
-          {item.category || "Uncategorized"}
-        </Text>
+        <View style={styles.metaRow}>
+          <SecondaryText style={styles.category}>
+            {item.category || "Uncategorized"}
+          </SecondaryText>
 
-        <Text style={styles.typeBadge}>
-          {item.type.toUpperCase()}
-        </Text>
-      </View>
+          <Text style={styles.typeBadge}>
+            {item.type.toUpperCase()}
+          </Text>
+        </View>
 
-      {item.note ? (
-        <Text style={styles.note} numberOfLines={1}>
-          {item.note}
-        </Text>
-      ) : null}
+        {item.note ? (
+          <Text style={styles.note} numberOfLines={1}>
+            {item.note}
+          </Text>
+        ) : null}
+      </Card>
     </TouchableOpacity>
   );
 
-  // ✅ Empty State
   if (!loading && templates.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyTitle}>No Templates Yet</Text>
-        <Text style={styles.emptyText}>
+      <View style={globalStyles.container}>
+        <BodyText >No Templates Yet</BodyText>
+        <BodyText >
           Create transaction templates to quickly reuse transactions.
-        </Text>
+        </BodyText>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={globalStyles.container}>
+      <BodyText style={globalStyles.title}>My Templates</BodyText>
       <FlatList
         data={templates}
         keyExtractor={(item) => item.uuid}
@@ -103,22 +104,6 @@ export default function TransactionTemplatesListScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FAF9F7",
-    padding: 16,
-  },
-
-  card: {
-    backgroundColor: "#fff",
-    padding: 16,
-    marginBottom: 12,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-  },
 
   row: {
     flexDirection: "row",
@@ -126,11 +111,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  title: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#333",
-  },
 
   amount: {
     fontSize: 15,
@@ -153,7 +133,6 @@ const styles = StyleSheet.create({
 
   category: {
     fontSize: 13,
-    color: "#666",
   },
 
   typeBadge: {
@@ -181,16 +160,4 @@ const styles = StyleSheet.create({
     backgroundColor: "#FAF9F7",
   },
 
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#333",
-    marginBottom: 8,
-  },
-
-  emptyText: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-  },
 });

@@ -1,23 +1,24 @@
 import { useEffect, useState } from "react";
-import { View, Text, Alert, StyleSheet } from "react-native";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { View, Text, Alert, StyleSheet, TouchableOpacity } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
-import { CustomButton, LoadingSpinner } from "../../../../src/components/ThemeProvider/components";
+import { BodyText } from "../../../../src/components/ThemeProvider/components";
+import PageLoader from "../../../../src/components/common/PageLoader"
 import { getTransactionTemplateByUuid, deleteTransactionTemplate,  } from "../../../../src/db/transactionsTempsDb";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useThemeStyles } from "../../../../src/hooks/useThemeStyles";
+import DeleteButton from "../../../../src/components/common/DeleteButton"
+import { useIsFocused } from "@react-navigation/native";
 
 export default function TransactionTemplateDetailsScreen() {
+  const {globalStyles} = useThemeStyles()
+  const isFocused = useIsFocused()
+  const {id:uuid} = useLocalSearchParams()
   const db = useSQLiteContext();
-  const route = useRoute();
-  const navigation = useNavigation();
-
-  const { uuid } = route.params;
+  const router = useRouter()
 
   const [template, setTemplate] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  /* ============================================================
-     ✅ Load Template Details
-  ============================================================ */
   const loadTemplate = async () => {
     setLoading(true);
 
@@ -29,11 +30,8 @@ export default function TransactionTemplateDetailsScreen() {
 
   useEffect(() => {
     loadTemplate();
-  }, []);
+  }, [isFocused]);
 
-  /* ============================================================
-     ✅ Delete Template
-  ============================================================ */
   const handleDelete = () => {
     Alert.alert(
       "Delete Template?",
@@ -46,25 +44,19 @@ export default function TransactionTemplateDetailsScreen() {
           onPress: async () => {
             await deleteTransactionTemplate(db, uuid);
             Alert.alert("Deleted ✅", "Template removed successfully.");
-            navigation.goBack();
+            router.goBack();
           },
         },
       ]
     );
   };
 
-  /* ============================================================
-     ✅ Edit Template
-  ============================================================ */
   const handleEdit = () => {
-    navigation.navigate("EditTransactionTemplate", { uuid });
+    router.push(`transactions-templates/${uuid}/edit`)
   };
 
-  /* ============================================================
-     ✅ Loading State
-  ============================================================ */
   if (loading) {
-    return <LoadingSpinner />;
+    return <PageLoader />
   }
 
   if (!template) {
@@ -77,15 +69,10 @@ export default function TransactionTemplateDetailsScreen() {
     );
   }
 
-  /* ============================================================
-     ✅ UI
-  ============================================================ */
   return (
     <View style={styles.container}>
-      {/* Title */}
       <Text style={styles.title}>{template.title}</Text>
 
-      {/* Amount */}
       <Text
         style={[
           styles.amount,
@@ -98,7 +85,6 @@ export default function TransactionTemplateDetailsScreen() {
         {template.amount || "—"}
       </Text>
 
-      {/* Details Card */}
       <View style={styles.card}>
         <DetailRow label="Type" value={template.type} />
         <DetailRow
@@ -119,23 +105,21 @@ export default function TransactionTemplateDetailsScreen() {
         />
       </View>
 
-      {/* Actions */}
-      <View style={{ marginTop: 20 }}>
-        <CustomButton title="✏️ Edit Template" onPress={handleEdit} />
-        <View style={{ height: 12 }} />
-        <CustomButton
-          title="🗑 Delete Template"
-          variant="danger"
-          onPress={handleDelete}
-        />
+      <View style={{ marginTop: 20 }}> 
+        <TouchableOpacity style={globalStyles.secondaryBtn} onPress={handleEdit}>
+            <BodyText style={globalStyles.secondaryBtnText}>
+              Edit Template
+            </BodyText>
+          </TouchableOpacity>
+          <DeleteButton 
+            handleOk={handleDelete} 
+            item="template"
+          />
       </View>
     </View>
   );
 }
 
-/* ============================================================
-   ✅ Small Detail Row Component
-============================================================ */
 function DetailRow({ label, value }) {
   return (
     <View style={styles.row}>
@@ -145,9 +129,6 @@ function DetailRow({ label, value }) {
   );
 }
 
-/* ============================================================
-   ✅ Styles (ZeniaMoney Theme)
-============================================================ */
 const styles = StyleSheet.create({
   container: {
     flex: 1,

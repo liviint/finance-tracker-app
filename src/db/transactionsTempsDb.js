@@ -1,13 +1,8 @@
 import uuid from "react-native-uuid";
 
 const newUuid = () => uuid.v4();
-
-/* ============================================================
-   ✅ UPSERT Template (Create or Update)
-============================================================ */
 export const upsertTransactionTemplate = async (db, template) => {
   const {
-    uuid = newUuid(),
 
     title,
     amount,
@@ -25,6 +20,7 @@ export const upsertTransactionTemplate = async (db, template) => {
     deleted_at = null,
     is_synced = 0,
   } = template;
+  let uuid = template.uuid || newUuid()
 
   await db.runAsync(
     `
@@ -75,9 +71,6 @@ export const upsertTransactionTemplate = async (db, template) => {
   return uuid;
 };
 
-/* ============================================================
-   ✅ GET All Templates
-============================================================ */
 export const getTransactionTemplates = async (db) => {
   return await db.getAllAsync(`
     SELECT *
@@ -87,9 +80,6 @@ export const getTransactionTemplates = async (db) => {
   `);
 };
 
-/* ============================================================
-   ✅ GET Single Template by UUID
-============================================================ */
 export const getTransactionTemplateByUuid = async (db, uuid) => {
   return await db.getFirstAsync(
     `
@@ -102,9 +92,6 @@ export const getTransactionTemplateByUuid = async (db, uuid) => {
   );
 };
 
-/* ============================================================
-   ✅ Soft Delete Template
-============================================================ */
 export const deleteTransactionTemplate = async (db, uuid) => {
   await db.runAsync(
     `
@@ -118,9 +105,6 @@ export const deleteTransactionTemplate = async (db, uuid) => {
   );
 };
 
-/* ============================================================
-   ✅ Restore Template (Undo Delete)
-============================================================ */
 export const restoreTransactionTemplate = async (db, uuid) => {
   await db.runAsync(
     `
@@ -134,9 +118,7 @@ export const restoreTransactionTemplate = async (db, uuid) => {
   );
 };
 
-/* ============================================================
-   ✅ Mark Template as Synced
-============================================================ */
+
 export const markTemplateAsSynced = async (db, uuid) => {
   await db.runAsync(
     `
@@ -149,9 +131,6 @@ export const markTemplateAsSynced = async (db, uuid) => {
   );
 };
 
-/* ============================================================
-   ✅ Get Unsynced Templates (for API Sync)
-============================================================ */
 export const getUnsyncedTemplates = async (db) => {
   return await db.getAllAsync(`
     SELECT *
@@ -161,9 +140,6 @@ export const getUnsyncedTemplates = async (db) => {
   `);
 };
 
-/* ============================================================
-   ✅ Permanently Delete (Only if Needed)
-============================================================ */
 export const hardDeleteTransactionTemplate = async (db, uuid) => {
   await db.runAsync(
     `
