@@ -59,35 +59,9 @@ export default function FinanceStatsPage() {
     <ScrollView style={globalStyles.container}>
       <BodyText style={globalStyles.title}>Financial Overview</BodyText>
 
-      <Card style={styles.balanceCard}>
-        <SecondaryText style={styles.balanceLabel}>
-          Current Balance
-        </SecondaryText>
-        <BodyText
-          style={[
-            styles.balanceAmount,
-            { color: stats.balance >= 0 ? "#2E8B8B" : "#FF6B6B" },
-          ]}
-        >
-          KES {stats.balance.toLocaleString()}
-        </BodyText>
-      </Card>
+      
 
-      <View style={styles.row}>
-        <Card style={styles.statCard}>
-          <SecondaryText style={styles.statLabel}>Income</SecondaryText>
-          <BodyText style={[styles.statAmount, styles.income]}>
-            +KES {stats.income.toLocaleString()}
-          </BodyText>
-        </Card>
-
-        <Card style={styles.statCard}>
-          <SecondaryText style={styles.statLabel}>Expenses</SecondaryText>
-          <BodyText style={[styles.statAmount, styles.expense]}>
-            -KES {stats.expenses.toLocaleString()}
-          </BodyText>
-        </Card>
-      </View>
+      
 
       <Card>
         <SecondaryText style={styles.chartTitle}>
@@ -142,19 +116,6 @@ export default function FinanceStatsPage() {
 }
 
 const styles = StyleSheet.create({
-  balanceCard: {
-    alignItems: "center",
-    paddingVertical: 20,
-    marginBottom: 16,
-  },
-  balanceLabel: {
-    fontSize: 13,
-    marginBottom: 6,
-  },
-  balanceAmount: {
-    fontSize: 30,
-    fontWeight: "800",
-  },
   row: {
     flexDirection: "row",
     gap: 12,

@@ -42,13 +42,13 @@ export default function FinanceListPage() {
         setTransactions(transactions)
     }
     const fetchStats = async () => {
-      const summary = await getTransactionStats(db);
+      const summary = await getTransactionStats(db,period);
       setStats(summary);
     };
 
     useEffect(() => {
     if (isFocused) {
-      fetchTransactions(period)
+      fetchTransactions()
       fetchStats()
     }
     },[isFocused, period])
