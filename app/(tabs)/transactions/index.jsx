@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useIsFocused } from "@react-navigation/native";
-import { View, Text, FlatList, StyleSheet, Pressable } from "react-native";
+import { View, FlatList, StyleSheet, Pressable } from "react-native";
 import { Card, BodyText, SecondaryText } from "../../../src/components/ThemeProvider/components";
 import { AddButton } from "../../../src/components/common/AddButton";
 import { useRouter } from "expo-router";
-import { getTransactions } from "../../../src/db/transactionsDb";
+import { getTransactions, getTransactionStats } from "../../../src/db/transactionsDb";
 import { useSQLiteContext } from "expo-sqlite";
 import { dateFormat } from "../../../utils/dateFormat";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles"
@@ -16,19 +16,32 @@ export default function FinanceListPage() {
     const [transactions,setTransactions] = useState([])
     const isFocused = useIsFocused()
     const {globalStyles} = useThemeStyles()
+    const [stats, setStats] = useState({
+        income: 0,
+        expenses: 0,
+        balance: 0,
+      });
 
     let fetchTransactions = async() => {
         let transactions = await getTransactions(db)
         setTransactions(transactions)
     }
+    const fetchStats = async () => {
+      const summary = await getTransactionStats(db);
+      setStats(summary);
+    };
 
     useEffect(() => {
-        fetchTransactions()
+    if (isFocused) {
+      fetchTransactions()
+      fetchStats()
+    }
     },[isFocused])
 
     useEffect(() => {
       const unsub = syncManager.on("transactions_updated", async () => {
         fetchTransactions()
+        fetchStats()
       });
       return unsub;
     }, []);
@@ -54,24 +67,59 @@ export default function FinanceListPage() {
     </Pressable>
   );
 
+  const ListHeader = () => (
+  <>
+    <View style={styles.headerRow}>
+      <SecondaryText style={globalStyles.title}>
+        My transactions
+      </SecondaryText>
+    </View>
+
+    <Card style={styles.balanceCard}>
+      <SecondaryText style={styles.balanceLabel}>
+        Current Balance
+      </SecondaryText>
+      <BodyText
+        style={[
+          styles.balanceAmount,
+          { color: stats.balance >= 0 ? "#2E8B8B" : "#FF6B6B" },
+        ]}
+      >
+        KES {stats.balance.toLocaleString()}
+      </BodyText>
+    </Card>
+
+    <View style={styles.statRow}>
+      <Card style={styles.statCard}>
+        <SecondaryText style={styles.statLabel}>Income</SecondaryText>
+        <BodyText style={[styles.statAmount, styles.income]}>
+          +KES {stats.income.toLocaleString()}
+        </BodyText>
+      </Card>
+
+      <Card style={styles.statCard}>
+        <SecondaryText style={styles.statLabel}>Expenses</SecondaryText>
+        <BodyText style={[styles.statAmount, styles.expense]}>
+          -KES {stats.expenses.toLocaleString()}
+        </BodyText>
+      </Card>
+    </View>
+
+    <View style={styles.viewStatsRow}>
+      <Pressable onPress={() => router.push("/transactions/stats")}>
+        <SecondaryText style={styles.viewStatsText}>
+          View stats →
+        </SecondaryText>
+      </Pressable>
+    </View>
+  </>
+);
+
   return (
     <View style={globalStyles.container}>
-
-      <View style={styles.headerRow}>
-        <View>
-          <SecondaryText style={globalStyles.title}>My transactions</SecondaryText>
-        </View>
-
-        <Pressable
-          onPress={() => router.push("/transactions/stats")}
-          style={styles.statsButton}
-        >
-          <Text style={styles.statsText}>Stats</Text>
-        </Pressable>
-      </View>
-
       <FlatList
         data={transactions}
+        ListHeaderComponent={<ListHeader />}
         keyExtractor={(item) => item.uuid}
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 96 }}
@@ -89,8 +137,6 @@ export default function FinanceListPage() {
 
 const styles = StyleSheet.create({
   headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
   },
@@ -101,6 +147,51 @@ const styles = StyleSheet.create({
   subHeader: {
     fontSize: 14,
     marginTop: 2,
+  },
+  statRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 16,
+  },
+  statCard: {
+    flex: 1,
+  },
+  statLabel: {
+    fontSize: 12,
+    marginBottom: 6,
+  },
+  statAmount: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  viewStatsRow: {
+    alignItems: "flex-end",
+    marginBottom: 12,
+  },
+
+  viewStatsText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#2E8B8B",
+  },
+
+  balanceCard: {
+    alignItems: "center",
+    paddingVertical: 20,
+    marginBottom: 16,
+  },
+  balanceLabel: {
+    fontSize: 13,
+    marginBottom: 6,
+  },
+  balanceAmount: {
+    fontSize: 30,
+    fontWeight: "800",
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   statsButton: {
     paddingHorizontal: 14,
@@ -118,11 +209,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     backgroundColor: "#FFFFFF",
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
   },
   title: {
     fontWeight: "600",

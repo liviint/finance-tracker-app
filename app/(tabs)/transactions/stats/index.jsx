@@ -3,7 +3,6 @@ import { View, Dimensions, StyleSheet, ScrollView } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import { useSQLiteContext } from "expo-sqlite";
 import { BarChart } from "react-native-chart-kit";
-
 import {
   Card,
   BodyText,
