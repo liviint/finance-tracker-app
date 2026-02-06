@@ -1,6 +1,5 @@
 import { useSelector } from "react-redux";
 import { useSQLiteContext } from "expo-sqlite";
-
 import {
   getUnsyncedTransactions,
   syncTransactionsFromApi,
@@ -9,6 +8,11 @@ import {getLastSyncedAt, saveLastSyncedAt} from "../../../db/common"
 import { api } from "../../../../api";
 import { syncManager } from "../../../../utils/syncManager";
 import { useSyncEngine } from "../../../../src/hooks/useSyncEngine";
+import {
+  getUnsyncedTemplates,
+  syncTemplatesFromApi,
+} from "../../../db/transactionsTempsDb"
+
 
 export default function TransactionsProvider({ children }) {
   const db = useSQLiteContext();
@@ -38,10 +42,41 @@ export default function TransactionsProvider({ children }) {
     }
   }
 
+  const syncTemplatesFromLocalToApi = async () => {
+    const unsynced = await getUnsyncedTemplates(db);
+
+    if (unsynced.length > 0) {
+      await api.post("/finances/transactions/templates/bulk_sync/", {
+        items: unsynced,
+      });
+    }
+  };
+
+  const syncTemplatesFromApiToLocal = async () => {
+    const lastSyncedAt = await getLastSyncedAt(db, "templates");
+
+    try {
+      const res = await api.post("/finances/transactions/templates/sync/", {
+        last_synced_at: lastSyncedAt,
+      });
+
+      await syncTemplatesFromApi(db, res.data.results);
+      await saveLastSyncedAt(db, res.data.server_time, "templates");
+    } catch (error) {
+      console.log(error?.response?.data, "templates sync error");
+    }
+  };
+
   const bootstrap = async () => {
+
     await syncFromLocalToApi()
     await syncFromApiToLocal()
     syncManager.emit("transactions_updated");
+
+    await syncTemplatesFromLocalToApi();
+    await syncTemplatesFromApiToLocal();
+    syncManager.emit("templates_updated");
+
   };
 
   useSyncEngine({

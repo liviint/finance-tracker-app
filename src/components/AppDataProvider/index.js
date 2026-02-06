@@ -10,6 +10,7 @@ import { extraMigrations } from "./migrations"
 const migrateDbIfNeeded = async (db) => {
   // await db.execAsync(`DROP TABLE IF EXISTS finance_transactions;`);
   // await db.execAsync(`DROP TABLE IF EXISTS finance_categories;`);
+  //await db.execAsync(`DROP TABLE IF EXISTS transaction_templates;`);
   // await db.execAsync(`DROP TABLE IF EXISTS savings_goals;`);
   // await db.execAsync(`DROP TABLE IF EXISTS budgets;`);
   // await db.execAsync(`DROP TABLE IF EXISTS savings_transactions;`);

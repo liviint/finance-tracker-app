@@ -71,6 +71,85 @@ export const upsertTransactionTemplate = async (db, template) => {
   return uuid;
 };
 
+export const syncTemplatesFromApi = async (db, templates = []) => {
+  if (!Array.isArray(templates) || templates.length === 0) {
+    return;
+  }
+
+  for (const tpl of templates) {
+    const {
+      uuid,
+      title,
+      amount,
+      type,
+      category,
+      category_uuid,
+      payee,
+      note,
+      created_at,
+      updated_at,
+      deleted_at,
+    } = tpl;
+
+    if (deleted_at) {
+      await db.runAsync(
+        `
+        UPDATE transaction_templates
+        SET deleted_at = ?, updated_at = ?, is_synced = 1
+        WHERE uuid = ?
+        `,
+        [deleted_at, updated_at, uuid]
+      );
+      continue;
+    }
+
+    await db.runAsync(
+      `
+      INSERT INTO transaction_templates (
+        uuid,
+        title,
+        amount,
+        type,
+        category,
+        category_uuid,
+        payee,
+        note,
+        created_at,
+        updated_at,
+        is_synced
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+      ON CONFLICT(uuid) DO UPDATE SET
+        title = excluded.title,
+        amount = excluded.amount,
+        type = excluded.type,
+        category = excluded.category,
+        category_uuid = excluded.category_uuid,
+        payee = excluded.payee,
+        note = excluded.note,
+        updated_at = excluded.updated_at,
+        deleted_at = NULL,
+        is_synced = 1
+      `,
+      [
+        uuid,
+        title,
+        amount,
+        type,
+        category,
+        category_uuid,
+        payee,
+        note,
+        created_at,
+        updated_at,
+      ]
+    );
+  }
+
+  console.log("✅ Templates synced from API");
+};
+
+
 export const getTransactionTemplates = async (db) => {
   return await db.getAllAsync(`
     SELECT *

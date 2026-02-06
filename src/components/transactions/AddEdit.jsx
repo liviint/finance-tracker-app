@@ -139,7 +139,6 @@ const isFormValid = () => {
     const loadTemplates = async () => {
       try {
         const result = await getTransactionTemplates(db);
-        console.log(result,"hello res")
         setTemplates(result);
       } catch (error) {
         console.log(error,"hello error")

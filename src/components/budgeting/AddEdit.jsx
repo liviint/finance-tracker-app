@@ -46,7 +46,6 @@ export default function AddEditBudget() {
         setForm((prev) => ({ ...prev, [key]: value }));
     };
     const handleCategoryChange = (selected) => {
-        console.log(selected,"hello selected here")
         setForm((prev) => ({ ...prev, category_uuid: selected.uuid, category:selected.name, type:selected.type }))
     } 
 

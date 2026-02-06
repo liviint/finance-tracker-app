@@ -298,7 +298,6 @@ export const upsertCategory = async (
   db,
   { id = null, uuid, name, type, spendingType, color, icon }
 ) => {
-    console.log(spendingType,"hello spending type")
   const now = new Date().toISOString();
 
   try {
