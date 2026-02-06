@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, Dimensions, StyleSheet, ScrollView } from "react-native";
+import {  Dimensions, StyleSheet, ScrollView } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import { useSQLiteContext } from "expo-sqlite";
 import { BarChart } from "react-native-chart-kit";
@@ -11,10 +11,9 @@ import {
 import { useThemeStyles } from "../../../../src/hooks/useThemeStyles";
 import { getTransactionStats, getExpenseBreakdownByCategory } from "../../../../src/db/transactionsDb";
 import CategoryPieChart from "../../../../src/components/transactions/CategoryPieChart";
-
+import TimeFilters from "../../../../src/components/transactions/TimeFilters";
 
 const screenWidth = Dimensions.get("window").width;
-
 export default function FinanceStatsPage() {
   const { globalStyles, colors } = useThemeStyles();
   const db = useSQLiteContext();
@@ -25,21 +24,25 @@ export default function FinanceStatsPage() {
     expenses: 0,
     balance: 0,
   });
+  const [period,setPeriod] = useState("30 days")
+
+  const onPeriodChange = (value) => {
+    setPeriod(value)
+  }
 
   const [categoryStats, setCategoryStats] = useState([]);
 
-
   useEffect(() => {
     const fetchStats = async () => {
-      const summary = await getTransactionStats(db);
-      const categories = await getExpenseBreakdownByCategory(db);
+      const summary = await getTransactionStats(db,period);
+      const categories = await getExpenseBreakdownByCategory(db,period);
 
       setStats(summary);
       setCategoryStats(categories);
     };
 
     if (isFocused) fetchStats();
-  }, [isFocused])
+  }, [isFocused, period])
 
   const savingsRate =
     stats.income > 0
@@ -58,11 +61,10 @@ export default function FinanceStatsPage() {
   return (
     <ScrollView style={globalStyles.container}>
       <BodyText style={globalStyles.title}>Financial Overview</BodyText>
-
-      
-
-      
-
+      <TimeFilters  
+        selectedPeriod={period}
+        onPeriodChange={onPeriodChange}
+      />
       <Card>
         <SecondaryText style={styles.chartTitle}>
           Income vs Expenses

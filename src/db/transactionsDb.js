@@ -247,9 +247,9 @@ export async function getTransactionStats(db, period) {
   };
 }
 
+export async function getExpenseBreakdownByCategory(db, period = "this_month") {
+    const periodWhere = getPeriodDateFilter(period);
 
-
-export async function getExpenseBreakdownByCategory(db) {
     return await db.getAllAsync(`
         SELECT
         c.name AS name,
@@ -260,6 +260,7 @@ export async function getExpenseBreakdownByCategory(db) {
         ON c.uuid = t.category_uuid
         WHERE t.type = 'expense'
         AND t.deleted_at IS NULL
+        ${periodWhere}
         GROUP BY t.category_uuid
         ORDER BY total DESC
     `);

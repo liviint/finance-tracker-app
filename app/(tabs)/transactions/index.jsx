@@ -9,15 +9,7 @@ import { useSQLiteContext } from "expo-sqlite";
 import { dateFormat } from "../../../utils/dateFormat";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles"
 import { syncManager } from "../../../utils/syncManager";
-
-const TIME_FILTERS = [
-  "7 days",
-  "This Month",
-  "30 days",
-  "3 months",
-  "6 months",
-  "1 year",
-];
+import TimeFilters from "../../../src/components/transactions/TimeFilters";
 
 export default function FinanceListPage() {
     const db = useSQLiteContext()
@@ -111,10 +103,6 @@ export default function FinanceListPage() {
 
 const ListHeader = ({ stats, onPeriodChange, globalStyles,selectedPeriod }) => {
   const router = useRouter();
-
-  const handleSelectPeriod = (period) => {
-    if (onPeriodChange) onPeriodChange(period);
-  };
   return <>
     <View style={styles.headerRow}>
       <SecondaryText style={globalStyles.title}>
@@ -160,27 +148,10 @@ const ListHeader = ({ stats, onPeriodChange, globalStyles,selectedPeriod }) => {
       </Pressable>
     </View>
 
-    <View style={styles.filterRow}>
-        {TIME_FILTERS.map((period) => (
-          <Pressable
-            key={period}
-            onPress={() => handleSelectPeriod(period)}
-            style={[
-              styles.filterChip,
-              selectedPeriod === period && styles.filterChipActive,
-            ]}
-          >
-            <BodyText
-              style={[
-                styles.filterText,
-                selectedPeriod === period && { color: "#FFFFFF", fontWeight: "600" },
-              ]}
-            >
-              {period}
-            </BodyText>
-          </Pressable>
-        ))}
-      </View>
+      <TimeFilters 
+        onPeriodChange={onPeriodChange} 
+        selectedPeriod ={selectedPeriod} 
+      />
 
   </>
 }
@@ -254,28 +225,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#2E8B8B",
   },
-  filterRow: {
-  flexDirection: "row",
-  flexWrap: "wrap",
-  gap: 8,
-  marginVertical: 12,
-},
-
-filterChip: {
-  paddingVertical: 6,
-  paddingHorizontal: 12,
-  borderRadius: 12,
-  backgroundColor: "#F0F0F0",
-},
-
-filterChipActive: {
-  backgroundColor: "#2E8B8B",
-},
-
-filterText: {
-  fontSize: 12,
-  color: "#333",
-},
 
   card: {
     marginBottom: 12,
