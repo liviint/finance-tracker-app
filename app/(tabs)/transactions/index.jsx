@@ -38,7 +38,7 @@ export default function FinanceListPage() {
       }
     
     let fetchTransactions = async() => {
-        let transactions = await getTransactions(db)
+        let transactions = await getTransactions(db, period)
         setTransactions(transactions)
     }
     const fetchStats = async () => {
@@ -48,10 +48,10 @@ export default function FinanceListPage() {
 
     useEffect(() => {
     if (isFocused) {
-      fetchTransactions()
+      fetchTransactions(period)
       fetchStats()
     }
-    },[isFocused])
+    },[isFocused, period])
 
     useEffect(() => {
       const unsub = syncManager.on("transactions_updated", async () => {
@@ -91,6 +91,7 @@ export default function FinanceListPage() {
             stats={stats} 
             onPeriodChange={onPeriodChange}  
             globalStyles={globalStyles} 
+            selectedPeriod={period}
           />
         }
         keyExtractor={(item) => item.uuid}
@@ -108,12 +109,10 @@ export default function FinanceListPage() {
   );
 }
 
-const ListHeader = ({ stats, onPeriodChange, globalStyles }) => {
+const ListHeader = ({ stats, onPeriodChange, globalStyles,selectedPeriod }) => {
   const router = useRouter();
-  const [selectedPeriod, setSelectedPeriod] = useState("This Month");
 
   const handleSelectPeriod = (period) => {
-    setSelectedPeriod(period);
     if (onPeriodChange) onPeriodChange(period);
   };
   return <>

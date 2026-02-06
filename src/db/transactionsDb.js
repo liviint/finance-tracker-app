@@ -1,4 +1,5 @@
 import uuid from "react-native-uuid";
+import { startOfMonth, subDays, subMonths, format } from "date-fns";
 
 const newUuid = () => uuid.v4();
 
@@ -163,13 +164,56 @@ export const syncTransactionsFromApi = async (db, transactions = []) => {
     console.log("✅ Transactions synced from API");
 };
 
-export async function getTransactions(db) {
-    return await db.getAllAsync(`
-        SELECT * FROM finance_transactions
-        WHERE deleted_at IS NULL
-        ORDER BY datetime(date) DESC
-    `);
+export async function getTransactions(db, period = "30 days") {
+  let whereClause = "deleted_at IS NULL";
+
+  const today = new Date();
+
+  switch (period) {
+    case "7 days":
+      const sevenDaysAgo = subDays(today, 7);
+      whereClause += ` AND date >= '${format(sevenDaysAgo, "yyyy-MM-dd")}'`;
+      break;
+
+    case "This Month":
+      const firstDayOfMonth = startOfMonth(today);
+      whereClause += ` AND date >= '${format(firstDayOfMonth, "yyyy-MM-dd")}'`;
+      break;
+
+    case "30 days":
+      const thirtyDaysAgo = subDays(today, 30);
+      whereClause += ` AND date >= '${format(thirtyDaysAgo, "yyyy-MM-dd")}'`;
+      break;
+
+    case "3 months":
+      const threeMonthsAgo = subMonths(today, 3);
+      whereClause += ` AND date >= '${format(threeMonthsAgo, "yyyy-MM-dd")}'`;
+      break;
+
+    case "6 months":
+      const sixMonthsAgo = subMonths(today, 6);
+      whereClause += ` AND date >= '${format(sixMonthsAgo, "yyyy-MM-dd")}'`;
+      break;
+
+    case "1 year":
+      const oneYearAgo = subMonths(today, 12);
+      whereClause += ` AND date >= '${format(oneYearAgo, "yyyy-MM-dd")}'`;
+      break;
+
+    default:
+      // fallback: all transactions
+      break;
+  }
+
+  const query = `
+    SELECT * FROM finance_transactions
+    WHERE ${whereClause}
+    ORDER BY datetime(date) DESC
+  `;
+
+  return await db.getAllAsync(query);
 }
+
 
 export async function getTransactionByUuid(db, uuid) {
     return await db.getFirstAsync(`
