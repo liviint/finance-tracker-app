@@ -14,6 +14,7 @@ import { dateFormat } from "../../../utils/dateFormat";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles"
 import { getAllDebts } from "../../../src/db/debtsDb";
 import { AddButton } from "../../../src/components/common/AddButton";
+import EmptyState from "../../../src/components/common/EmptyState";
 
 export default function DebtsListScreen() {
   const isFocused = useIsFocused()
@@ -80,6 +81,12 @@ export default function DebtsListScreen() {
         keyExtractor={(item) => item.uuid}
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 24 }}
+        ListEmptyComponent={
+          <EmptyState 
+            title="No debts yet"
+            description="Add your debts and loans to keep track of what you owe and what’s owed to you."
+          />
+        }
       />
 
       <AddButton 

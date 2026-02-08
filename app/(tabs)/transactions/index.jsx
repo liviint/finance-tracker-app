@@ -10,6 +10,7 @@ import { dateFormat } from "../../../utils/dateFormat";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles"
 import { syncManager } from "../../../utils/syncManager";
 import TimeFilters from "../../../src/components/transactions/TimeFilters";
+import EmptyState from "../../../src/components/common/EmptyState";
 
 export default function FinanceListPage() {
     const db = useSQLiteContext()
@@ -89,43 +90,54 @@ export default function FinanceListPage() {
     </Pressable>
   );
 
+    
 
   return (
     <View style={globalStyles.container}>
-      <FlatList
-        data={transactions}
-        ListHeaderComponent={
-          <ListHeader 
-            stats={stats} 
-            onPeriodChange={onPeriodChange}  
-            globalStyles={globalStyles} 
-            selectedPeriod={period}
-          />
-        }
-        keyExtractor={(item) => item.uuid}
-        renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 96 }}
-      />
-      <AddButton 
-          primaryAction={{route:"/transactions/add",label:"Add Transaction"}}
-          secondaryActions={[
-            {route:"/categories/add/modal",label:"Add Category"},
-            {route:"/transactions-templates/add/",label:"Add Template"},
-          ]}
+      <View style={styles.headerRow}>
+        <BodyText style={globalStyles.title}>
+          My transactions
+        </BodyText>
+      </View>
+      {transactions.length === 0 ? 
+        <EmptyState
+          title="No transactions yet"
+          description="Add your income and expenses to see where your money really goes."
         />
-    </View>
-  );
+      : 
+      <>
+        <FlatList
+          data={transactions}
+          ListHeaderComponent={
+            <ListHeader 
+              stats={stats} 
+              onPeriodChange={onPeriodChange}  
+              globalStyles={globalStyles} 
+              selectedPeriod={period}
+            />
+          }
+          keyExtractor={(item) => item.uuid}
+          renderItem={renderItem}
+          contentContainerStyle={{ paddingBottom: 96 }}
+        />
+        
+     
+    </>
+}
+<AddButton 
+            primaryAction={{route:"/transactions/add",label:"Add Transaction"}}
+            secondaryActions={[
+              {route:"/categories/add/modal",label:"Add Category"},
+              {route:"/transactions-templates/add/",label:"Add Template"},
+            ]}
+          />
+ </View>
+  )
 }
 
 const ListHeader = ({ stats, onPeriodChange, globalStyles,selectedPeriod }) => {
   const router = useRouter();
   return <>
-    <View style={styles.headerRow}>
-      <SecondaryText style={globalStyles.title}>
-        My transactions
-      </SecondaryText>
-    </View>
-
     <TimeFilters 
         onPeriodChange={onPeriodChange} 
         selectedPeriod ={selectedPeriod} 

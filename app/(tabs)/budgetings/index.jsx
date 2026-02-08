@@ -11,6 +11,7 @@ import { BodyText, Card } from "../../../src/components/ThemeProvider/components
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 import { syncManager } from "../../../utils/syncManager";
 import { AddButton } from "../../../src/components/common/AddButton";
+import EmptyState from "../../../src/components/common/EmptyState";
 
 export default function BudgetsListScreen() {
   const router = useRouter();
@@ -135,9 +136,10 @@ export default function BudgetsListScreen() {
         keyExtractor={(item) => item.uuid}
         renderItem={renderItem}
         ListEmptyComponent={
-          <BodyText style={{ textAlign: "center", marginTop: 32 }}>
-            No monthly budgets yet
-          </BodyText>
+          <EmptyState 
+            title="No monthly budgets yet"
+            description="Create budgets to plan your spending and stay within your limits."
+          />
         }
       />
       <AddButton

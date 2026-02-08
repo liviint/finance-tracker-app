@@ -8,6 +8,7 @@ import { getSavingsGoals } from "../../../src/db/savingsDb";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 import { syncManager } from "../../../utils/syncManager";
 import { AddButton } from "../../../src/components/common/AddButton";
+import EmptyState from "../../../src/components/common/EmptyState";
 
 export default function SavingsList() {
   const { globalStyles } = useThemeStyles();
@@ -88,14 +89,10 @@ export default function SavingsList() {
       <BodyText style={globalStyles.title}>My Savings</BodyText>
 
       {goals.length === 0 ? (
-        <Card>
-          <BodyText style={{ textAlign: "center", opacity: 0.7 }}>
-            No savings goals yet.
-          </BodyText>
-          <BodyText style={{ textAlign: "center", marginTop: 8 }}>
-            Start by creating your first goal 🎯
-          </BodyText>
-        </Card>
+        <EmptyState 
+          title="No savings goals yet."
+          description="Create a savings goal to plan for the things that matter most."
+        />
       ) : (
         <FlatList
           data={goals}
