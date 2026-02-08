@@ -54,40 +54,40 @@ export default function FinanceListPage() {
     }, []);
 
   const renderItem = ({ item }) => (
-  <Pressable onPress={() => router.push(`/transactions/${item.uuid}`)}>
-    <Card>
-      <View style={styles.row}>
-        <View style={styles.left}>
-          <BodyText
-            style={styles.title}
-            numberOfLines={3}
-            ellipsizeMode="tail"
-          >
-            {item.title}
-          </BodyText>
+    <Pressable onPress={() => router.push(`/transactions/${item.uuid}`)}>
+      <Card>
+        <View style={styles.row}>
+          <View style={styles.left}>
+            <BodyText
+              style={styles.title}
+              numberOfLines={3}
+              ellipsizeMode="tail"
+            >
+              {item.title}
+            </BodyText>
 
-          <SecondaryText
-            style={styles.meta}
-            numberOfLines={2}
-            ellipsizeMode="tail"
+            <SecondaryText
+              style={styles.meta}
+              numberOfLines={2}
+              ellipsizeMode="tail"
+            >
+              {item.category} • {dateFormat(item?.date)}
+              {item.payee ? ` • ${item.payee}` : ""}
+            </SecondaryText>
+          </View>
+          <BodyText
+            style={[
+              styles.amount,
+              item.type === "expense" ? styles.expense : styles.income,
+            ]}
           >
-            {item.category} • {dateFormat(item?.date)}
-            {item.payee ? ` • ${item.payee}` : ""}
-          </SecondaryText>
+            {item.type === "expense" ? "-" : "+"}
+            KES {Math.abs(item.amount).toLocaleString()}
+          </BodyText>
         </View>
-        <BodyText
-          style={[
-            styles.amount,
-            item.type === "expense" ? styles.expense : styles.income,
-          ]}
-        >
-          {item.type === "expense" ? "-" : "+"}
-          KES {Math.abs(item.amount).toLocaleString()}
-        </BodyText>
-      </View>
-    </Card>
-  </Pressable>
-);
+      </Card>
+    </Pressable>
+  );
 
 
   return (
@@ -126,6 +126,11 @@ const ListHeader = ({ stats, onPeriodChange, globalStyles,selectedPeriod }) => {
       </SecondaryText>
     </View>
 
+    <TimeFilters 
+        onPeriodChange={onPeriodChange} 
+        selectedPeriod ={selectedPeriod} 
+      />
+
     <Card style={styles.balanceCard}>
       <SecondaryText style={styles.balanceLabel}>
         Current Balance
@@ -163,12 +168,6 @@ const ListHeader = ({ stats, onPeriodChange, globalStyles,selectedPeriod }) => {
         </SecondaryText>
       </Pressable>
     </View>
-
-      <TimeFilters 
-        onPeriodChange={onPeriodChange} 
-        selectedPeriod ={selectedPeriod} 
-      />
-
   </>
 }
 
