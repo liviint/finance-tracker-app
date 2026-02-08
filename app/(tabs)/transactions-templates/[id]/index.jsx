@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { View, Text, Alert, StyleSheet, TouchableOpacity } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
-import { BodyText } from "../../../../src/components/ThemeProvider/components";
+import { BodyText, Card,  SecondaryText } from "../../../../src/components/ThemeProvider/components";
 import PageLoader from "../../../../src/components/common/PageLoader"
 import { getTransactionTemplateByUuid, deleteTransactionTemplate,  } from "../../../../src/db/transactionsTempsDb";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useThemeStyles } from "../../../../src/hooks/useThemeStyles";
 import DeleteButton from "../../../../src/components/common/DeleteButton"
 import { useIsFocused } from "@react-navigation/native";
+import { dateFormat } from "../../../../utils/dateFormat";
 
 export default function TransactionTemplateDetailsScreen() {
   const {globalStyles} = useThemeStyles()
@@ -32,23 +33,10 @@ export default function TransactionTemplateDetailsScreen() {
     loadTemplate();
   }, [isFocused]);
 
-  const handleDelete = () => {
-    Alert.alert(
-      "Delete Template?",
-      "This template will be removed from your list.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            await deleteTransactionTemplate(db, uuid);
-            Alert.alert("Deleted ✅", "Template removed successfully.");
-            router.goBack();
-          },
-        },
-      ]
-    );
+  const handleDelete = async() => {
+    await deleteTransactionTemplate(db, uuid);
+    Alert.alert("Deleted ✅", "Template removed successfully.");
+    router.back();
   };
 
   const handleEdit = () => {
@@ -70,8 +58,8 @@ export default function TransactionTemplateDetailsScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{template.title}</Text>
+    <View style={globalStyles.container}>
+      <BodyText style={globalStyles.title}>{template.title}</BodyText>
 
       <Text
         style={[
@@ -85,7 +73,7 @@ export default function TransactionTemplateDetailsScreen() {
         {template.amount || "—"}
       </Text>
 
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <DetailRow label="Type" value={template.type} />
         <DetailRow
           label="Category"
@@ -101,12 +89,12 @@ export default function TransactionTemplateDetailsScreen() {
         />
         <DetailRow
           label="Created"
-          value={template.created_at}
+          value={dateFormat(template.created_at)}
         />
-      </View>
+      </Card>
 
       <View style={{ marginTop: 20 }}> 
-        <TouchableOpacity style={globalStyles.secondaryBtn} onPress={handleEdit}>
+        <TouchableOpacity style={{...globalStyles.secondaryBtn, marginBottom:12}} onPress={handleEdit}>
             <BodyText style={globalStyles.secondaryBtnText}>
               Edit Template
             </BodyText>
@@ -123,25 +111,13 @@ export default function TransactionTemplateDetailsScreen() {
 function DetailRow({ label, value }) {
   return (
     <View style={styles.row}>
-      <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{value}</Text>
+      <SecondaryText style={styles.label}>{label}</SecondaryText>
+      <BodyText style={styles.value}>{value}</BodyText>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FAF9F7",
-    padding: 20,
-  },
-
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#333",
-    marginBottom: 6,
-  },
 
   amount: {
     fontSize: 18,
@@ -157,16 +133,6 @@ const styles = StyleSheet.create({
     color: "#FF6B6B",
   },
 
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 18,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -178,13 +144,11 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#666",
   },
 
   value: {
     fontSize: 13,
     fontWeight: "500",
-    color: "#333",
     maxWidth: "60%",
     textAlign: "right",
   },
