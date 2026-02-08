@@ -162,9 +162,14 @@ const ListHeader = ({ stats, onPeriodChange, globalStyles,selectedPeriod }) => {
     </View>
 
     <View style={styles.viewStatsRow}>
+      <Pressable onPress={() => router.push("/transactions-templates")}>
+        <SecondaryText style={styles.viewStatsText}>
+          Templates
+        </SecondaryText>
+      </Pressable>
       <Pressable onPress={() => router.push("/transactions/stats")}>
         <SecondaryText style={styles.viewStatsText}>
-          View stats
+          Stats
         </SecondaryText>
       </Pressable>
     </View>
@@ -201,8 +206,13 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   viewStatsRow: {
+    display:"flex",
     alignItems: "flex-end",
     marginBottom: 12,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap:12,
+    marginTop: 12,
   },
 
   viewStatsText: {
