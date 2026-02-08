@@ -53,30 +53,7 @@ export default function SavingsGoalStats() {
                 </BodyText>
             </View>
 
-        <Card style={styles.card}>
-            <BodyText style={styles.progressText}>
-                {Math.round(progress)}% completed
-            </BodyText>
-
-            <View style={styles.progressBar}>
-                <View
-                    style={[
-                    styles.progressFill,
-                    {
-                        width: `${progress}%`,
-                        backgroundColor: goal.color,
-                    },
-                    ]}
-                />
-            </View>
-
-            <BodyText style={styles.amount}>
-                KES {totalSaved.toLocaleString()} saved
-            </BodyText>
-            <SecondaryText style={styles.remaining}>
-                KES {remaining.toLocaleString()} remaining
-            </SecondaryText>
-        </Card>
+        
 
         <View style={styles.statsRow}>
             <StatCard label="Saved" value={`KES ${totalSaved}`} />
