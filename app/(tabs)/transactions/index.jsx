@@ -54,25 +54,41 @@ export default function FinanceListPage() {
     }, []);
 
   const renderItem = ({ item }) => (
-    <Pressable onPress={() => router.push(`/transactions/${item.uuid}`)}>
-        <Card >
-            <View style={styles.row}>
-                <View>
-                  <BodyText style={styles.title}>{item.title}</BodyText>
-                  
-                  <SecondaryText style={styles.meta}>
-                    {item.category} {" • "}
-                    {dateFormat(item?.date)} {item.payee ? " • " : ""} 
-                    {item.payee}
-                  </SecondaryText>
-                </View>
-                <BodyText style={[styles.amount, item.type === "expense"  ? styles.expense : styles.income]}>
-                  {item.type === "expense" ? "-" : "+"}KES {Math.abs(item.amount).toLocaleString()}
-                </BodyText>
-            </View>
-        </Card>
-    </Pressable>
-  );
+  <Pressable onPress={() => router.push(`/transactions/${item.uuid}`)}>
+    <Card>
+      <View style={styles.row}>
+        <View style={styles.left}>
+          <BodyText
+            style={styles.title}
+            numberOfLines={3}
+            ellipsizeMode="tail"
+          >
+            {item.title}
+          </BodyText>
+
+          <SecondaryText
+            style={styles.meta}
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          >
+            {item.category} • {dateFormat(item?.date)}
+            {item.payee ? ` • ${item.payee}` : ""}
+          </SecondaryText>
+        </View>
+        <BodyText
+          style={[
+            styles.amount,
+            item.type === "expense" ? styles.expense : styles.income,
+          ]}
+        >
+          {item.type === "expense" ? "-" : "+"}
+          KES {Math.abs(item.amount).toLocaleString()}
+        </BodyText>
+      </View>
+    </Card>
+  </Pressable>
+);
+
 
   return (
     <View style={globalStyles.container}>
@@ -214,6 +230,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+  left:{
+    flex:1,
+    marginRight:12,
+    minWidth: 0,
+  },
   statsButton: {
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -234,6 +255,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: "600",
+    maxWidth:"100%",
   },
   meta: {
     fontSize: 12,
@@ -242,6 +264,7 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: 16,
     fontWeight: "700",
+    flexShrink: 0,
   },
   income: {
     color: "#2E8B8B",
