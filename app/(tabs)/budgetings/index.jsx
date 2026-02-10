@@ -20,11 +20,14 @@ export default function BudgetsListScreen() {
   const db = useSQLiteContext();
 
   const [budgets, setBudgets] = useState([]);
+  const [isLoading,setIsLoading] = useState(true)
 
   const loadBudgets = async () => {
+    setIsLoading(true)
     await ensureRecurringBudgetsForMonth(db)
     const data = await getMonthlyBudgets(db);
     setBudgets(data);
+    setIsLoading(false)
   };
 
   useEffect(() => {
@@ -130,18 +133,21 @@ export default function BudgetsListScreen() {
       <BodyText style={globalStyles.title}>
         My Monthly budegt
       </BodyText>
+
+      {
+        !isLoading && budgets.length === 0 ? 
+        <EmptyState 
+          title="No monthly budgets yet"
+          description="Create budgets to plan your spending and stay within your limits."
+        /> : 
       
-      <FlatList
-        data={budgets}
-        keyExtractor={(item) => item.uuid}
-        renderItem={renderItem}
-        ListEmptyComponent={
-          <EmptyState 
-            title="No monthly budgets yet"
-            description="Create budgets to plan your spending and stay within your limits."
-          />
-        }
-      />
+        <FlatList
+          data={budgets}
+          keyExtractor={(item) => item.uuid}
+          renderItem={renderItem}
+        />
+      }
+      
       <AddButton
           primaryAction={{route:`/budgetings/add`,label:"Add Budget"}}
           secondaryActions={[{route:"/categories/add/modal",label:"Add Category"}]}

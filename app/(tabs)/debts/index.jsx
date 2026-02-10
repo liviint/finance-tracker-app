@@ -22,10 +22,13 @@ export default function DebtsListScreen() {
   const router = useRouter()
   const { globalStyles } =   useThemeStyles()
   const [debts,setDebts] = useState([])
+  const [isLoading,setIsLoading] = useState(true)
 
   let fetchDebts = async() => {
+      setIsLoading(true)
       let debts = await getAllDebts(db)
       setDebts(debts)
+      setIsLoading(false)
   }
 
   useEffect(() => {
@@ -76,18 +79,20 @@ export default function DebtsListScreen() {
     <View style={globalStyles.container}>
       <BodyText style={globalStyles.title}>Debts</BodyText>
 
-      <FlatList
-        data={debts}
-        keyExtractor={(item) => item.uuid}
-        renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 24 }}
-        ListEmptyComponent={
-          <EmptyState 
-            title="No debts yet"
-            description="Add your debts and loans to keep track of what you owe and what’s owed to you."
-          />
-        }
-      />
+      {
+        !isLoading && debts.length === 0 ? 
+        <EmptyState 
+          title="No monthly budgets yet"
+          description="Create budgets to plan your spending and stay within your limits."
+        /> : 
+      
+        <FlatList
+          data={debts}
+          keyExtractor={(item) => item.uuid}
+          renderItem={renderItem}
+          contentContainerStyle={{ paddingBottom: 24 }}
+        />
+      }
 
       <AddButton 
         primaryAction={{route:"/debts/add",label:"Add Debt"}}

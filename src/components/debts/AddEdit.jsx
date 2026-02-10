@@ -110,7 +110,7 @@ export default function AddEdit() {
                 </View>
 
                 <View style={globalStyles.formGroup}>
-                    <FormLabel>Date & Time</FormLabel>
+                    <FormLabel>Due Date</FormLabel>
                     <View style={{ flexDirection: "row", gap: 12 }}>
                     <TouchableOpacity
                         onPress={() => setShowDatePicker(true)}

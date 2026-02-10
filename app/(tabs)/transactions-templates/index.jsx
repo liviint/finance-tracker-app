@@ -12,6 +12,8 @@ import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 import { BodyText, Card, SecondaryText } from "../../../src/components/ThemeProvider/components";
 import { getTransactionTemplates } from "../../../src/db/transactionsTempsDb";
 import { useIsFocused } from "@react-navigation/native";
+import EmptyState from "../../../src/components/common/EmptyState";
+import { AddButton } from "../../../src/components/common/AddButton";
 
 export default function TransactionTemplatesListScreen() {
   const isFocused = useIsFocused()
@@ -77,27 +79,27 @@ export default function TransactionTemplatesListScreen() {
     </TouchableOpacity>
   );
 
-  if (!loading && templates.length === 0) {
-    return (
-      <View style={globalStyles.container}>
-        <BodyText >No Templates Yet</BodyText>
-        <BodyText >
-          Create transaction templates to quickly reuse transactions.
-        </BodyText>
-      </View>
-    );
-  }
-
   return (
     <View style={globalStyles.container}>
       <BodyText style={globalStyles.title}>My Templates</BodyText>
-      <FlatList
-        data={templates}
-        keyExtractor={(item) => item.uuid}
-        renderItem={renderItem}
-        refreshing={loading}
-        onRefresh={loadTemplates}
-        contentContainerStyle={{ paddingBottom: 40 }}
+      {
+        !loading && templates.length === 0 ? 
+        <EmptyState
+          title="No Templates Yet."
+          description="Create transaction templates to quickly reuse transactions."
+        /> : 
+
+        <FlatList
+          data={templates}
+          keyExtractor={(item) => item.uuid}
+          renderItem={renderItem}
+          refreshing={loading}
+          onRefresh={loadTemplates}
+          contentContainerStyle={{ paddingBottom: 40 }}
+        />
+      }
+      <AddButton  
+        primaryAction={{route:"/transactions-templates/add",label:"Add Template"}}
       />
     </View>
   );
