@@ -14,9 +14,9 @@ const AccountInfoPage = () => {
       </BodyText>
 
       <BodyText style={styles.subtext}>
-        You can use ZeniaHub without an account.
+        You can use ZeniaMoney without an account.
         {"\n\n"}
-        Your journals and habits are stored safely on this device and work fully offline.
+        Your records are stored safely on this device and work fully offline.
         {"\n\n"}
         Creating an account is optional — it lets you back up your data, sync across devices, and restore it if you change phones.
       </BodyText>
