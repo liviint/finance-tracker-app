@@ -120,18 +120,20 @@ export default function CategoriesListScreen({ navigation }) {
   );
 
   return (
-    <ScrollView style={globalStyles.container}>
+    <>
+      <ScrollView style={globalStyles.container}>
 
-      <BodyText style={globalStyles.title}>
-        My Categories
-      </BodyText>
+        <BodyText style={globalStyles.title}>
+          My Categories
+        </BodyText>
 
-      <Section title="Income" data={incomeCategories} />
-      <Section title="Expenses" data={expenseCategories} />
+        <Section title="Income" data={incomeCategories} />
+        <Section title="Expenses" data={expenseCategories} />
 
+      </ScrollView>
       <AddButton 
-        primaryAction={{route:`/categories/add`,label:"Add Category"}}
-      />
-    </ScrollView>
+          primaryAction={{route:`/categories/add`,label:"Add Category"}}
+        />
+    </>
   );
 }

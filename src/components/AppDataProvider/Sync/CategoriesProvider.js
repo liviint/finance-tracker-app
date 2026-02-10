@@ -63,10 +63,15 @@ export default function CategoriesProvider({ children }) {
     syncManager.emit("categories_updated");
   };
 
+  const bootstrapLocalNoInternet = async () => {
+        await seedCategoriesIfEmpty(db)
+    };
+
   useSyncEngine({
     enabled:true,
     name: "categories",
     bootstrap,
+    bootstrapLocalNoInternet,
   });
 
   return children;
