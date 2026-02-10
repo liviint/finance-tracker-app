@@ -36,7 +36,7 @@ export default function BudgetsProvider({ children }) {
       });
 
       await syncBudgetsFromApi(db, res.data.results);
-      await saveLastSyncedAt(db, res.data.server_time,"budgets");
+      await saveLastSyncedAt(db,"budgets", res.data.server_time);
     } catch (error) {
       console.log(error,"hello error")
     }

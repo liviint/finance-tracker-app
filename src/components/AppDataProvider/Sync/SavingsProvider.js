@@ -49,7 +49,7 @@ export default function SavingsProvider({ children }) {
         last_synced_at: lastSyncedAt,
       });
       await syncSavingsGoalsFromApi(db, res.data.results);
-      await saveLastSyncedAt(db, res.data.server_time,"savings-goals");
+      await saveLastSyncedAt(db, "savings-goals",res.data.server_time);
     } catch (error) {
       console.log(error,"hello error")
     }
@@ -62,7 +62,7 @@ export default function SavingsProvider({ children }) {
         last_synced_at: lastSyncedAt,
       });
       await syncSavingsTransactionsFromApi(db, res.data.results);
-      await saveLastSyncedAt(db, res.data.server_time,"savings-transactions");
+      await saveLastSyncedAt(db, "savings-transactions", res.data.server_time);
     } catch (error) {
       console.log(error,"hello error")
     }

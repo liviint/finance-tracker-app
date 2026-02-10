@@ -52,7 +52,7 @@ export default function DebtsProvider({ children }) {
             });
 
             await syncDebtsFromApi(db, debtsRes.data.results);
-            await saveLastSyncedAt(db, debtsRes.data.server_time, "debts");
+            await saveLastSyncedAt(db,"debts", debtsRes.data.server_time );
         } catch (error) {
             console.log("Debt API → Local Sync Error:", error);
         }
@@ -67,7 +67,7 @@ export default function DebtsProvider({ children }) {
             });
             await syncDebtPaymentsFromApi(db, paymentsRes.data.results);
 
-            await saveLastSyncedAt(db,paymentsRes.data.server_time,"debt_payments");
+            await saveLastSyncedAt(db,"debt_payments",paymentsRes.data.server_time,);
         } catch (error) {
         console.log("Debt Payments API → Local Sync Error:", error);
         }

@@ -14,6 +14,7 @@ export async function getLastSyncedAt(db, type) {
 }
 
 export async function saveLastSyncedAt(db, type, serverTime) {
+  console.log(serverTime,type,"hello last synced")
   const key = `last_synced_at:${type}`;
 
   // Convert string to Date if necessary

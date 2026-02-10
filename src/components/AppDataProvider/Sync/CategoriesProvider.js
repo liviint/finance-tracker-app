@@ -36,7 +36,7 @@ export default function CategoriesProvider({ children }) {
     });
 
     await syncCategoriesFromApi(db, res.data.results);
-    await saveLastSyncedAt(db, res.data.server_time,"categories");
+    await saveLastSyncedAt(db, "categories", res.data.server_time);
   }
 
   const handleDefaultCategoriesSync = async() => {

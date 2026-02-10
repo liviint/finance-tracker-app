@@ -36,7 +36,7 @@ export default function TransactionsProvider({ children }) {
       });
 
       await syncTransactionsFromApi(db, res.data.results);
-      await saveLastSyncedAt(db, res.data.server_time,"transactions");
+      await saveLastSyncedAt(db,"transactions", res.data.server_time);
     } catch (error) {
       console.log(error?.response?.data,"hello error 123")
     }
@@ -61,7 +61,7 @@ export default function TransactionsProvider({ children }) {
       });
 
       await syncTemplatesFromApi(db, res.data.results);
-      await saveLastSyncedAt(db, res.data.server_time, "templates");
+      await saveLastSyncedAt(db,"templates", res.data.server_time);
     } catch (error) {
       console.log(error?.response?.data, "templates sync error");
     }
