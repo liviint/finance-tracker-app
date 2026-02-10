@@ -67,6 +67,16 @@ export default function BudgetDetailsScreen() {
         <BodyText style={styles.amount}>
           KES {Number(total).toLocaleString()}
         </BodyText>
+        
+
+        <View style={styles.divider} />
+
+        <View style={styles.row}>
+          <SecondaryText style={styles.metaLabel}>Category</SecondaryText>
+          <BodyText style={styles.metaValue}>
+            {budget.category_name}
+          </BodyText>
+        </View>
 
         <View style={styles.divider} />
 
