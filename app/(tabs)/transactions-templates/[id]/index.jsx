@@ -94,8 +94,8 @@ export default function TransactionTemplateDetailsScreen() {
       </Card>
 
       <View style={{ marginTop: 20 }}> 
-        <TouchableOpacity style={{...globalStyles.secondaryBtn, marginBottom:12}} onPress={handleEdit}>
-            <BodyText style={globalStyles.secondaryBtnText}>
+        <TouchableOpacity style={{...globalStyles.editBtn, marginBottom:12}} onPress={handleEdit}>
+            <BodyText style={globalStyles.editBtnText}>
               Edit Template
             </BodyText>
           </TouchableOpacity>

@@ -65,8 +65,8 @@ export default function FinanceEntryViewPage() {
       </Card>
 
       <View style={styles.actionsRow}>
-        <Pressable style={styles.editButton} onPress={() => router.push(`transactions/${uuid}/edit`)}>
-          <Text style={styles.actionText}>Edit</Text>
+        <Pressable style={globalStyles.editBtn} onPress={() => router.push(`transactions/${uuid}/edit`)}>
+          <Text style={globalStyles.editBtnText}>Edit</Text>
         </Pressable>
         <DeleteButton 
             handleOk={handleDelete}
@@ -136,15 +136,9 @@ const styles = StyleSheet.create({
   },
   actionsRow: {
     flexDirection: "row",
+    justifyContent:"flex-end",
     gap: 12,
     marginTop: 20,
-  },
-  editButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 16,
-    backgroundColor: "#2E8B8B",
-    alignItems: "center",
   },
   actionText: {
     color: "#FFFFFF",

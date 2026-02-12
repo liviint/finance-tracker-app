@@ -179,10 +179,10 @@ export default function DebtDetailsScreen() {
 
       
       {!debt.is_paid &&  <TouchableOpacity
-        style={{...globalStyles.secondaryBtn,marginBottom:12}}
+        style={{...globalStyles.editBtn,marginBottom:12}}
         onPress={() =>router.push(`/debts/${uuid}/edit`)}
       >
-        <Text style={globalStyles.secondaryBtnText}>Edit Debt</Text>
+        <Text style={globalStyles.editBtnText}>Edit Debt</Text>
       </TouchableOpacity>}
 
       <DeleteButton 

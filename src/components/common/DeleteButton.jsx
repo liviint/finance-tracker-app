@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Modal, View, Text, Pressable, StyleSheet } from "react-native";
-import { BodyText } from "../ThemeProvider/components";
 import { useThemeStyles } from "../../hooks/useThemeStyles";
 
 const DeleteButton = ({ handleOk, item,cusomStyles={}}) => {
@@ -15,8 +14,8 @@ const DeleteButton = ({ handleOk, item,cusomStyles={}}) => {
     return (
         <>
         {/* Delete Button */}
-        <Pressable style={{...globalStyles.primaryBtn,...styles.deleteBtn,...cusomStyles}} onPress={() => setVisible(true)}>
-            <BodyText style={styles.deleteBtnText}>Delete</BodyText>
+        <Pressable style={globalStyles.deleteButton} onPress={() => setVisible(true)}>
+            <Text style={globalStyles.deleteText}>Delete</Text>
         </Pressable>
 
         {/* Modal */}
@@ -58,21 +57,6 @@ const DeleteButton = ({ handleOk, item,cusomStyles={}}) => {
 
 export default DeleteButton;
 const styles = StyleSheet.create({
-  deleteBtn: {
-      borderRadius: 12,
-      marginRight: 8,
-      alignItems: "center",
-      backgroundColor: "#FF6B6B",
-      paddingVertical: 8,
-      paddingHorizontal: 16,
-      borderColor:"#FF6B6B",
-      borderWidth: 2,
-  },
-  deleteBtnText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 14,
-  },
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",

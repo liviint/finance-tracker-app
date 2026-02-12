@@ -6,7 +6,7 @@ export const createGlobalStyles = (colors) =>
       backgroundColor: colors.background,
       flex: 1,
       paddingHorizontal: 16,
-      paddingVertical: 24,
+      paddingVertical: 8,
     },
 
     content: {
@@ -32,6 +32,21 @@ export const createGlobalStyles = (colors) =>
       color: colors.text,
     },
 
+    addButton: {
+      flex: 1,
+      backgroundColor: colors.primary,
+      paddingVertical: 12,
+      borderRadius: 12,
+      marginRight: 8,
+      alignItems: "center",
+    },
+
+    addButtonText: {
+      color: "#fff",
+      fontWeight: "bold",
+      fontSize: 16,
+    },
+
     primaryBtn: {
       backgroundColor: colors.primary,
       paddingVertical: 12,
@@ -48,7 +63,7 @@ export const createGlobalStyles = (colors) =>
     },
 
     secondaryBtn: {
-      borderRadius: 12,
+      borderRadius: 8,
       paddingVertical: 12,
       paddingHorizontal: 16,
       borderColor: colors.secondary,
@@ -57,6 +72,50 @@ export const createGlobalStyles = (colors) =>
     },
 
     secondaryBtnText: {
+      color: colors.secondary,
+      fontWeight: "bold",
+      fontSize: 16,
+    },
+    editBtn: {
+      backgroundColor: colors.secondary + "20", 
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 8,
+      borderColor: "#ccc",
+      borderWidth: 1,
+      alignItems: "center",
+    },
+    editBtnText: {
+      fontSize: 12,
+      fontWeight: "600",
+    },
+
+
+    deleteButton: {
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 12,
+      marginRight: 8,
+      alignItems: "center",
+      backgroundColor: colors.primary + "20", 
+    },
+
+    deleteText: {
+      color: colors.primary,
+      fontWeight: "600",
+    },
+
+    trackButton: {
+      flex: 1,
+      borderColor: colors.secondary,
+      borderWidth: 2,
+      paddingVertical: 12,
+      borderRadius: 12,
+      marginLeft: 8,
+      alignItems: "center",
+    },
+
+    trackButtonText: {
       color: colors.secondary,
       fontWeight: "bold",
       fontSize: 16,

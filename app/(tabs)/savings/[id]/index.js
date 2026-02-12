@@ -102,8 +102,6 @@ export default function SavingsDetail() {
         <Pressable
           style={{
             ...globalStyles.primaryBtn,
-            paddingVertical: 8,
-            paddingHorizontal: 16,
           }}
           onPress={() => router.push(`/savings/${savingsUuid}/stats`)}
         >
@@ -112,13 +110,11 @@ export default function SavingsDetail() {
 
         <Pressable
           style={{
-            ...globalStyles.secondaryBtn,
-            paddingVertical: 8,
-            paddingHorizontal: 16,
+            ...globalStyles.editBtn,
           }}
           onPress={() => router.push(`/savings/${savingsUuid}/edit`)}
         >
-          <BodyText style={globalStyles.secondaryBtnText}>Edit</BodyText>
+          <BodyText style={globalStyles.editBtnText}>Edit</BodyText>
         </Pressable>
 
         <Delete handleOk={handleDelete} item="savings goal" />

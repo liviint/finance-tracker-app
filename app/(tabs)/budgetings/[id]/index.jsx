@@ -158,9 +158,9 @@ export default function BudgetDetailsScreen() {
       <View style={styles.actions}>
         <Pressable
           onPress={() => router.push(`/budgetings/${uuid}/edit`)}
-          style={{ ...globalStyles.secondaryBtn, flex: 1 }}
+          style={{ ...globalStyles.editBtn }}
         >
-          <BodyText style={globalStyles.secondaryBtnText}>
+          <BodyText style={globalStyles.editBtnText}>
             Edit Budget
           </BodyText>
         </Pressable>
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
 
   actions: {
     flexDirection: "row",
-    justifyContent: "space-evenly",
+    justifyContent: "flex-end",
     gap: 10,
     marginTop: 16,
   },
