@@ -24,10 +24,9 @@ export default {
       },
 
       edgeToEdgeEnabled: true,
-      predictiveBackGestureEnabled: false,
-
       enableProguardInReleaseBuilds: true,
-
+      enableShrinkResourcesInReleaseBuilds: true,
+      predictiveBackGestureEnabled: false,
       "intentFilters": [
           // 1. Regular Deep Link (zeniahub://)
           {
