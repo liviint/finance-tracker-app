@@ -175,6 +175,9 @@ const styles = StyleSheet.create({
   },
   card: {
     marginBottom: 16,
+    flex: 1,
+    padding: 16,
+    borderRadius: 18,
   },
   progressText: {
     fontWeight: "600",
@@ -245,19 +248,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
-  progressTrack: {
-    width: "100%",
-    height: 8,
-    backgroundColor: "#eee",
-    borderRadius: 20,
-    marginTop: 12,
-    overflow: "hidden",
-  },
 
-  progressFill: {
-    height: "100%",
-    backgroundColor: "#2E8B8B",
-  },
 
   completed: {
     marginTop: 8,
@@ -271,11 +262,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 
-  card: {
-    flex: 1,
-    padding: 16,
-    borderRadius: 18,
-  },
+  
 
   label: {
     fontSize: 12,
