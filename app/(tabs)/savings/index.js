@@ -4,7 +4,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { useSQLiteContext } from "expo-sqlite";
 import { useRouter } from "expo-router";
 import { Card, BodyText, SecondaryText } from "../../../src/components/ThemeProvider/components";
-import { getSavingsGoals } from "../../../src/db/savingsDb";
+import { getSavingsGoals, getSavingsStats } from "../../../src/db/savingsDb";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 import { syncManager } from "../../../utils/syncManager";
 import { AddButton } from "../../../src/components/common/AddButton";
@@ -18,13 +18,21 @@ export default function SavingsList() {
   
   const [goals, setGoals] = useState([]);
 
+  const [stats, setStats] = useState();
+
   const loadGoals = async () => {
     const data = await getSavingsGoals(db);
     setGoals(data || []);
   };
 
+  const getStats = async () => {
+    let stats = await getSavingsStats(db)
+    setStats(stats)
+  }
+
   useEffect(() => {
       loadGoals();
+      getStats()
   },[isFocused])
   
   useEffect(() => {
@@ -99,6 +107,9 @@ export default function SavingsList() {
           keyExtractor={(item) => item.uuid}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <SavingsListHeader stats={stats} />
+          }
         />
       )}
       <AddButton 
@@ -107,6 +118,47 @@ export default function SavingsList() {
     </View>
   );
 }
+
+const SavingsListHeader = ({ stats = {} }) => {
+  const {
+    total_saved = 0,
+    total_remaining = 0,
+    total_target = 0,
+    completed_goals = 0,
+    overall_progress_percent = 0,
+    total_goals = 0,
+  } = stats;
+
+  return (
+    <View style={styles.container}>
+
+      <View style={styles.row}>
+        <Card style={styles.card}>
+          <SecondaryText style={{...styles.label,textAlign:"center"}}>Target</SecondaryText>
+          <BodyText style={{...styles.value,textAlign:"center"}}>
+            KES {total_target.toLocaleString()}
+          </BodyText>
+        </Card>
+      </View>
+
+      <View style={styles.row}>
+        <Card style={styles.card}>
+          <SecondaryText style={styles.label}>Total Saved</SecondaryText>
+          <BodyText style={[styles.value, { color: "#2E8B8B" }]}>
+            KES {total_saved.toLocaleString()}
+          </BodyText>
+        </Card>
+
+        <Card style={styles.card}>
+          <SecondaryText style={styles.label}>Remaining</SecondaryText>
+          <BodyText style={[styles.value, { color: "#FF6B6B" }]}>
+            KES {total_remaining.toLocaleString()}
+          </BodyText>
+        </Card>
+      </View>
+    </View>
+  );
+};
 
 
 const styles = StyleSheet.create({
@@ -169,5 +221,70 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#999",
     paddingVertical: 24,
+  },
+
+  container: {
+    gap: 14,
+    marginBottom: 10,
+  },
+
+  mainCard: {
+    padding: 22,
+    borderRadius: 22,
+    alignItems: "center",
+  },
+
+  mainLabel: {
+    opacity: 0.7,
+    marginBottom: 4,
+    fontSize: 14,
+  },
+
+  mainValue: {
+    fontSize: 34,
+    fontWeight: "700",
+  },
+
+  progressTrack: {
+    width: "100%",
+    height: 8,
+    backgroundColor: "#eee",
+    borderRadius: 20,
+    marginTop: 12,
+    overflow: "hidden",
+  },
+
+  progressFill: {
+    height: "100%",
+    backgroundColor: "#2E8B8B",
+  },
+
+  completed: {
+    marginTop: 8,
+    fontSize: 12,
+    color: "#333",
+    opacity: 0.7,
+  },
+
+  row: {
+    flexDirection: "row",
+    gap: 12,
+  },
+
+  card: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 18,
+  },
+
+  label: {
+    fontSize: 12,
+    opacity: 0.6,
+  },
+
+  value: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginTop: 4,
   },
 });
