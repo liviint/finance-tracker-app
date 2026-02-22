@@ -190,10 +190,12 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
+  
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    gap: 12,
   },
   
   amount: {
@@ -251,11 +253,6 @@ const styles = StyleSheet.create({
   subInfo: {
     fontSize: 12,
     opacity: 0.6,
-  },
-
-  row: {
-    flexDirection: "row",
-    gap: 12,
   },
 
   statCard: {
