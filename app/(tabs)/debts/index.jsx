@@ -12,28 +12,46 @@ import { BodyText, Card, SecondaryText } from "../../../src/components/ThemeProv
 import { useSQLiteContext } from "expo-sqlite";
 import { dateFormat } from "../../../utils/dateFormat";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles"
-import { getAllDebts } from "../../../src/db/debtsDb";
+import { getAllDebts, getDebtSummaryStats } from "../../../src/db/debtsDb";
 import { AddButton } from "../../../src/components/common/AddButton";
-import EmptyState from "../../../src/components/common/EmptyState";
+import TimeFilters from "../../../src/components/transactions/TimeFilters";
 
 export default function DebtsListScreen() {
   const isFocused = useIsFocused()
   const db = useSQLiteContext()
   const router = useRouter()
   const { globalStyles } =   useThemeStyles()
+
   const [debts,setDebts] = useState([])
   const [isLoading,setIsLoading] = useState(true)
 
+  const [stats, setStats] = useState({
+    total_balance:0,
+    total_unpaid:0,
+    total_paid:0,
+  });
+  const [period,setPeriod] = useState("30 days")
+
+  const onPeriodChange = (value) => {
+    setPeriod(value)
+  }
+
   let fetchDebts = async() => {
       setIsLoading(true)
-      let debts = await getAllDebts(db)
+      let debts = await getAllDebts(db,period)
       setDebts(debts)
       setIsLoading(false)
   }
 
+  let fetchDebtsStats = async () => {
+    let stats = await getDebtSummaryStats(db,period)
+    setStats(stats)
+  }
+
   useEffect(() => {
       fetchDebts()
-  },[isFocused])
+      fetchDebtsStats()
+  },[isFocused, period])
 
   const renderItem = ({ item }) => {
     const isOwed = item.type === "owed";
@@ -79,21 +97,21 @@ export default function DebtsListScreen() {
     <View style={globalStyles.container}>
       <BodyText style={globalStyles.title}>Debts</BodyText>
 
-      {
-        !isLoading && debts.length === 0 ? 
-        <EmptyState 
-          title="No monthly budgets yet"
-          description="Create budgets to plan your spending and stay within your limits."
-        /> : 
-      
         <FlatList
           data={debts}
           keyExtractor={(item) => item.uuid}
           renderItem={renderItem}
           contentContainerStyle={{ paddingBottom: 24 }}
+          ListHeaderComponent={
+            <ListHeader
+              stats={stats} 
+              onPeriodChange={onPeriodChange}  
+              globalStyles={globalStyles} 
+              selectedPeriod={period}
+            />
+          }
         />
-      }
-
+      
       <AddButton 
         primaryAction={{route:"/debts/add",label:"Add Debt"}}
       />
@@ -101,6 +119,65 @@ export default function DebtsListScreen() {
     </View>
   );
 }
+
+const ListHeader = ({ stats, onPeriodChange, globalStyles, selectedPeriod }) => {
+
+  const format = (n) => Number(n || 0).toLocaleString();
+
+  return (
+    <View style={styles.container}>
+      
+      <TimeFilters
+        onPeriodChange={onPeriodChange}
+        selectedPeriod={selectedPeriod}
+      />
+
+      <Card style={styles.balanceCard}>
+        <SecondaryText style={styles.balanceLabel}>
+          Total Debt Balance
+        </SecondaryText>
+
+        <BodyText
+          style={[
+            styles.balanceAmount,
+            { color: stats.total_balance > 0 ? "#FF6B6B" : "#2E8B8B" },
+          ]}
+        >
+          KES {format(stats.total_balance)}
+        </BodyText>
+
+        <SecondaryText style={styles.subInfo}>
+          {stats.total_debts} debts tracked
+        </SecondaryText>
+      </Card>
+
+
+      <View style={styles.row}>
+        
+        <Card style={styles.statCard}>
+          <SecondaryText style={styles.statLabel}>
+            Remaining
+          </SecondaryText>
+
+          <BodyText style={[styles.statValue, styles.negative]}>
+            KES {format(stats.total_unpaid)}
+          </BodyText>
+        </Card>
+
+        <Card style={styles.statCard}>
+          <SecondaryText style={styles.statLabel}>
+            Paid
+          </SecondaryText>
+
+          <BodyText style={[styles.statValue, styles.positive]}>
+            KES {format(stats.total_paid)}
+          </BodyText>
+        </Card>
+
+      </View>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   card: {
@@ -148,5 +225,71 @@ const styles = StyleSheet.create({
   },
   unpaid: {
     color: "#FF6B6B",
+  },
+  container: {
+    gap: 14,
+    marginBottom: 10,
+  },
+
+  balanceCard: {
+    padding: 22,
+    borderRadius: 20,
+    alignItems: "center",
+  },
+
+  balanceLabel: {
+    opacity: 0.7,
+    marginBottom: 6,
+  },
+
+  balanceAmount: {
+    fontSize: 28,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+
+  subInfo: {
+    fontSize: 12,
+    opacity: 0.6,
+  },
+
+  row: {
+    flexDirection: "row",
+    gap: 12,
+  },
+
+  statCard: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 18,
+  },
+
+  statLabel: {
+    fontSize: 12,
+    opacity: 0.6,
+    marginBottom: 6,
+  },
+
+  statValue: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+
+  positive: {
+    color: "#2E8B8B",
+  },
+
+  negative: {
+    color: "#FF6B6B",
+  },
+
+  viewStatsBtn: {
+    alignSelf: "center",
+    marginTop: 6,
+  },
+
+  viewStatsText: {
+    color: "#2E8B8B",
+    fontWeight: "600",
   },
 });

@@ -1,4 +1,5 @@
 import uuid from "react-native-uuid";
+import { getPeriodDateFilter } from "./periodFilter";
 
 const newUuid = () => uuid.v4();
 export const upsertDebt = async (db, debt) => {
@@ -8,7 +9,7 @@ export const upsertDebt = async (db, debt) => {
     counterparty_name,
     counterparty_type = "person",
     amount,
-    type,
+  type,
     due_date,
     note,
     is_paid = 0,
@@ -64,11 +65,13 @@ export const upsertDebt = async (db, debt) => {
   return uuid;
 };
 
-export const getAllDebts = async (db) => {
+export const getAllDebts = async (db,period) => {
+  const dateFilter = getPeriodDateFilter(period,"created_at");
   return await db.getAllAsync(
     `
     SELECT * FROM debts
     WHERE deleted_at IS NULL
+    ${dateFilter}
     ORDER BY created_at DESC
     `
   );
@@ -332,9 +335,7 @@ export const addDebtPayment = async (db, { debt_uuid, amount, note }) => {
   return uuid;
 };
 
-/**
- * Get all payments for a specific debt
- */
+
 export const getPaymentsByDebt = async (db, debt_uuid) => {
   return await db.getAllAsync(
     `
@@ -346,19 +347,30 @@ export const getPaymentsByDebt = async (db, debt_uuid) => {
   );
 };
 
-/**
- * Get payment stats for a debt
- */
-export const getDebtStats = async (db, debt_uuid) => {
-  const payments = await getPaymentsByDebt(db, debt_uuid);
-  const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+export const getDebtSummaryStats = async (db, period = null) => {
+  const dateFilter = getPeriodDateFilter(period,"created_at");
 
-  const debt = await db.getFirstAsync(
-    `SELECT amount FROM debts WHERE uuid = ?`,
-    [debt_uuid]
-  );
+  return await db.getFirstAsync(`
+    SELECT
+      COUNT(*) as total_debts,
+      COALESCE(SUM(amount),0) as total_balance,
+      COALESCE(SUM(CASE WHEN is_paid = 1 THEN amount ELSE 0 END),0) as total_paid,
+      COALESCE(SUM(CASE WHEN is_paid = 0 THEN amount ELSE 0 END),0) as total_unpaid,
+      COALESCE(SUM(original_amount),0) as original_total
+    FROM debts
+    WHERE deleted_at IS NULL
+    ${dateFilter}
+  `);
+};
 
-  const remaining = debt ? Math.max(debt.amount - totalPaid, 0) : 0;
-
-  return { totalPaid, remaining, payments };
+export const getDebtTotalsByType = async (db) => {
+  return await db.getAllAsync(`
+    SELECT
+      type,
+      COUNT(*) as count,
+      SUM(amount) as total_amount
+    FROM debts
+    WHERE deleted_at IS NULL
+    GROUP BY type
+  `);
 };
