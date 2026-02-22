@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
-  
+
   row: {
     flexDirection: "row",
     justifyContent: "space-between",

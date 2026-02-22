@@ -1,4 +1,4 @@
-import { View, FlatList, Pressable , Text} from "react-native";
+import { View, FlatList, Pressable , Text, StyleSheet} from "react-native";
 import { useRouter } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 import { useEffect, useState } from "react";
@@ -6,8 +6,9 @@ import { useSQLiteContext } from "expo-sqlite";
 import {
   ensureRecurringBudgetsForMonth,
   getMonthlyBudgets,
+  getMonthlyBudgetStats,
 } from "../../../src/db/budgetingDb";
-import { BodyText, Card } from "../../../src/components/ThemeProvider/components";
+import { BodyText, Card, SecondaryText } from "../../../src/components/ThemeProvider/components";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 import { syncManager } from "../../../utils/syncManager";
 import { AddButton } from "../../../src/components/common/AddButton";
@@ -22,6 +23,8 @@ export default function BudgetsListScreen() {
   const [budgets, setBudgets] = useState([]);
   const [isLoading,setIsLoading] = useState(true)
 
+  const [stats, setStats] = useState();
+
   const loadBudgets = async () => {
     setIsLoading(true)
     await ensureRecurringBudgetsForMonth(db)
@@ -29,13 +32,19 @@ export default function BudgetsListScreen() {
     setBudgets(data);
     setIsLoading(false)
   };
+  
+  const fetchBudgetStats = async () => {
+    let stats = await getMonthlyBudgetStats(db)
+    setStats(stats)
+  }
 
   useEffect(() => {
     loadBudgets();
+    fetchBudgetStats()
   }, [isFocused]);
 
   useEffect(() => {
-    const unsub = syncManager.on("transactions_updated", async () => {
+    const unsub = syncManager.on("budgets_updated", async () => {
       loadBudgets();
     });
     return unsub;
@@ -145,6 +154,12 @@ export default function BudgetsListScreen() {
           data={budgets}
           keyExtractor={(item) => item.uuid}
           renderItem={renderItem}
+          ListHeaderComponent={
+            <BudgetListHeader 
+              stats={stats} 
+
+            />
+          }
         />
       }
       
@@ -155,3 +170,110 @@ export default function BudgetsListScreen() {
     </View>
   );
 }
+
+const BudgetListHeader = ({
+  stats = {},
+}) => {
+  const {
+    total_budgeted = 0,
+    total_spent = 0,
+    total_remaining = 0,
+    overspent_count = 0,
+  } = stats;
+
+  return (
+    <View style={styles.container}>
+
+      {overspent_count > 0 && 
+        <Card style={styles.mainCard}>
+            <SecondaryText style={styles.warning}>
+              {overspent_count} category over budget
+            </SecondaryText>
+        </Card>
+      }
+
+      <View style={styles.row}>
+        <Card style={styles.card}>
+          <SecondaryText style={styles.label}>Budgeted</SecondaryText>
+          <BodyText style={styles.value}>
+            KES {total_budgeted.toLocaleString()}
+          </BodyText>
+        </Card>
+
+        <Card style={styles.card}>
+          <SecondaryText style={styles.label}>Spent</SecondaryText>
+          <BodyText style={[styles.value, { color: "#FF6B6B" }]}>
+            KES {total_spent.toLocaleString()}
+          </BodyText>
+        </Card>
+      </View>
+
+      <View style={styles.row}>
+        <Card style={styles.card}>
+          <SecondaryText style={styles.label}>Remaining</SecondaryText>
+          <BodyText style={[styles.value, { color: "#2E8B8B" }]}>
+            KES {total_remaining.toLocaleString()}
+          </BodyText>
+        </Card>
+      </View>
+
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    gap: 14,
+    marginBottom: 10,
+  },
+
+  monthLabel: {
+    textAlign: "center",
+    fontSize: 14,
+    opacity: 0.7,
+  },
+
+  mainCard: {
+    padding: 22,
+    borderRadius: 22,
+    alignItems: "center",
+  },
+
+  mainLabel: {
+    opacity: 0.7,
+    marginBottom: 4,
+  },
+
+  mainValue: {
+    fontSize: 34,
+    fontWeight: "700",
+  },
+
+  warning: {
+    marginTop: 8,
+    fontSize: 12,
+    color: "#FF6B6B",
+  },
+
+  row: {
+    flexDirection: "row",
+    gap: 12,
+  },
+
+  card: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 18,
+  },
+
+  label: {
+    fontSize: 12,
+    opacity: 0.6,
+  },
+
+  value: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginTop: 4,
+  },
+});

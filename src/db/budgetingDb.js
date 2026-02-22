@@ -159,6 +159,50 @@ export const getMonthlyBudgets = async (db, date = new Date()) => {
   );
 };
 
+export const getMonthlyBudgetStats = async (db, date = new Date()) => {
+  const startDate = normalizeStartDate(date, "monthly");
+
+  return await db.getFirstAsync(
+    `
+    SELECT
+      COUNT(*) as total_budgets,
+      SUM(b.amount) as total_budgeted,
+      SUM(IFNULL(t.spent,0)) as total_spent,
+      SUM(b.amount - IFNULL(t.spent,0)) as total_remaining,
+      COUNT(CASE WHEN IFNULL(t.spent,0) > b.amount THEN 1 END) as overspent_count,
+      ROUND(
+        CASE WHEN SUM(b.amount) > 0
+          THEN SUM(IFNULL(t.spent,0)) * 100.0 / SUM(b.amount)
+          ELSE 0
+        END, 1
+      ) as usage_percent
+    FROM budgets b
+
+    LEFT JOIN (
+      SELECT
+        category_uuid,
+        SUM(amount) AS spent
+      FROM finance_transactions
+      WHERE type = 'expense'
+      GROUP BY category_uuid
+    ) t
+    ON t.category_uuid = b.category_uuid
+       AND t.spent IS NOT NULL
+       AND EXISTS (
+         SELECT 1
+         FROM finance_transactions ft
+         WHERE ft.category_uuid = b.category_uuid
+           AND ft.type = 'expense'
+           AND ft.created_at BETWEEN b.start_date
+               AND date(b.start_date, '+1 month', '-1 day')
+       )
+
+    WHERE b.start_date = ?
+      AND b.deleted_at IS NULL
+    `,
+    [startDate]
+  );
+};
 
 export const getBudgetByUUID = async (db, uuid) => {
   const rows = await db.getAllAsync(
