@@ -87,6 +87,7 @@ export default function AddEdit() {
                     <TouchableOpacity
                         key={t}
                         onPress={() => handleFormChange("type",t)}
+                        disabled={!!categoryUuid}
                         style={{
                         flex: 1,
                         padding: 12,
@@ -97,11 +98,11 @@ export default function AddEdit() {
                         }}
                     >
                         <Text
-                        style={{
-                            textAlign: "center",
-                            color: form.type === t ? "#FFF" : "#333",
-                            fontWeight: "600",
-                        }}
+                            style={{
+                                textAlign: "center",
+                                color: form.type === t ? "#FFF" : "#333",
+                                fontWeight: "600",
+                            }}
                         >
                         {t === "expense" ? "expense" : "income"}
                         </Text>
@@ -109,7 +110,6 @@ export default function AddEdit() {
                 ))}
             </View>
         </>
-      
         </View>
 
         <View style={globalStyles.formGroup}>

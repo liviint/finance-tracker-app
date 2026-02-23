@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Alert,
   ScrollView,
 } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
@@ -13,6 +12,7 @@ import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 import { SecondaryText , BodyText} from "../../../src/components/ThemeProvider/components";
 import { syncManager } from "../../../utils/syncManager";
 import { AddButton } from "../../../src/components/common/AddButton";
+import { getCategories } from "../../../src/db/categoriesDb";
 
 export default function CategoriesListScreen({ navigation }) {
   const db = useSQLiteContext();
@@ -23,18 +23,9 @@ export default function CategoriesListScreen({ navigation }) {
   const isFocused = useIsFocused()
 
   const loadCategories = async () => {
-    const income = await db.getAllAsync(
-      `SELECT * FROM finance_categories
-       WHERE type='income' AND deleted_at IS NULL
-       ORDER BY name`
-    );
-
-    const expense = await db.getAllAsync(
-      `SELECT * FROM finance_categories
-       WHERE type='expense' AND deleted_at IS NULL
-       ORDER BY name`
-    );
-
+    const categories = await getCategories(db)
+    const income =  categories.filter(cate => cate.type === "income")
+    const expense = categories.filter(cate => cate.type !== "income")
     setIncomeCategories(income);
     setExpenseCategories(expense);
   };
@@ -50,33 +41,9 @@ export default function CategoriesListScreen({ navigation }) {
     return unsub;
   }, []);
 
-  const deleteCategory = (category) => {
-    Alert.alert(
-      "Delete category",
-      `Delete "${category.name}"? Transactions will remain.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            await db.runAsync(
-              `UPDATE finance_categories
-               SET deleted_at = datetime('now')
-               WHERE id = ?`,
-              [category.id]
-            );
-            loadCategories();
-          },
-        },
-      ]
-    );
-  };
-
   const renderCategory = ({ item }) => (
     <TouchableOpacity
-      onPress={() => router.push(`/categories/${item.uuid}/edit`, { categoryId: item.id })}
-      onLongPress={() => deleteCategory(item)}
+      onPress={() => router.push(`/categories/${item.uuid}`, { categoryId: item.id })}
       style={{
         flexDirection: "row",
         alignItems: "center",

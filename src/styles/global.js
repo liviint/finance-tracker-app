@@ -80,16 +80,14 @@ export const createGlobalStyles = (colors) =>
       backgroundColor: colors.secondary + "20", 
       paddingVertical: 12,
       paddingHorizontal: 16,
-      borderRadius: 8,
-      borderColor: "#ccc",
-      borderWidth: 1,
+      borderRadius: 12,
       alignItems: "center",
     },
     editBtnText: {
-      fontSize: 12,
-      fontWeight: "600",
+      fontSize: 16,
+      fontWeight: "bold",
+      color: colors.secondary,
     },
-
 
     deleteButton: {
       paddingVertical: 12,
@@ -102,7 +100,8 @@ export const createGlobalStyles = (colors) =>
 
     deleteText: {
       color: colors.primary,
-      fontWeight: "600",
+      fontWeight: "bold",
+      fontSize: 16,
     },
 
     trackButton: {
