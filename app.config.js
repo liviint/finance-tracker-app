@@ -46,7 +46,7 @@ export default {
             ]
           }
         ],
-      googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
+      googleServicesFile: "./google-services.json",
     },
 
 
@@ -59,6 +59,7 @@ export default {
       "expo-router",
       "expo-sqlite",
       "@react-native-community/datetimepicker",
+      "@react-native-firebase/app",
       [
         "expo-splash-screen",
         {
