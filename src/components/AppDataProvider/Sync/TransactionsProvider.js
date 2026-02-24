@@ -3,6 +3,8 @@ import { useSQLiteContext } from "expo-sqlite";
 import {
   getUnsyncedTransactions,
   syncTransactionsFromApi,
+  markTransactionsAsSynced,
+  deleteSyncedTransactions,
 } from "../../../db/transactionsDb";
 import {getLastSyncedAt, saveLastSyncedAt} from "../../../db/common"
 import { api } from "../../../../api";
@@ -11,6 +13,7 @@ import { useSyncEngine } from "../../../../src/hooks/useSyncEngine";
 import {
   getUnsyncedTemplates,
   syncTemplatesFromApi,
+  markTemplatesAsSynced,
 } from "../../../db/transactionsTempsDb"
 
 
@@ -20,11 +23,16 @@ export default function TransactionsProvider({ children }) {
   const enabled = !!userDetails;
   
   const syncFromLocalToApi = async() => {
-    const unsynced = await getUnsyncedTransactions(db);
-    if (unsynced.length > 0) {
-      await api.post("/finances/transactions/bulk_sync/", {
-        items: unsynced,
-      });
+    try {
+      const unsynced = await getUnsyncedTransactions(db);
+      if (unsynced.length > 0) {
+        await api.post("/finances/transactions/bulk_sync/", {
+          items: unsynced,
+        });
+      }
+      await markTransactionsAsSynced(db, unsynced.map(i => i.uuid));
+    } catch (error) {
+      console.log(error)
     }
   }
 
@@ -42,13 +50,27 @@ export default function TransactionsProvider({ children }) {
     }
   }
 
-  const syncTemplatesFromLocalToApi = async () => {
-    const unsynced = await getUnsyncedTemplates(db);
+  const deleteTransactions = async() => {
+    try {
+      await deleteSyncedTransactions(db)
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
-    if (unsynced.length > 0) {
-      await api.post("/finances/transactions/templates/bulk_sync/", {
-        items: unsynced,
-      });
+  const syncTemplatesFromLocalToApi = async () => {
+    try {
+      const unsynced = await getUnsyncedTemplates(db);
+
+      if (unsynced.length > 0) {
+        await api.post("/finances/transactions/templates/bulk_sync/", {
+          items: unsynced,
+        });
+      }
+
+      await markTemplatesAsSynced(db, unsynced.map(i => i.uuid));
+    } catch (error) {
+      console.log(error,"hello error")
     }
   };
 
@@ -71,6 +93,7 @@ export default function TransactionsProvider({ children }) {
 
     await syncFromLocalToApi()
     await syncFromApiToLocal()
+    await deleteTransactions()
     syncManager.emit("transactions_updated");
 
     await syncTemplatesFromLocalToApi();

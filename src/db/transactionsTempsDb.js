@@ -215,8 +215,18 @@ export const getUnsyncedTemplates = async (db) => {
     SELECT *
     FROM transaction_templates
     WHERE is_synced = 0
-      AND deleted_at IS NULL
   `);
+};
+
+export const markTemplatesAsSynced = async (db, uuids) => {
+  if (!uuids.length) return;
+  const placeholders = uuids.map(() => "?").join(",");
+  await db.runAsync(
+    `UPDATE transaction_templates
+      SET is_synced = 1
+      WHERE uuid IN (${placeholders})`,
+    uuids
+  );
 };
 
 export const hardDeleteTransactionTemplate = async (db, uuid) => {

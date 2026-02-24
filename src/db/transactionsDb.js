@@ -191,12 +191,32 @@ export async function getUnsyncedTransactions(db) {
         SELECT *
         FROM finance_transactions
         WHERE is_synced = 0
-        AND deleted_at IS NULL
-        ORDER BY datetime(updated_at) ASC
         `
     );
 }
 
+export async function deleteSyncedTransactions(db) {
+  const result = await db.runAsync(
+    `
+      DELETE FROM finance_transactions
+      WHERE deleted_at IS NOT NULL
+      AND is_synced = 1
+    `
+  );
+  console.log(result.changes,"hello changes")
+  return result.changes; 
+}
+
+export const markTransactionsAsSynced = async (db, uuids) => {
+  if (!uuids.length) return;
+  const placeholders = uuids.map(() => "?").join(",");
+  await db.runAsync(
+    `UPDATE finance_transactions
+      SET is_synced = 1
+      WHERE uuid IN (${placeholders})`,
+    uuids
+  );
+};
 
 export async function updateTransaction(db, uuid, updates) {
     let {title,amount,type,category,note} = updates
@@ -213,16 +233,17 @@ export async function updateTransaction(db, uuid, updates) {
 }
 
 export async function deleteTransaction(db, uuid) {
-    await db.runAsync(
-        `UPDATE finance_transactions
-        SET deleted_at = ?, updated_at = ?
-        WHERE uuid = ? AND deleted_at IS NULL`
-        , [
-        new Date().toISOString(),
-        new Date().toISOString(),
-        uuid,
-        ]
-    );
+  const now = new Date().toISOString();
+
+  await db.runAsync(
+    `UPDATE finance_transactions
+      SET deleted_at = ?,
+          updated_at = ?,
+          is_synced = 0
+      WHERE uuid = ?
+        AND deleted_at IS NULL`,
+    [now, now, uuid]
+  );
 }
 
 export async function getTransactionStats(db, period) {
