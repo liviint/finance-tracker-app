@@ -47,6 +47,9 @@ export default {
           }
         ],
       googleServicesFile: "./google-services.json",
+      permissions: [
+        "com.google.android.gms.permission.AD_ID"
+      ]
     },
 
 
