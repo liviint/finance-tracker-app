@@ -17,7 +17,8 @@ const MAPPING = {
     'category':'category' as MaterialIconName,
     'savings':'trending-up' as MaterialIconName,
     'budgetings':'account-balance-wallet' as MaterialIconName,
-    'debts':'request-quote' as MaterialIconName
+    'debts':'request-quote' as MaterialIconName,
+    'arrow-right': 'arrow-right' as MaterialIconName,
 };
 
 // 2. Define IconSymbolName using the *inferred* keys of MAPPING.

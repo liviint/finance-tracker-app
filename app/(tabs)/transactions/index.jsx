@@ -11,6 +11,7 @@ import { useThemeStyles } from "../../../src/hooks/useThemeStyles"
 import { syncManager } from "../../../utils/syncManager";
 import TimeFilters from "../../../src/components/transactions/TimeFilters";
 import EmptyState from "../../../src/components/common/EmptyState";
+import ButtonLinks from "../../../src/components/common/ButtonLinks";
 
 export default function FinanceListPage() {
     const db = useSQLiteContext()
@@ -173,18 +174,14 @@ const ListHeader = ({ stats, onPeriodChange, globalStyles,selectedPeriod }) => {
       </Card>
     </View>
 
-    <View style={styles.viewStatsRow}>
-      <Pressable onPress={() => router.push("/transactions-templates")}>
-        <SecondaryText style={styles.viewStatsText}>
-          Templates
-        </SecondaryText>
-      </Pressable>
-      <Pressable onPress={() => router.push("/transactions/stats")}>
-        <SecondaryText style={styles.viewStatsText}>
-          Stats
-        </SecondaryText>
-      </Pressable>
-    </View>
+    <ButtonLinks 
+      links={[
+        {name:"View Templates", route:"/transactions-templates"},
+        {name:"View Statistics", route:"/transactions/stats"},
+      ]}
+    />
+
+    
   </>
 }
 
