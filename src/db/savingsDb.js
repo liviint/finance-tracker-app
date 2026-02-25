@@ -36,20 +36,24 @@ export const getSavingsGoals = async (db) => {
 export const getSavingsStats = async (db) => {
   return await db.getFirstAsync(`
     SELECT
-      COUNT(*) AS total_goals,
+      COUNT(g.uuid) AS total_goals,
       COALESCE(SUM(g.target_amount), 0) AS total_target,
-      COALESCE(SUM(t.amount), 0) AS total_saved,
-      COALESCE(SUM(g.target_amount - IFNULL(t.amount, 0)), 0) AS total_remaining,
-      COUNT(CASE WHEN IFNULL(t.amount, 0) >= g.target_amount THEN 1 END) AS completed_goals,
+      COALESCE(SUM(tx.total_saved), 0) AS total_saved,
+      COALESCE(SUM(g.target_amount - tx.total_saved), 0) AS total_remaining,
+      COUNT(CASE WHEN tx.total_saved >= g.target_amount THEN 1 END) AS completed_goals,
       ROUND(
         CASE WHEN SUM(g.target_amount) > 0
-          THEN SUM(IFNULL(t.amount, 0)) * 100.0 / SUM(g.target_amount)
+          THEN SUM(tx.total_saved) * 100.0 / SUM(g.target_amount)
           ELSE 0
         END, 1
       ) AS overall_progress_percent
     FROM savings_goals g
-    LEFT JOIN savings_transactions t
-      ON t.goal_uuid = g.uuid
+    LEFT JOIN (
+      SELECT goal_uuid, SUM(amount) AS total_saved
+      FROM savings_transactions
+      GROUP BY goal_uuid
+    ) tx
+      ON tx.goal_uuid = g.uuid
     WHERE g.deleted_at IS NULL;
   `);
 };
