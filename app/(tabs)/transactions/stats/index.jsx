@@ -36,7 +36,6 @@ export default function FinanceStatsPage() {
     const fetchStats = async () => {
       const summary = await getTransactionStats(db,period);
       const categories = await getExpenseBreakdownByCategory(db,period);
-
       setStats(summary);
       setCategoryStats(categories);
     };
