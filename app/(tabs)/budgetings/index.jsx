@@ -196,14 +196,14 @@ const BudgetListHeader = ({
         <Card style={styles.card}>
           <SecondaryText style={styles.label}>Budgeted</SecondaryText>
           <BodyText style={styles.value}>
-            KES {total_budgeted.toLocaleString()}
+            KES {total_budgeted?.toLocaleString()}
           </BodyText>
         </Card>
 
         <Card style={styles.card}>
           <SecondaryText style={styles.label}>Spent</SecondaryText>
           <BodyText style={[styles.value, { color: "#FF6B6B" }]}>
-            KES {total_spent.toLocaleString()}
+            KES {total_spent?.toLocaleString()}
           </BodyText>
         </Card>
       </View>
@@ -212,7 +212,7 @@ const BudgetListHeader = ({
         <Card style={styles.card}>
           <SecondaryText style={styles.label}>Remaining</SecondaryText>
           <BodyText style={[styles.value, { color: "#2E8B8B" }]}>
-            KES {total_remaining.toLocaleString()}
+            KES {total_remaining?.toLocaleString()}
           </BodyText>
         </Card>
       </View>
