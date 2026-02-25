@@ -77,8 +77,10 @@ const migrateDbIfNeeded = async (db) => {
       is_synced INTEGER DEFAULT 0
     );
 
-    CREATE INDEX IF NOT EXISTS idx_categories_type
-    ON finance_categories(type);
+
+    CREATE UNIQUE INDEX IF NOT EXISTS finance_categories_name_type_unique
+    ON finance_categories(LOWER(name), type)
+    WHERE deleted_at IS NULL;
 
     CREATE TABLE IF NOT EXISTS app_settings (
       key TEXT PRIMARY KEY,

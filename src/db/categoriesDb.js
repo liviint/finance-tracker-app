@@ -60,9 +60,7 @@ export const getUnsyncedCategories = (db) => {
   );
 }
 
-/**
- * Upsert a category
- */
+
 export const upsertCategory = async (db, { id = null, uuid, name, type, color, icon }) => {
   const now = new Date().toISOString();
 
@@ -86,7 +84,7 @@ export const upsertCategory = async (db, { id = null, uuid, name, type, color, i
         icon = excluded.icon,
         updated_at = excluded.updated_at
       `,
-      [id, uuid || newUuid(), name, type, color, icon, now, now]
+      [id, uuid || newUuid(), name.trim(), type, color, icon, now, now]
     );
     console.log("✅ Category upserted locally");
   } catch (error) {
@@ -140,12 +138,6 @@ export const categoryExists = async (db, uuid) => {
   return !!row;
 };
 
-/**
- * Sync categories from API to local DB
- * @param db - SQLite DB instance
- * @param remoteCategories - array of categories from API
- * Each category should have: { uuid, name, type, color, icon, created_at, updated_at }
- */
 export const syncCategoriesFromApi = async (db, remoteCategories = []) => {
   if (!remoteCategories || !Array.isArray(remoteCategories)) return;
 

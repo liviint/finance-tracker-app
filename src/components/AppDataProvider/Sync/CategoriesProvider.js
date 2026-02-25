@@ -52,9 +52,9 @@ export default function CategoriesProvider({ children }) {
 
   const bootstrap = async () => {
     if(userDetails){
+      await syncFromApiToLocal()
       await handleDefaultCategoriesSync()
       await syncFromLocalToApi()
-      await syncFromApiToLocal()
     }
     else{
       seedCategoriesIfEmpty(db)
