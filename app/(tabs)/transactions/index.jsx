@@ -100,12 +100,7 @@ export default function FinanceListPage() {
           My transactions
         </BodyText>
       </View>
-      {transactions.length === 0 ? 
-        <EmptyState
-          title="No transactions yet"
-          description="Add your income and expenses to see where your money really goes."
-        />
-      : 
+      
       <>
         <FlatList
           data={transactions}
@@ -124,7 +119,7 @@ export default function FinanceListPage() {
         
      
     </>
-}
+
 <AddButton 
             primaryAction={{route:"/transactions/add",label:"Add Transaction"}}
             secondaryActions={[
@@ -180,7 +175,6 @@ const ListHeader = ({ stats, onPeriodChange, globalStyles,selectedPeriod }) => {
         {name:"View Statistics", route:"/transactions/stats"},
       ]}
     />
-
     
   </>
 }

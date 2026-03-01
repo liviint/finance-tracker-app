@@ -94,23 +94,27 @@ export default function FinanceStatsPage() {
       <Card style={styles.insightCard}>
         <BodyText style={styles.insightTitle}>Quick Insight</BodyText>
 
-        <BodyText style={styles.insightText}>
-          {stats.expenses > stats.income ? (
-            <>
-              You are spending{" "}
-              <BodyText style={{...styles.insightHighlight,color:colors.labelColor}}>more than you earn</BodyText>.
-              Consider reviewing your expenses.
-            </>
-          ) : (
-            <>
-              You are saving about{" "}
-              <BodyText style={{...styles.insightHighlight,color:colors.labelColor}}>
-                {savingsRate}%
-              </BodyText>{" "}
-              of your income. Great progress 💪
-            </>
-          )}
-        </BodyText>
+        {stats.expenses ? 
+          <BodyText style={styles.insightText}>
+            {stats.expenses > stats.income ? (
+              <>
+                You are spending{" "}
+                <BodyText style={{...styles.insightHighlight,color:colors.labelColor}}>more than you earn</BodyText>.
+                Consider reviewing your expenses.
+              </>
+            ) : (
+              <>
+                You are saving about{" "}
+                <BodyText style={{...styles.insightHighlight,color:colors.labelColor}}>
+                  {savingsRate}%
+                </BodyText>{" "}
+                of your income. Great progress 💪
+              </>
+            )}
+          </BodyText> : 
+          
+        <SecondaryText>No expense data yet</SecondaryText>
+        }
       </Card>
     </ScrollView>
   );
