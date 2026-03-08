@@ -53,8 +53,6 @@ export const ensureRecurringBudgetsForMonth = async (db, date = new Date()) => {
 
   if (existing.length > 0) return;
 
-  console.log("📌 Creating recurring budgets for", monthStart);
-
   const recurringBudgets = await db.getAllAsync(
     `
     SELECT category_uuid, amount
@@ -184,23 +182,16 @@ export const getMonthlyBudgetStats = async (db, date = new Date()) => {
         SUM(amount) AS spent
       FROM finance_transactions
       WHERE type = 'expense'
+        AND created_at >= ?
+        AND created_at < date(?, '+1 month')
       GROUP BY category_uuid
     ) t
-    ON t.category_uuid = b.category_uuid
-       AND t.spent IS NOT NULL
-       AND EXISTS (
-         SELECT 1
-         FROM finance_transactions ft
-         WHERE ft.category_uuid = b.category_uuid
-           AND ft.type = 'expense'
-           AND ft.created_at BETWEEN b.start_date
-               AND date(b.start_date, '+1 month', '-1 day')
-       )
+      ON t.category_uuid = b.category_uuid
 
     WHERE b.start_date = ?
       AND b.deleted_at IS NULL
     `,
-    [startDate]
+    [startDate, startDate, startDate]
   );
 };
 
