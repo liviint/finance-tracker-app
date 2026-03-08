@@ -15,12 +15,15 @@ export async function upsertTransaction(
     category_uuid,
     note = null,
     date,
+    template,
     source = "manual",
   }
 ) {
   const now = new Date().toISOString();
   const transactionDate = date ? date.toISOString() : now;
   amount = parseFloat(amount) || 0;
+
+  await db.runAsync("BEGIN TRANSACTION");
 
   try {
     const localUuid = uuid ? uuid : newUuid();
@@ -72,9 +75,20 @@ export async function upsertTransaction(
       ]
     );
 
+    if(template) {
+      await db.runAsync(`
+        UPDATE transaction_templates
+        SET usage_count = usage_count + 1,
+            updated_at = datetime('now')
+        WHERE uuid = ?
+      `, [template]);
+    }
+
+    await db.runAsync("COMMIT");
+    
     return localUuid;
   } catch (error) {
-    console.error("❌ Failed to upsert transaction:", error);
+    await db.runAsync("ROLLBACK");
     throw error;
   }
 }

@@ -46,9 +46,25 @@ const addRecurringColumnToBudgets = async (db) => {
     } 
 };
 
+const addUsageCountToTransactionTemplates = async (db) => {
+    const columns = await db.getAllAsync(
+        `PRAGMA table_info(transaction_templates);`
+    );
+
+    const hasUsageCount = columns.some(col => col.name === "usage_count");
+
+    if (!hasUsageCount) {
+        await db.execAsync(`
+        ALTER TABLE transaction_templates
+        ADD COLUMN usage_count INTEGER DEFAULT 0;
+        `);
+    }
+};
+
 
 export const extraMigrations = async (db) => {
     await addPayeeColumnToTransactions(db);
     await addSpendingTypeColumnToCategories(db);
     await addRecurringColumnToBudgets(db)
+    await addUsageCountToTransactionTemplates(db)
 };

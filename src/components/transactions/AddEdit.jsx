@@ -26,6 +26,7 @@ export default function AddEdit() {
     uuid:"",
     payee:"",
     date:new Date(),
+    template:false,
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -108,8 +109,8 @@ const isFormValid = () => {
       type: template.type,
       note: template.note || "",
       payee: template.payee || "",
+      template:template.uuid,
     }));
-
     setShowTemplates(false);
   };
 

@@ -96,6 +96,7 @@ const migrateDbIfNeeded = async (db) => {
 
       category TEXT,
       category_uuid TEXT,
+      usage_count INTEGER DEFAULT 0,
 
       payee TEXT,
       note TEXT,

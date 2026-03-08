@@ -155,7 +155,7 @@ export const getTransactionTemplates = async (db) => {
     SELECT *
     FROM transaction_templates
     WHERE deleted_at IS NULL
-    ORDER BY updated_at DESC
+    ORDER BY usage_count DESC, updated_at DESC
   `);
 };
 
