@@ -12,7 +12,6 @@ import { BodyText, Card } from "../../../src/components/ThemeProvider/components
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 import { syncManager } from "../../../utils/syncManager";
 import { AddButton } from "../../../src/components/common/AddButton";
-import EmptyState from "../../../src/components/common/EmptyState";
 import BudgetListHeader  from "../../../src/components/budgeting/BudgetListHeader";
 
 export default function BudgetsListScreen() {

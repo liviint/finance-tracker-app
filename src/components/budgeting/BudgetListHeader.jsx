@@ -2,24 +2,6 @@ import { useState } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { BodyText, Card, SecondaryText } from "../../../src/components/ThemeProvider/components";
 
-const getPastSixMonths = () => {
-  const months = [];
-  const now = new Date();
-
-  for (let i = 0; i < 6; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-
-    months.push({
-      label: d.toLocaleString("default", { month: "short" }),
-      value: d,
-    });
-  }
-
-  return months;
-};
-
-
-
 const BudgetListHeader = ({
   stats = {},
   selectedMonth,
