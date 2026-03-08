@@ -1,5 +1,9 @@
 export function getPeriodDateFilter(period = "30 days", column = "date") {
     switch (period) {
+        
+        case "All time":
+        return ``;
+
         case "7 days":
         return `AND datetime(${column}) >= datetime('now','-7 days')`;
 

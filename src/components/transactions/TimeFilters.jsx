@@ -11,35 +11,42 @@ const TIME_FILTERS = [
     "1 year",
 ];
 
-const TimeFilters = ({ onPeriodChange,selectedPeriod }) => {
-    const {colors} = useThemeStyles()
-    const handleSelectPeriod = (period) => {
-        if (onPeriodChange) onPeriodChange(period);
-    };
-    return <>
-        <View style={styles.filterRow}>
-            {TIME_FILTERS.map((period) => (
-            <Pressable
-                key={period}
-                onPress={() => handleSelectPeriod(period)}
-                style={{
-                    ...styles.filterChip,
-                    backgroundColor: selectedPeriod === period ? "#2E8B8B"  : colors.surface,
-                }}
-            >
-                <BodyText
-                style={{
-                    ...styles.filterText,
-                    color:selectedPeriod === period ? "#FFFFFF" : colors.text ,
-                }}
-                >
-                {period}
-                </BodyText>
-            </Pressable>
-            ))}
-        </View>
-    </>
-}
+const TimeFilters = ({ onPeriodChange, selectedPeriod, showAllSelector = false }) => {
+  const { colors } = useThemeStyles();
+
+  const filters = showAllSelector
+    ? ["All time", ...TIME_FILTERS]
+    : TIME_FILTERS;
+
+  const handleSelectPeriod = (period) => {
+    if (onPeriodChange) onPeriodChange(period);
+  };
+
+  return (
+    <View style={styles.filterRow}>
+      {filters.map((period) => (
+        <Pressable
+          key={period}
+          onPress={() => handleSelectPeriod(period)}
+          style={{
+            ...styles.filterChip,
+            backgroundColor:
+              selectedPeriod === period ? "#2E8B8B" : colors.surface,
+          }}
+        >
+          <BodyText
+            style={{
+              ...styles.filterText,
+              color: selectedPeriod === period ? "#FFFFFF" : colors.text,
+            }}
+          >
+            {period}
+          </BodyText>
+        </Pressable>
+      ))}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
     filterRow: {

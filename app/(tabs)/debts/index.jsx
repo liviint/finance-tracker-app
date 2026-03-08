@@ -30,7 +30,7 @@ export default function DebtsListScreen() {
     total_unpaid:0,
     total_paid:0,
   });
-  const [period,setPeriod] = useState("30 days")
+  const [period,setPeriod] = useState("All time")
 
   const onPeriodChange = (value) => {
     setPeriod(value)
@@ -120,7 +120,7 @@ export default function DebtsListScreen() {
   );
 }
 
-const ListHeader = ({ stats, onPeriodChange, globalStyles, selectedPeriod }) => {
+const ListHeader = ({ stats, onPeriodChange, selectedPeriod }) => {
 
   const format = (n) => Number(n || 0).toLocaleString();
 
@@ -130,6 +130,7 @@ const ListHeader = ({ stats, onPeriodChange, globalStyles, selectedPeriod }) => 
       <TimeFilters
         onPeriodChange={onPeriodChange}
         selectedPeriod={selectedPeriod}
+        showAllSelector={true}
       />
 
       <Card style={styles.balanceCard}>
