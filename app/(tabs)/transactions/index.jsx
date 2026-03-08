@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useIsFocused } from "@react-navigation/native";
-import { View, FlatList, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable, SectionList } from "react-native";
 import { Card, BodyText, SecondaryText } from "../../../src/components/ThemeProvider/components";
 import { AddButton } from "../../../src/components/common/AddButton";
 import { useRouter } from "expo-router";
@@ -10,7 +10,6 @@ import { dateFormat } from "../../../utils/dateFormat";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles"
 import { syncManager } from "../../../utils/syncManager";
 import TimeFilters from "../../../src/components/transactions/TimeFilters";
-import EmptyState from "../../../src/components/common/EmptyState";
 import ButtonLinks from "../../../src/components/common/ButtonLinks";
 
 export default function FinanceListPage() {
@@ -54,6 +53,57 @@ export default function FinanceListPage() {
       });
       return unsub;
     }, []);
+
+    const groupTransactions = (transactions) => {
+      const today = new Date();
+      const todayStr = today.toISOString().slice(0, 10);
+
+      const yesterday = new Date();
+      yesterday.setDate(today.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().slice(0, 10);
+
+      const startOfWeek = new Date(today);
+      const day = today.getDay();
+      const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+      startOfWeek.setDate(diff);
+
+      const startOfLastWeek = new Date(startOfWeek);
+      startOfLastWeek.setDate(startOfWeek.getDate() - 7);
+
+      const groups = {
+        Today: [],
+        Yesterday: [],
+        "This Week": [],
+        "Last Week": [],
+        Older: [],
+  };
+
+  transactions.forEach((transaction) => {
+    const date = new Date(transaction.date);
+    const dateStr = date.toISOString().slice(0, 10);
+
+    if (dateStr === todayStr) {
+      groups.Today.push(transaction);
+    } else if (dateStr === yesterdayStr) {
+      groups.Yesterday.push(transaction);
+    } else if (date >= startOfWeek) {
+      groups["This Week"].push(transaction);
+    } else if (date >= startOfLastWeek && date < startOfWeek) {
+      groups["Last Week"].push(transaction);
+    } else {
+      groups.Older.push(transaction);
+    }
+  });
+
+  return Object.keys(groups)
+    .map((key) => ({
+      title: key,
+      data: groups[key],
+    }))
+    .filter((section) => section.data.length > 0);
+};
+
+  const sections = groupTransactions(transactions);
 
   const renderItem = ({ item }) => (
     <Pressable onPress={() => router.push(`/transactions/${item.uuid}`)}>
@@ -102,31 +152,34 @@ export default function FinanceListPage() {
       </View>
       
       <>
-        <FlatList
-          data={transactions}
-          ListHeaderComponent={
-            <ListHeader 
-              stats={stats} 
-              onPeriodChange={onPeriodChange}  
-              globalStyles={globalStyles} 
-              selectedPeriod={period}
-            />
-          }
-          keyExtractor={(item) => item.uuid}
-          renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 96 }}
-        />
-        
-     
+      <SectionList
+        sections={sections}
+        keyExtractor={(item) => item.uuid}
+        renderItem={renderItem}
+        renderSectionHeader={({ section: { title } }) => (
+          <BodyText style={{ fontWeight: "bold", padding: 10 }}>
+            {title}
+          </BodyText>
+        )}
+        ListHeaderComponent={
+          <ListHeader
+            stats={stats}
+            onPeriodChange={onPeriodChange}
+            globalStyles={globalStyles}
+            selectedPeriod={period}
+          />
+        }
+        contentContainerStyle={{ paddingBottom: 96 }}
+      />
     </>
 
-<AddButton 
-            primaryAction={{route:"/transactions/add",label:"Add Transaction"}}
-            secondaryActions={[
-              {route:"/categories/add/modal",label:"Add Category"},
-              {route:"/transactions-templates/add/",label:"Add Template"},
-            ]}
-          />
+    <AddButton 
+      primaryAction={{route:"/transactions/add",label:"Add Transaction"}}
+      secondaryActions={[
+        {route:"/categories/add/modal",label:"Add Category"},
+        {route:"/transactions-templates/add/",label:"Add Template"},
+      ]}
+    />
  </View>
   )
 }
