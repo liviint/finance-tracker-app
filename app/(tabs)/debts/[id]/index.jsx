@@ -13,7 +13,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { useThemeStyles } from "../../../../src/hooks/useThemeStyles";
 import { BodyText, SecondaryText,Card, Input } from "../../../../src/components/ThemeProvider/components";
 import DeleteButton from "../../../../src/components/common/DeleteButton";
-import { getDebtByUuid, offsetDebt, markDebtAsPaid, markDebtAsUnpaid } from "../../../../src/db/debtsDb";
+import { getDebtByUuid, offsetDebt, markDebtAsPaid, deleteDebt} from "../../../../src/db/debtsDb";
 import { useSQLiteContext } from "expo-sqlite";
 import { dateFormat } from "../../../../utils/dateFormat";
 
@@ -98,21 +98,9 @@ export default function DebtDetailsScreen() {
   }
 };
 
-  const handleDelete = () => {
-    Alert.alert(
-      "Delete Debt",
-      "This debt will be removed. You can’t undo this.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            // await deleteDebt(db, uuid);
-          },
-        },
-      ]
-    );
+  const handleDelete = async () => {
+    await deleteDebt(db, uuid);
+    router.back();
   };
 
   useEffect(() => {
