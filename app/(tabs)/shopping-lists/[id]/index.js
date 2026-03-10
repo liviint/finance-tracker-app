@@ -3,10 +3,11 @@ import { View, FlatList, StyleSheet, TouchableOpacity, Text, Alert, Modal } from
 import { Card, BodyText, Input, FormLabel, SecondaryText } from "@/src/components/ThemeProvider/components";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useThemeStyles } from "@/src/hooks/useThemeStyles";
-import { getShoppingListByUuid, getShoppingItemsByListUuid, upsertShoppingItem, getShoppingListStats } from "../../../../src/db/shoppingListDb";
+import { getShoppingListByUuid, getShoppingItemsByListUuid, upsertShoppingItem, getShoppingListStats, deleteShoppingItem, } from "../../../../src/db/shoppingListDb";
 import { useSQLiteContext } from "expo-sqlite";
 import { useIsFocused } from "@react-navigation/native";
 import { AddButton } from "../../../../src/components/common/AddButton";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const ShoppingListDetailsPage = () => {
   const { globalStyles } = useThemeStyles();
@@ -23,6 +24,8 @@ const ShoppingListDetailsPage = () => {
   const [newItemPrice, setNewItemPrice] = useState("");
   const [reloadItems,setReloadItems] = useState(0)
   const [showForm, setShowForm] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [showActions, setShowActions] = useState(false);
 
   // Load shopping list and items
   useEffect(() => {
@@ -46,7 +49,6 @@ const ShoppingListDetailsPage = () => {
       try {
         if (!uuid) return;
         const itemData = await getShoppingItemsByListUuid(db,uuid);
-        console.log(itemData,"hello item data")
         setItems(itemData || []);
       } catch (error) {
         console.error("Error loading list items:", error);
@@ -73,6 +75,8 @@ const ShoppingListDetailsPage = () => {
   }, [uuid, reloadItems, isFocused]);
 
 
+
+
   const toggleCompleted = async (itemUuid) => {
     const updatedItems = items.map((item) =>
       item.uuid === itemUuid ? { ...item, is_completed: item.is_completed ? 0 : 1 } : item
@@ -84,43 +88,102 @@ const ShoppingListDetailsPage = () => {
     setReloadItems(prev => prev + 1)
   };
 
-  const addItem = async () => {
-    if (!newItemName.trim()) {
-      Alert.alert("Validation", "Please enter an item name.");
-      return;
-    }
+  const addEditItem = async () => {
+  if (!newItemName.trim()) {
+    Alert.alert("Validation", "Please enter an item name.");
+    return;
+  }
 
-    const newItem = {
-      uuid: "",
-      list_uuid: uuid,
-      name: newItemName,
-      quantity: 1,
-      estimated_price: parseFloat(newItemPrice) || 0,
-      is_completed: 0,
-    };
+  const item = {
+    uuid: selectedItem?.uuid || "",
+    list_uuid: uuid,
+    name: newItemName,
+    quantity: 1,
+    estimated_price: parseFloat(newItemPrice) || 0,
+    is_completed: selectedItem?.is_completed || 0,
+  };
 
+  try {
+    await upsertShoppingItem(db, item);
+
+    setNewItemName("");
+    setNewItemPrice("");
+    setSelectedItem(null);
+
+    setReloadItems((prev) => prev + 1);
+  } catch (error) {
+    console.error("Error saving item:", error);
+  }
+};
+
+  const deleteItem = async (itemUuid) => {
     try {
-      await upsertShoppingItem(db,newItem);
-      setNewItemName("");
-      setNewItemPrice("");
-      setReloadItems(prev => prev + 1)
+      await deleteShoppingItem(db, itemUuid);
+      setReloadItems((prev) => prev + 1);
     } catch (error) {
-      console.error("Error adding item:", error);
-      Alert.alert("Error", "Unable to add item.");
+      console.error("Error deleting item:", error);
     }
   };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => toggleCompleted(item.uuid)}>
-      <Card style={[styles.itemCard, item.is_completed ? styles.completedItem : null]}>
-        <BodyText style={item.is_completed ? {...styles.itemCompleted} : {}}>
-          {item.name} {item.quantity > 1 ? `x${item.quantity}` : ""}
-        </BodyText>
-        <SecondaryText>KSh {item.estimated_price}</SecondaryText>
-        {item.is_completed ? <Text style={styles.completedLabel}>✓ Completed</Text> : null}
-      </Card>
-    </TouchableOpacity>
+  const handleDeleteItem = async () => {
+  if (!selectedItem) return;
+
+  Alert.alert(
+    "Confirm Delete",
+    `Are you sure you want to delete "${selectedItem.name}"?`,
+    [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await deleteItem(selectedItem.uuid); 
+            setShowActions(false);
+            setSelectedItem(null);
+          } catch (error) {
+            console.error("Error deleting item:", error);
+            Alert.alert("Error", "Unable to delete item.");
+          }
+        },
+      },
+    ],
+    { cancelable: true }
   );
+};
+
+  const openActions = (item) => {
+    setSelectedItem(item);
+    setShowActions(true);
+  };
+
+  const renderItem = ({ item }) => (
+    <Card style={[styles.itemCard, item.is_completed && styles.completedItem]}>
+  
+  <TouchableOpacity
+    style={{ flex: 1 }}
+    onPress={() => toggleCompleted(item.uuid)}
+  >
+    <BodyText style={item.is_completed && styles.itemCompleted}>
+      {item.name} {item.quantity > 1 ? `x${item.quantity}` : ""}
+    </BodyText>
+
+    <SecondaryText>KSh {item.estimated_price}</SecondaryText>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.actionsBtn}
+    onPress={() => openActions(item)}
+  >
+    <MaterialIcons name="more-vert" size={22} color="#666" />
+  </TouchableOpacity>
+
+</Card>
+  );
+
 
   if (loading) return <Text style={{ margin: 20 }}>Loading...</Text>;
 
@@ -129,24 +192,24 @@ const ShoppingListDetailsPage = () => {
       <BodyText style={globalStyles.title}>{list.name || "Shopping List"}</BodyText>
 
       <Card style={styles.statsCard}>
-  <View style={styles.statsHeader}>
-    <BodyText style={styles.progressText}>
-      {stats.completedCount} / {stats.itemCount} items completed
-    </BodyText>
+        <View style={styles.statsHeader}>
+          <BodyText style={styles.progressText}>
+            {stats.completedCount} / {stats.itemCount} items completed
+          </BodyText>
 
-    <SecondaryText>
-      KSh {stats.spentAmount} / {stats.totalEstimated}
-    </SecondaryText>
-  </View>
+          <SecondaryText>
+            KSh {stats.spentAmount} / {stats.totalEstimated}
+          </SecondaryText>
+        </View>
 
-  <View style={styles.progressBarContainer}>
-    <View
-      style={[
-        styles.progressBarFill,
-        { width: `${stats.progress * 100}%` }
-      ]}
-    />
-  </View>
+      <View style={styles.progressBarContainer}>
+        <View
+          style={[
+            styles.progressBarFill,
+            { width: `${stats.progress * 100}%` }
+          ]}
+        />
+      </View>
 </Card>
 
       <FlatList
@@ -159,14 +222,14 @@ const ShoppingListDetailsPage = () => {
       <AddButton action={() => setShowForm(true)} />
 
             <Modal
-        visible={showForm}
+        visible={Boolean(showForm)}
         animationType="slide"
         transparent
       >
         <View style={styles.modalOverlay}>
           <Card style={styles.modalCard}>
-
-            <BodyText style={styles.modalTitle}>Add Item</BodyText>
+            
+            <BodyText style={styles.modalTitle}>{selectedItem ? "Edit Item" : "Add Item"}</BodyText>
 
             <View style={globalStyles.formGroup}>
               <FormLabel>Item name</FormLabel>
@@ -190,11 +253,13 @@ const ShoppingListDetailsPage = () => {
             <TouchableOpacity
               style={globalStyles.primaryBtn}
               onPress={async () => {
-                await addItem();
+                await addEditItem();
                 setShowForm(false);
               }}
             >
-              <Text style={globalStyles.primaryBtnText}>Save Item</Text>
+              <Text style={globalStyles.primaryBtnText}>
+                {selectedItem ? "Update Item" : "Save Item"}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -207,6 +272,46 @@ const ShoppingListDetailsPage = () => {
           </Card>
         </View>
       </Modal>
+
+      <Modal
+  visible={showActions}
+  transparent
+  animationType="fade"
+>
+  <TouchableOpacity
+    style={styles.actionsOverlay}
+    onPress={() => setShowActions(false)}
+  >
+    <View style={styles.actionsPopup}>
+
+      <TouchableOpacity
+        style={styles.actionItem}
+        onPress={() => {
+          console.log(selectedItem,"hello selected item")
+          setShowActions(false);
+          setNewItemName(selectedItem.name)
+          setNewItemPrice(String(selectedItem.estimated_price))
+          setShowForm(true)          
+        }}
+      >
+        <MaterialIcons name="edit" size={20} color="#333" />
+        <Text style={styles.actionText}>Edit</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.actionItem}
+        onPress={() => {
+          setShowActions(false);
+          handleDeleteItem()
+        }}
+      >
+        <MaterialIcons name="delete" size={20} color="#FF6B6B" />
+        <Text style={styles.actionText}>Delete</Text>
+      </TouchableOpacity>
+
+    </View>
+  </TouchableOpacity>
+</Modal>
 
     </View>
   );
@@ -277,5 +382,42 @@ progressBarContainer: {
 progressBarFill: {
   height: "100%",
   backgroundColor: "#FF6B6B"
+},
+// actionsBtn: {
+//   position: "absolute",
+//   right: 10,
+//   top: 10,
+//   padding: 6
+// },
+
+itemContent: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center"
+},
+
+actionsOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.2)",
+  justifyContent: "center",
+  alignItems: "center"
+},
+
+actionsPopup: {
+  backgroundColor: "white",
+  borderRadius: 12,
+  paddingVertical: 10,
+  width: 180
+},
+
+actionItem: {
+  flexDirection: "row",
+  alignItems: "center",
+  padding: 12,
+  gap: 10
+},
+
+actionText: {
+  fontSize: 15
 },
 });
