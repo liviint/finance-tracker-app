@@ -1,16 +1,18 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { View, FlatList, StyleSheet, TouchableOpacity, Text, Alert } from "react-native";
 import { Card, BodyText, Input, FormLabel, SecondaryText } from "@/src/components/ThemeProvider/components";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useThemeStyles } from "@/src/hooks/useThemeStyles";
 import { getShoppingListByUuid, getShoppingItemsByListUuid, upsertShoppingItem } from "../../../../src/db/shoppingListDb";
 import { useSQLiteContext } from "expo-sqlite";
+import { useIsFocused } from "@react-navigation/native";
 
 const ShoppingListDetailsPage = () => {
   const { globalStyles } = useThemeStyles();
   const { id: uuid } = useLocalSearchParams();
   const db = useSQLiteContext()
   const router = useRouter();
+  const isFocused = useIsFocused();
 
   const [list, setList] = useState({ name: "" });
   const [items, setItems] = useState([]);
@@ -35,7 +37,7 @@ const ShoppingListDetailsPage = () => {
       }
     };
     loadData();
-  }, [uuid]);
+  }, [uuid,isFocused]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -51,7 +53,7 @@ const ShoppingListDetailsPage = () => {
       }
     };
     loadData();
-  }, [uuid,reloadItems]);
+  }, [uuid,reloadItems,isFocused]);
 
   const toggleCompleted = async (itemUuid) => {
     const updatedItems = items.map((item) =>
