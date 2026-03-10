@@ -1,16 +1,16 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Pressable,
   Text,
   StyleSheet,
-  View,
   Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Card, BodyText } from "../ThemeProvider/components";
 
 export const AddButton = ({
-  primaryAction,
+  primaryAction={},
+  action,
   secondaryActions = [],
 }) => {
   const router = useRouter();
@@ -19,7 +19,11 @@ export const AddButton = ({
   const hasSecondary = secondaryActions.length > 0;
 
   const toggleMenu = () => {
-    if (!hasSecondary) {
+    if(action){
+      action()
+      return
+    }
+    else if (!hasSecondary) {
       router.push(primaryAction.route);
       return;
     }

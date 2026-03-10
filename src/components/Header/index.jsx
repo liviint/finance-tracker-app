@@ -46,6 +46,11 @@ export default function Header() {
             path="/settings" 
             isActive={isActive("/(tabs)/settings")} 
           />
+          <NavLink 
+            label="Shopping List" 
+            path="/shopping-lists" 
+            isActive={isActive("/(tabs)/settings")} 
+          />
         </View>
       </View>
     )}

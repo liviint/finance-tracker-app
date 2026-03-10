@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { View, FlatList, StyleSheet, TouchableOpacity, Text, Alert } from "react-native";
+import { View, FlatList, StyleSheet, TouchableOpacity, Text, Alert, Modal } from "react-native";
 import { Card, BodyText, Input, FormLabel, SecondaryText } from "@/src/components/ThemeProvider/components";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useThemeStyles } from "@/src/hooks/useThemeStyles";
 import { getShoppingListByUuid, getShoppingItemsByListUuid, upsertShoppingItem } from "../../../../src/db/shoppingListDb";
 import { useSQLiteContext } from "expo-sqlite";
 import { useIsFocused } from "@react-navigation/native";
+import { AddButton } from "../../../../src/components/common/AddButton";
 
 const ShoppingListDetailsPage = () => {
   const { globalStyles } = useThemeStyles();
@@ -21,6 +22,7 @@ const ShoppingListDetailsPage = () => {
   const [newItemName, setNewItemName] = useState("");
   const [newItemPrice, setNewItemPrice] = useState("");
   const [reloadItems,setReloadItems] = useState(0)
+  const [showForm, setShowForm] = useState(false);
 
   // Load shopping list and items
   useEffect(() => {
@@ -61,9 +63,8 @@ const ShoppingListDetailsPage = () => {
     );
     setItems(updatedItems);
 
-    // Update in DB
     const updatedItem = updatedItems.find((i) => i.uuid === itemUuid);
-    await upsertShoppingItem({ ...updatedItem, list_uuid: uuid });
+    await upsertShoppingItem(db,{ ...updatedItem, list_uuid: uuid });
   };
 
   const addItem = async () => {
@@ -97,7 +98,7 @@ const ShoppingListDetailsPage = () => {
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => toggleCompleted(item.uuid)}>
       <Card style={[styles.itemCard, item.is_completed ? styles.completedItem : null]}>
-        <BodyText style={styles.itemName}>
+        <BodyText style={item.is_completed ? {...styles.itemCompleted} : {}}>
           {item.name} {item.quantity > 1 ? `x${item.quantity}` : ""}
         </BodyText>
         <SecondaryText>KSh {item.estimated_price}</SecondaryText>
@@ -112,33 +113,6 @@ const ShoppingListDetailsPage = () => {
     <View style={globalStyles.container}>
       <BodyText style={globalStyles.title}>{list.name || "Shopping List"}</BodyText>
 
-      <Card style={styles.addCard}>
-        <View style={globalStyles.formGroup}>
-          <FormLabel>Item name</FormLabel>
-          <Input
-            style={styles.input}
-            placeholder="i.e Vegetables"
-            value={newItemName}
-            onChangeText={setNewItemName}
-          />
-        </View>
-
-        <View style={globalStyles.formGroup}>
-          <FormLabel>Estimated price</FormLabel>
-          <Input
-            style={[styles.input, styles.priceInput]}
-            placeholder="i.e 500"
-            value={newItemPrice}
-            onChangeText={setNewItemPrice}
-            keyboardType="numeric"
-          />
-        </View>
-
-        <TouchableOpacity style={globalStyles.primaryBtn} onPress={addItem}>
-          <Text style={globalStyles.primaryBtnText}>+ Add Item</Text>
-        </TouchableOpacity>
-      </Card>
-
       <FlatList
         data={items}
         renderItem={renderItem}
@@ -149,6 +123,59 @@ const ShoppingListDetailsPage = () => {
       <View style={styles.totalContainer}>
         <BodyText style={styles.totalText}>Total: KSh {totalPrice}</BodyText>
       </View>
+
+      <AddButton action={() => setShowForm(true)} />
+
+            <Modal
+        visible={showForm}
+        animationType="slide"
+        transparent
+      >
+        <View style={styles.modalOverlay}>
+          <Card style={styles.modalCard}>
+
+            <BodyText style={styles.modalTitle}>Add Item</BodyText>
+
+            <View style={globalStyles.formGroup}>
+              <FormLabel>Item name</FormLabel>
+              <Input
+                placeholder="i.e Vegetables"
+                value={newItemName}
+                onChangeText={setNewItemName}
+              />
+            </View>
+
+            <View style={globalStyles.formGroup}>
+              <FormLabel>Estimated price</FormLabel>
+              <Input
+                placeholder="i.e 500"
+                value={newItemPrice}
+                onChangeText={setNewItemPrice}
+                keyboardType="numeric"
+              />
+            </View>
+
+            <TouchableOpacity
+              style={globalStyles.primaryBtn}
+              onPress={async () => {
+                await addItem();
+                setShowForm(false);
+              }}
+            >
+              <Text style={globalStyles.primaryBtnText}>Save Item</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={() => setShowForm(false)}
+            >
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+
+          </Card>
+        </View>
+      </Modal>
+
     </View>
   );
 };
@@ -159,9 +186,43 @@ const styles = StyleSheet.create({
   addCard: { padding: 16, borderRadius: 16, marginBottom: 16 },
   priceInput: { width: "50%" },
   itemCard: { padding: 16, marginBottom: 12, borderRadius: 16, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  itemCompleted:{color:"black"},
   completedItem: { backgroundColor: "#E0F7E0" },
   completedLabel: { color: "#28A745", fontWeight: "700", marginLeft: 8 },
   emptyText: { textAlign: "center", marginTop: 40, color: "#999" },
-  totalContainer: { padding: 16, borderTopWidth: 1, borderColor: "#eee", alignItems: "flex-end" },
+  totalContainer: { 
+    padding: 16, 
+    borderTopWidth: 1, 
+    borderColor: "#eee", 
+    alignItems: "center" 
+  },
   totalText: { fontSize: 16, fontWeight: "700" },
+  modalOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.4)",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+modalCard: {
+  width: "90%",
+  padding: 20,
+  borderRadius: 16,
+},
+
+modalTitle: {
+  fontSize: 18,
+  fontWeight: "700",
+  marginBottom: 10,
+},
+
+cancelBtn: {
+  marginTop: 10,
+  alignItems: "center",
+},
+
+cancelText: {
+  color: "#999",
+  fontWeight: "600",
+},
 });
