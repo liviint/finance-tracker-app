@@ -17,6 +17,8 @@ const migrateDbIfNeeded = async (db) => {
   // await db.execAsync(`DROP TABLE IF EXISTS  app_settings;`);
   // await db.execAsync(`DROP TABLE IF EXISTS  debts;`);
   // await db.execAsync(`DROP TABLE IF EXISTS  debt_payments;`);
+  await db.execAsync(`DROP TABLE IF EXISTS shopping_lists;`);
+  await db.execAsync(`DROP TABLE IF EXISTS shopping_items;`);
   // await db.execAsync(`PRAGMA user_version = 0;`);
 
 
@@ -205,6 +207,43 @@ const migrateDbIfNeeded = async (db) => {
     is_synced INTEGER DEFAULT 0,       
     FOREIGN KEY (debt_uuid) REFERENCES debts(uuid)
   );
+
+  CREATE TABLE IF NOT EXISTS shopping_lists (
+    id INTEGER,
+    uuid TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    note TEXT,
+    is_archived INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT,
+    deleted_at TEXT,
+    is_synced INTEGER DEFAULT 0
+  );
+
+
+  CREATE TABLE IF NOT EXISTS shopping_items (
+    id INTEGER,
+    uuid TEXT PRIMARY KEY,
+    list_uuid TEXT NOT NULL,
+    name TEXT NOT NULL,
+    quantity REAL DEFAULT 1,
+    estimated_price REAL,
+    category_uuid TEXT,
+    note TEXT,
+    position INTEGER,
+    is_completed INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT,
+    deleted_at TEXT,
+    is_synced INTEGER DEFAULT 0,
+    FOREIGN KEY (list_uuid) REFERENCES shopping_lists(uuid) ON DELETE CASCADE
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_shopping_items_list
+  ON shopping_items(list_uuid);
+
+  CREATE INDEX IF NOT EXISTS idx_shopping_items_completed
+  ON shopping_items(is_completed);
 
   `);
 
