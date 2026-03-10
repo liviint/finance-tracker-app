@@ -21,6 +21,8 @@ export const getAllShoppingLists = async (db) => {
     `);
 };
 
+
+// Get a single shopping list by its UUID, including item counts
 export const getShoppingListByUuid = async (db, listUuid) => {
   return await db.getFirstAsync(`
     SELECT
@@ -30,17 +32,18 @@ export const getShoppingListByUuid = async (db, listUuid) => {
       l.is_archived,
       l.created_at,
       l.updated_at,
-      COUNT(i.id) AS item_count,
+      COUNT(i.uuid) AS item_count,
       SUM(CASE WHEN i.is_completed = 1 THEN 1 ELSE 0 END) AS completed_count
     FROM shopping_lists l
     LEFT JOIN shopping_items i
-      ON i.list_id = l.id AND i.deleted_at IS NULL
+      ON i.list_uuid = l.uuid AND i.deleted_at IS NULL
     WHERE l.uuid = ? AND l.deleted_at IS NULL
     GROUP BY l.uuid
     LIMIT 1;
   `, [listUuid]);
 };
 
+// Insert or update a shopping list
 export const upsertShoppingList = async (db, { uuid, name, note = "", is_archived = 0 }) => {
   const now = new Date().toISOString();
   const listUuid = uuid || newUuid();
@@ -65,6 +68,17 @@ export const upsertShoppingList = async (db, { uuid, name, note = "", is_archive
   return listUuid;
 };
 
+export const getShoppingItemsByListUuid = async (db, listUuid) => {
+  return await db.getAllAsync(`
+    SELECT
+      *
+    FROM shopping_items
+    WHERE list_uuid = ? AND deleted_at IS NULL
+    ORDER BY position ASC, created_at ASC;
+  `, [listUuid]);
+};
+
+
 export const deleteShoppingList = async (db, listUuid) => {
   const now = new Date().toISOString();
   await db.runAsync(`
@@ -88,7 +102,7 @@ export const getItemsForList = async (db, listUuid) => {
 
 export const upsertShoppingItem = async (db, {
   uuid,
-  list_id,
+  list_uuid,
   name,
   quantity = 1,
   estimated_price = 0,
@@ -103,7 +117,7 @@ export const upsertShoppingItem = async (db, {
   await db.runAsync(`
     INSERT INTO shopping_items (
       uuid,
-      list_id,
+      list_uuid,
       name,
       quantity,
       estimated_price,
@@ -125,7 +139,7 @@ export const upsertShoppingItem = async (db, {
       is_completed = excluded.is_completed,
       updated_at = excluded.updated_at
   `, [
-    itemUuid, list_id, name, quantity, estimated_price,
+    itemUuid, list_uuid, name, quantity, estimated_price,
     category_uuid, note, position, is_completed, now, now
   ]);
 

@@ -21,7 +21,6 @@ const ShoppingListsPage = () => {
     const loadLists = async () => {
       try {
         const data = await getAllShoppingLists(db);
-        console.log(data,"hello data")
         setLists(data);
       } catch (error) {
         console.error("Error fetching shopping lists:", error);
