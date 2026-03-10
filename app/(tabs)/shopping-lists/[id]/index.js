@@ -3,7 +3,7 @@ import { View, FlatList, StyleSheet, TouchableOpacity, Text, Alert, Modal } from
 import { Card, BodyText, Input, FormLabel, SecondaryText } from "@/src/components/ThemeProvider/components";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useThemeStyles } from "@/src/hooks/useThemeStyles";
-import { getShoppingListByUuid, getShoppingItemsByListUuid, upsertShoppingItem } from "../../../../src/db/shoppingListDb";
+import { getShoppingListByUuid, getShoppingItemsByListUuid, upsertShoppingItem, getShoppingListStats } from "../../../../src/db/shoppingListDb";
 import { useSQLiteContext } from "expo-sqlite";
 import { useIsFocused } from "@react-navigation/native";
 import { AddButton } from "../../../../src/components/common/AddButton";
@@ -17,8 +17,8 @@ const ShoppingListDetailsPage = () => {
 
   const [list, setList] = useState({ name: "" });
   const [items, setItems] = useState([]);
+  const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
-
   const [newItemName, setNewItemName] = useState("");
   const [newItemPrice, setNewItemPrice] = useState("");
   const [reloadItems,setReloadItems] = useState(0)
@@ -57,6 +57,22 @@ const ShoppingListDetailsPage = () => {
     loadData();
   }, [uuid,reloadItems,isFocused]);
 
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        if (!uuid) return;
+        const statsData = await getShoppingListStats(db, uuid);
+        console.log(statsData,"hello stats data")
+        setStats(statsData);
+      } catch (error) {
+        console.error("Error loading stats:", error);
+      }
+    };
+
+    loadStats();
+  }, [uuid, reloadItems, isFocused]);
+
+
   const toggleCompleted = async (itemUuid) => {
     const updatedItems = items.map((item) =>
       item.uuid === itemUuid ? { ...item, is_completed: item.is_completed ? 0 : 1 } : item
@@ -65,6 +81,7 @@ const ShoppingListDetailsPage = () => {
 
     const updatedItem = updatedItems.find((i) => i.uuid === itemUuid);
     await upsertShoppingItem(db,{ ...updatedItem, list_uuid: uuid });
+    setReloadItems(prev => prev + 1)
   };
 
   const addItem = async () => {
@@ -93,8 +110,6 @@ const ShoppingListDetailsPage = () => {
     }
   };
 
-  const totalPrice = items.reduce((sum, item) => sum + (item.estimated_price || 0), 0);
-
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => toggleCompleted(item.uuid)}>
       <Card style={[styles.itemCard, item.is_completed ? styles.completedItem : null]}>
@@ -113,16 +128,33 @@ const ShoppingListDetailsPage = () => {
     <View style={globalStyles.container}>
       <BodyText style={globalStyles.title}>{list.name || "Shopping List"}</BodyText>
 
+      <Card style={styles.statsCard}>
+  <View style={styles.statsHeader}>
+    <BodyText style={styles.progressText}>
+      {stats.completedCount} / {stats.itemCount} items completed
+    </BodyText>
+
+    <SecondaryText>
+      KSh {stats.spentAmount} / {stats.totalEstimated}
+    </SecondaryText>
+  </View>
+
+  <View style={styles.progressBarContainer}>
+    <View
+      style={[
+        styles.progressBarFill,
+        { width: `${stats.progress * 100}%` }
+      ]}
+    />
+  </View>
+</Card>
+
       <FlatList
         data={items}
         renderItem={renderItem}
         keyExtractor={(item) => item.uuid}
         ListEmptyComponent={<Text style={styles.emptyText}>No items yet</Text>}
       />
-
-      <View style={styles.totalContainer}>
-        <BodyText style={styles.totalText}>Total: KSh {totalPrice}</BodyText>
-      </View>
 
       <AddButton action={() => setShowForm(true)} />
 
@@ -190,13 +222,6 @@ const styles = StyleSheet.create({
   completedItem: { backgroundColor: "#E0F7E0" },
   completedLabel: { color: "#28A745", fontWeight: "700", marginLeft: 8 },
   emptyText: { textAlign: "center", marginTop: 40, color: "#999" },
-  totalContainer: { 
-    padding: 16, 
-    borderTopWidth: 1, 
-    borderColor: "#eee", 
-    alignItems: "center" 
-  },
-  totalText: { fontSize: 16, fontWeight: "700" },
   modalOverlay: {
   flex: 1,
   backgroundColor: "rgba(0,0,0,0.4)",
@@ -224,5 +249,33 @@ cancelBtn: {
 cancelText: {
   color: "#999",
   fontWeight: "600",
+},
+statsCard: {
+  padding: 18,
+  borderRadius: 16,
+  marginBottom: 16
+},
+
+statsHeader: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginBottom: 10
+},
+
+progressText: {
+  fontWeight: "700",
+  fontSize: 16
+},
+
+progressBarContainer: {
+  height: 10,
+  backgroundColor: "#eee",
+  borderRadius: 8,
+  overflow: "hidden"
+},
+
+progressBarFill: {
+  height: "100%",
+  backgroundColor: "#FF6B6B"
 },
 });

@@ -94,7 +94,7 @@ export const getItemsForList = async (db, listUuid) => {
   return await db.getAllAsync(`
     SELECT i.*
     FROM shopping_items i
-    JOIN shopping_lists l ON l.id = i.list_id
+    JOIN shopping_lists l ON l.uuid = i.list_uuid
     WHERE l.uuid = ? AND i.deleted_at IS NULL
     ORDER BY i.position ASC, i.created_at ASC
   `, [listUuid]);
@@ -162,15 +162,29 @@ export const getShoppingListStats = async (db, listUuid) => {
   if (!list) return null;
 
   const items = await getItemsForList(db, listUuid);
-  const totalEstimated = items.reduce((sum, i) => sum + (i.estimated_price || 0), 0);
-  const completedCount = items.filter(i => i.is_completed).length;
+
+  const itemCount = items.length;
+const completedCount = items.filter((i) => i.is_completed).length;
+
+const totalEstimated = items.reduce(
+  (sum, i) => sum + (i.estimated_price || 0),
+  0
+);
+
+const spentAmount = items
+  .filter((i) => i.is_completed)
+  .reduce((sum, i) => sum + (i.estimated_price || 0), 0);
+
+const progress = itemCount === 0 ? 0 : completedCount / itemCount;
 
   return {
     ...list,
     items,
     totalEstimated,
     completedCount,
-    itemCount: items.length
+    itemCount: items.length,
+    spentAmount,
+    progress,
   };
 };
 
