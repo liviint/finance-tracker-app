@@ -9,7 +9,7 @@ import { useSQLiteContext } from "expo-sqlite";
 import { dateFormat } from "../../../utils/dateFormat";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles"
 import { syncManager } from "../../../utils/syncManager";
-import TimeFilters from "../../../src/components/transactions/TimeFilters";
+import TimeFilters from "../../../src/components/transactions/TimeFilters2";
 import ButtonLinks from "../../../src/components/common/ButtonLinks";
 
 export default function FinanceListPage() {
@@ -23,19 +23,14 @@ export default function FinanceListPage() {
         expenses: 0,
         balance: 0,
       });
-    
-      const [period,setPeriod] = useState("30 days")
+    const [selectedMonth, setSelectedMonth] = useState(new Date());
 
-      const onPeriodChange = (value) => {
-        setPeriod(value)
-      }
-    
     let fetchTransactions = async() => {
-        let transactions = await getTransactions(db, period)
+        let transactions = await getTransactions(db, selectedMonth)
         setTransactions(transactions)
     }
     const fetchStats = async () => {
-      const summary = await getTransactionStats(db,period);
+      const summary = await getTransactionStats(db,selectedMonth);
       setStats(summary);
     };
 
@@ -44,7 +39,7 @@ export default function FinanceListPage() {
       fetchTransactions()
       fetchStats()
     }
-    },[isFocused, period])
+    },[isFocused, selectedMonth])
 
     useEffect(() => {
       const unsub = syncManager.on("transactions_updated", async () => {
@@ -164,9 +159,8 @@ export default function FinanceListPage() {
         ListHeaderComponent={
           <ListHeader
             stats={stats}
-            onPeriodChange={onPeriodChange}
-            globalStyles={globalStyles}
-            selectedPeriod={period}
+            selectedMonth={selectedMonth}
+            onMonthChange={setSelectedMonth}
           />
         }
         contentContainerStyle={{ paddingBottom: 96 }}
@@ -184,12 +178,12 @@ export default function FinanceListPage() {
   )
 }
 
-const ListHeader = ({ stats, onPeriodChange, globalStyles,selectedPeriod }) => {
+const ListHeader = ({ stats, selectedMonth,onMonthChange}) => {
   const router = useRouter();
   return <>
     <TimeFilters 
-        onPeriodChange={onPeriodChange} 
-        selectedPeriod ={selectedPeriod} 
+        selectedMonth={selectedMonth}
+        onMonthChange={onMonthChange}
       />
 
     <Card style={styles.balanceCard}>

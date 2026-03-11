@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { BodyText, Card, SecondaryText } from "../../../src/components/ThemeProvider/components";
+import TimeFilters from "../transactions/TimeFilters2";
 
 const BudgetListHeader = ({
   stats = {},
@@ -56,20 +57,10 @@ const goNextMonth = () => {
   return (
     <View style={styles.container}>
 
-      
-      <View style={styles.monthNav}>
-        <TouchableOpacity disabled={isPrevDisabled} onPress={goPrevMonth}>
-            <BodyText style={[styles.arrow, isPrevDisabled && {opacity:0.3}]}>◀</BodyText>
-        </TouchableOpacity>
-
-        <BodyText style={styles.monthText}>
-            {monthLabel}
-        </BodyText>
-
-        <TouchableOpacity disabled={isNextDisabled} onPress={goNextMonth}>
-            <BodyText style={[styles.arrow, isNextDisabled && {opacity:0.3}]}>▶</BodyText>
-        </TouchableOpacity>
-      </View>
+      <TimeFilters 
+        selectedMonth={selectedMonth}
+        onMonthChange={onMonthChange}
+      />
 
       {overspent_count > 0 && 
         <Card style={styles.mainCard}>

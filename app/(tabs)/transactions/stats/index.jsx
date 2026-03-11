@@ -11,7 +11,7 @@ import {
 import { useThemeStyles } from "../../../../src/hooks/useThemeStyles";
 import { getTransactionStats, getExpenseBreakdownByCategory } from "../../../../src/db/transactionsDb";
 import CategoryPieChart from "../../../../src/components/transactions/CategoryPieChart";
-import TimeFilters from "../../../../src/components/transactions/TimeFilters";
+import TimeFilters from "../../../../src/components/transactions/TimeFilters2";
 
 const screenWidth = Dimensions.get("window").width;
 export default function FinanceStatsPage() {
@@ -24,24 +24,20 @@ export default function FinanceStatsPage() {
     expenses: 0,
     balance: 0,
   });
-  const [period,setPeriod] = useState("30 days")
-
-  const onPeriodChange = (value) => {
-    setPeriod(value)
-  }
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
 
   const [categoryStats, setCategoryStats] = useState([]);
 
   useEffect(() => {
     const fetchStats = async () => {
-      const summary = await getTransactionStats(db,period);
-      const categories = await getExpenseBreakdownByCategory(db,period);
+      const summary = await getTransactionStats(db,selectedMonth);
+      const categories = await getExpenseBreakdownByCategory(db,selectedMonth);
       setStats(summary);
       setCategoryStats(categories);
     };
 
     if (isFocused) fetchStats();
-  }, [isFocused, period])
+  }, [isFocused, selectedMonth])
 
   const savingsRate =
     stats.income > 0
@@ -61,8 +57,8 @@ export default function FinanceStatsPage() {
     <ScrollView style={globalStyles.container}>
       <BodyText style={globalStyles.title}>Financial Overview</BodyText>
       <TimeFilters  
-        selectedPeriod={period}
-        onPeriodChange={onPeriodChange}
+        selectedMonth={selectedMonth}
+        onMonthChange={setSelectedMonth}
       />
       <Card>
         <SecondaryText style={styles.chartTitle}>

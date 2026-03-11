@@ -1,5 +1,6 @@
 import uuid from "react-native-uuid";
 import { getPeriodDateFilter } from "./periodFilter";
+import { getMonthRange } from "../helpers";
 
 const newUuid = () => uuid.v4();
 
@@ -178,16 +179,19 @@ export const syncTransactionsFromApi = async (db, transactions = []) => {
     console.log("✅ Transactions synced from API");
 };
 
-export async function getTransactions(db, period) {
-    const dateFilter = getPeriodDateFilter(period);
+export async function getTransactions(db, date = new Date()) {
+  const { start, end } = getMonthRange(date);
 
-    return await db.getAllAsync(`
-        SELECT *
-        FROM finance_transactions
-        WHERE deleted_at IS NULL
-        ${dateFilter}
-        ORDER BY datetime(date) DESC
-    `);
+  return await db.getAllAsync(
+    `
+    SELECT *
+    FROM finance_transactions
+    WHERE deleted_at IS NULL
+    AND date BETWEEN ? AND ?
+    ORDER BY datetime(date) DESC
+    `,
+    [start, end]
+  );
 }
 
 
@@ -260,17 +264,20 @@ export async function deleteTransaction(db, uuid) {
   );
 }
 
-export async function getTransactionStats(db, period) {
-  const dateFilter = getPeriodDateFilter(period);
+export async function getTransactionStats(db, date = new Date()) {
+  const { start, end } = getMonthRange(date);
 
-  const result = await db.getFirstAsync(`
+  const result = await db.getFirstAsync(
+    `
     SELECT
       SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) AS income,
       SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) AS expenses
     FROM finance_transactions
     WHERE deleted_at IS NULL
-    ${dateFilter}
-  `);
+    AND date BETWEEN ? AND ?
+    `,
+    [start, end]
+  );
 
   const income = result?.income || 0;
   const expenses = result?.expenses || 0;
@@ -282,23 +289,26 @@ export async function getTransactionStats(db, period) {
   };
 }
 
-export async function getExpenseBreakdownByCategory(db, period = "this_month") {
-    const periodWhere = getPeriodDateFilter(period);
+export async function getExpenseBreakdownByCategory(db, date = new Date()) {
+  const { start, end } = getMonthRange(date);
 
-    return await db.getAllAsync(`
-        SELECT
-        c.name AS name,
-        c.color AS color,
-        SUM(t.amount) AS total
-        FROM finance_transactions t
-        JOIN finance_categories c
-        ON c.uuid = t.category_uuid
-        WHERE t.type = 'expense'
-        AND t.deleted_at IS NULL
-        ${periodWhere}
-        GROUP BY t.category_uuid
-        ORDER BY total DESC
-    `);
+  return await db.getAllAsync(
+    `
+    SELECT
+      c.name AS name,
+      c.color AS color,
+      SUM(t.amount) AS total
+    FROM finance_transactions t
+    JOIN finance_categories c
+      ON c.uuid = t.category_uuid
+    WHERE t.type = 'expense'
+      AND t.deleted_at IS NULL
+      AND t.date BETWEEN ? AND ?
+    GROUP BY t.category_uuid
+    ORDER BY total DESC
+    `,
+    [start, end]
+  );
 }
 
 
