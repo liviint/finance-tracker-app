@@ -50,7 +50,7 @@ export default function UpdateAppProvider() {
             );
         };
 
-        setTimeout(runCheck, 1500);
+        // setTimeout(runCheck, 1500);
     }, []);
 
     return null;
