@@ -78,11 +78,11 @@ export default function SavingsProvider({ children }) {
     syncManager.emit("savings_updated");
   };
 
-  useSyncEngine({
-    enabled,
-    name: "savings",
-    bootstrap,
-  });
+  // useSyncEngine({
+  //   enabled,
+  //   name: "savings",
+  //   bootstrap,
+  // });
 
   return children;
 }

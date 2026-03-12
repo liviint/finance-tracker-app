@@ -102,11 +102,11 @@ export default function TransactionsProvider({ children }) {
 
   };
 
-  useSyncEngine({
-    enabled,
-    name: "transactions",
-    bootstrap,
-  });
+  // useSyncEngine({
+  //   enabled,
+  //   name: "transactions",
+  //   bootstrap,
+  // });
 
   return children;
 }

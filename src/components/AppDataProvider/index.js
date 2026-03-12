@@ -263,7 +263,7 @@ export default function AppDataProvider({ children }) {
       <SavingsProvider />
       <BudgetsProvider />
       <DebtsProvider />
-      {children}
+        {children}
     </SQLiteProvider>
   );
 }

@@ -83,11 +83,11 @@ export default function DebtsProvider({ children }) {
         syncManager.emit("debts_updated");
     };
 
-    useSyncEngine({
-        enabled,
-        name: "debts",
-        bootstrap,
-    });
+    // useSyncEngine({
+    //     enabled,
+    //     name: "debts",
+    //     bootstrap,
+    // });
 
     return children;
 }

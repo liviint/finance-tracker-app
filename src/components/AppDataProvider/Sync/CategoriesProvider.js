@@ -67,12 +67,12 @@ export default function CategoriesProvider({ children }) {
         await seedCategoriesIfEmpty(db)
     };
 
-  useSyncEngine({
-    enabled:true,
-    name: "categories",
-    bootstrap,
-    bootstrapLocalNoInternet,
-  });
+  // useSyncEngine({
+  //   enabled:true,
+  //   name: "categories",
+  //   bootstrap,
+  //   bootstrapLocalNoInternet,
+  // });
 
   return children;
 }

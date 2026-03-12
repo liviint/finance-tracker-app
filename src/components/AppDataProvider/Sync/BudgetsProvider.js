@@ -48,11 +48,11 @@ export default function BudgetsProvider({ children }) {
     syncManager.emit("budgets_updated");
   };
 
-  useSyncEngine({
-    enabled,
-    name: "budgets",
-    bootstrap,
-  });
+  // useSyncEngine({
+  //   enabled,
+  //   name: "budgets",
+  //   bootstrap,
+  // });
 
   return children;
 }
