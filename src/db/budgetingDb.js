@@ -1,4 +1,4 @@
-import { normalizeStartDate } from "../helpers";
+import { normalizeStartDate , getMonthRange} from "../helpers";
 import uuid from "react-native-uuid";
 
 const newUuid = () => uuid.v4();
@@ -128,7 +128,8 @@ export const syncBudgetsFromApi = async (db, apiBudgets = []) => {
 };
 
 export const getMonthlyBudgets = async (db, date = new Date()) => {
-  const startDate = normalizeStartDate(date, "monthly");
+  const startDate = normalizeStartDate(date);
+  const { start, end } = getMonthRange(date);
 
   return db.getAllAsync(
     `
@@ -143,22 +144,25 @@ export const getMonthlyBudgets = async (db, date = new Date()) => {
       c.color,
       IFNULL(SUM(t.amount), 0) AS spent
     FROM budgets b
-    JOIN finance_categories c ON c.uuid = b.category_uuid
+    JOIN finance_categories c 
+      ON c.uuid = b.category_uuid
     LEFT JOIN finance_transactions t
       ON t.category_uuid = b.category_uuid
       AND t.type = 'expense'
-      AND t.created_at BETWEEN b.start_date
-          AND date(b.start_date, '+1 month', '-1 day')
+      AND t.deleted_at IS NULL
+      AND t.created_at >= ?
+      AND t.created_at < ?
     WHERE b.start_date = ?
     GROUP BY b.uuid
-    ORDER BY c.name ASC;
+    ORDER BY c.name ASC
     `,
-    [startDate]
+    [start, end, startDate]
   );
 };
 
 export const getMonthlyBudgetStats = async (db, date = new Date()) => {
-  const startDate = normalizeStartDate(date, "monthly");
+  const startDate = normalizeStartDate(date);
+  const { start, end } = getMonthRange(date);
 
   return await db.getFirstAsync(
     `
@@ -182,8 +186,9 @@ export const getMonthlyBudgetStats = async (db, date = new Date()) => {
         SUM(amount) AS spent
       FROM finance_transactions
       WHERE type = 'expense'
+        AND deleted_at IS NULL
         AND created_at >= ?
-        AND created_at < date(?, '+1 month')
+        AND created_at < ?
       GROUP BY category_uuid
     ) t
       ON t.category_uuid = b.category_uuid
@@ -191,7 +196,7 @@ export const getMonthlyBudgetStats = async (db, date = new Date()) => {
     WHERE b.start_date = ?
       AND b.deleted_at IS NULL
     `,
-    [startDate, startDate, startDate]
+    [start, end, startDate]
   );
 };
 

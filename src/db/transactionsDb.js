@@ -1,5 +1,4 @@
 import uuid from "react-native-uuid";
-import { getPeriodDateFilter } from "./periodFilter";
 import { getMonthRange } from "../helpers";
 
 const newUuid = () => uuid.v4();
@@ -185,14 +184,16 @@ export async function getTransactions(db, date = new Date()) {
   return await db.getAllAsync(
     `
     SELECT *
-    FROM finance_transactions
-    WHERE deleted_at IS NULL
-    AND date BETWEEN ? AND ?
-    ORDER BY datetime(date) DESC
+    FROM finance_transactions t
+    WHERE t.deleted_at IS NULL
+      AND t.date >= ?
+      AND t.date < ?
+    ORDER BY datetime(t.date) DESC
     `,
     [start, end]
   );
 }
+
 
 
 export async function getTransactionByUuid(db, uuid) {
@@ -274,7 +275,8 @@ export async function getTransactionStats(db, date = new Date()) {
       SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) AS expenses
     FROM finance_transactions
     WHERE deleted_at IS NULL
-    AND date BETWEEN ? AND ?
+      AND date >= ?
+      AND date < ?
     `,
     [start, end]
   );
@@ -288,6 +290,7 @@ export async function getTransactionStats(db, date = new Date()) {
     balance: income - expenses,
   };
 }
+
 
 export async function getExpenseBreakdownByCategory(db, date = new Date()) {
   const { start, end } = getMonthRange(date);
@@ -303,13 +306,15 @@ export async function getExpenseBreakdownByCategory(db, date = new Date()) {
       ON c.uuid = t.category_uuid
     WHERE t.type = 'expense'
       AND t.deleted_at IS NULL
-      AND t.date BETWEEN ? AND ?
+      AND t.date >= ?
+      AND t.date < ?
     GROUP BY t.category_uuid
     ORDER BY total DESC
     `,
     [start, end]
   );
 }
+
 
 
 export async function getTopCategory(db) {

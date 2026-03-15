@@ -1,10 +1,5 @@
 import { SQLiteProvider } from "expo-sqlite";
 import React from "react";
-import TransactionsProvider from "./Sync/TransactionsProvider";
-import SavingsProvider from "./Sync/SavingsProvider"
-import BudgetsProvider from "./Sync/BudgetsProvider"
-import CategoriesProvider from "./Sync/CategoriesProvider"
-import DebtsProvider from "./Sync/DebtsProvider"
 import { extraMigrations } from "./migrations"
 
 const migrateDbIfNeeded = async (db) => {
@@ -254,15 +249,9 @@ const migrateDbIfNeeded = async (db) => {
   extraMigrations(db)
 };
 
-
 export default function AppDataProvider({ children }) {
   return (
     <SQLiteProvider databaseName="zeniahub.db" onInit={migrateDbIfNeeded}>
-      <CategoriesProvider />
-      <TransactionsProvider />
-      <SavingsProvider />
-      <BudgetsProvider />
-      <DebtsProvider />
         {children}
     </SQLiteProvider>
   );
