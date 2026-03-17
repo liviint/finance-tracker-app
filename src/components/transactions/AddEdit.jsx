@@ -27,11 +27,12 @@ export default function AddEdit() {
     payee:"",
     date:new Date(),
     template:false,
+    created_at:new Date(),
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [transactionDate, setTransactionDate] = useState(
-    form.created_at ? new Date(form.created_at) : new Date()
+    form.date ? new Date(form.date) : new Date()
   );
   const [templates, setTemplates] = useState([]);
   const [showTemplates, setShowTemplates] = useState(false);
@@ -130,7 +131,7 @@ const isFormValid = () => {
     if(!uuid) return
     let getTransaction = async() => {
       let transaction = await getTransactionByUuid(db,uuid)
-      let date = form.date ? new Date(form.date) : new Date()
+      let date = transaction.date ? new Date(transaction.date) : new Date()
       setForm({...transaction,date})
     }
     getTransaction()
@@ -230,7 +231,7 @@ const isFormValid = () => {
                 ...globalStyles.formBorder
               }}
             >
-              <BodyText>{transactionDate.toDateString()}</BodyText>
+              <BodyText>{form?.date?.toDateString()}</BodyText>
             </TouchableOpacity>
 
             {/* Time Button */}
@@ -247,8 +248,8 @@ const isFormValid = () => {
               }}
             >
               <BodyText>
-                {form.date.getHours().toString().padStart(2, "0")}:
-                {form.date.getMinutes().toString().padStart(2, "0")}
+                {form?.date?.getHours().toString().padStart(2, "0")}:
+                {form?.date?.getMinutes().toString().padStart(2, "0")}
               </BodyText>
             </TouchableOpacity>
           </View>

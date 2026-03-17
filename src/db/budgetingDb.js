@@ -150,8 +150,8 @@ export const getMonthlyBudgets = async (db, date = new Date()) => {
       ON t.category_uuid = b.category_uuid
       AND t.type = 'expense'
       AND t.deleted_at IS NULL
-      AND t.created_at >= ?
-      AND t.created_at < ?
+      AND t.date >= ?
+      AND t.date < ?
     WHERE b.start_date = ?
     GROUP BY b.uuid
     ORDER BY c.name ASC

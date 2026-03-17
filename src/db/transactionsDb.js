@@ -16,6 +16,7 @@ export async function upsertTransaction(
     note = null,
     date,
     template,
+    created_at,
     source = "manual",
   }
 ) {
@@ -69,7 +70,7 @@ export async function upsertTransaction(
         category_uuid,
         note,
         source,
-        now,
+        created_at,
         now,
         transactionDate,
       ]
