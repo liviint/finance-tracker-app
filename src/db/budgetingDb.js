@@ -187,8 +187,8 @@ export const getMonthlyBudgetStats = async (db, date = new Date()) => {
       FROM finance_transactions
       WHERE type = 'expense'
         AND deleted_at IS NULL
-        AND created_at >= ?
-        AND created_at < ?
+        AND date >= ?
+        AND date < ?
       GROUP BY category_uuid
     ) t
       ON t.category_uuid = b.category_uuid
