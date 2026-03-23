@@ -1,69 +1,177 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, Alert, StyleSheet } from "react-native";
-import * as InAppPurchases from "expo-in-app-purchases";
-
-const itemSkus = ["support_50", "support_100", "support_200"]; // Google Play product IDs
+import { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity,StyleSheet, ActivityIndicator, Alert } from "react-native";
+import Purchases from 'react-native-purchases';
+import { useThemeStyles } from "@/src/hooks/useThemeStyles";
+import {  BodyText, SecondaryText } from "@/src/components/ThemeProvider/components";
 
 const SupportPage = () => {
+  const {globalStyles} = useThemeStyles()
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function initIAP() {
-      await InAppPurchases.connectAsync();
-      const { responseCode, results } = await InAppPurchases.getProductsAsync(itemSkus);
-      if (responseCode === InAppPurchases.IAPResponseCode.OK) {
-        setProducts(results);
+  const fetchProducts = async () => {
+    try {
+      const offerings = await Purchases.getOfferings();
+
+      if (offerings.current) {
+        setProducts(offerings.current.availablePackages);
+      } else {
+        Alert.alert(
+          "Unavailable",
+          "Support options are not available right now. Please try again later."
+        );
       }
 
-      InAppPurchases.setPurchaseListener(({ responseCode, results, errorCode }) => {
-        if (responseCode === InAppPurchases.IAPResponseCode.OK) {
-          results.forEach(async (purchase) => {
-            if (!purchase.acknowledged) {
-              await InAppPurchases.finishTransactionAsync(purchase, true);
-              Alert.alert("Thank you!", "Your support keeps ZeniaMoney running 💖");
-            }
-          });
-        } else if (responseCode === InAppPurchases.IAPResponseCode.USER_CANCELED) {
-          console.log("User cancelled purchase");
-        } else {
-          console.warn("Purchase failed", errorCode);
-        }
-      });
+    } catch (err) {
+      console.warn("RevenueCat fetch error", err);
+
+      let message = "Something went wrong. Please try again.";
+
+      if (err.message?.includes("network")) {
+        message = "No internet connection. Please check and try again.";
+      }
+
+      Alert.alert("Error", message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    initIAP();
+  fetchProducts();
+}, []);
 
-    return () => InAppPurchases.disconnectAsync();
-  }, []);
+  const handlePurchase = async (pkg) => {
+    try {
+      await Purchases.purchasePackage(pkg);
 
-  const handlePurchase = async (sku) => {
-    await InAppPurchases.purchaseItemAsync(sku);
+      Alert.alert("Thank you 💖", "Your support keeps ZeniaMoney running!");
+
+    } catch (err) {
+      console.warn("Purchase error", err);
+
+      if (!err.userCancelled) {
+        Alert.alert(
+          "Payment failed",
+          "Your payment didn't go through. Please try again."
+        );
+      }
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>❤️ Support ZeniaMoney</Text>
-      <Text style={styles.subtitle}>Even Ksh 50 helps keep the app running 💖</Text>
+  <View style={{...globalStyles.container,...styles.container}}>
+    
+    <BodyText style={globalStyles.title}>❤️ Support ZeniaMoney</BodyText>
 
-      {products.map((p) => (
-        <TouchableOpacity
-          key={p.productId}
-          style={styles.button}
-          onPress={() => handlePurchase(p.productId)}
-        >
-          <Text style={styles.buttonText}>{p.title}</Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
+    <BodyText style={styles.subtitle}>
+      This app is free. Your support helps keep it growing for everyone.
+    </BodyText>
+
+    <View style={styles.divider} />
+
+    {/* Loading */}
+    {loading ? (
+      <ActivityIndicator size="large" color="#FF6B6B" />
+    ) : products.length > 0 ? (
+
+      <>
+        {/* Support Options */}
+        {products.map((pkg) => (
+          <TouchableOpacity
+            key={pkg.identifier}
+            style={styles.card}
+            onPress={() => handlePurchase(pkg)}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.amount}>
+              {pkg.product.priceString}
+            </Text>
+
+            <Text style={styles.label}>
+              {pkg.product.title.split("(")[0].trim()}
+            </Text>
+          </TouchableOpacity>
+        ))}
+
+       
+        <SecondaryText style={styles.microcopy}>
+          No subscription • Secure via Google Play (M-Pesa supported)
+        </SecondaryText>
+      </>
+
+    ) : (
+      <Text style={styles.error}>
+        Support options unavailable. Please try again later.
+      </Text>
+    )}
+
+  </View>
+);
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: "#FAF9F7" },
-  title: { fontSize: 24, fontWeight: "700", color: "#FF6B6B", marginBottom: 10, textAlign: "center" },
-  subtitle: { fontSize: 16, textAlign: "center", marginBottom: 20, color: "#333" },
-  button: { backgroundColor: "#FF6B6B", padding: 14, borderRadius: 12, marginVertical: 8, width: "80%", alignItems: "center" },
-  buttonText: { color: "#FAF9F7", fontWeight: "600", fontSize: 16 },
-});
-
 export default SupportPage;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  title: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#FF6B6B",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+
+  subtitle: {
+    fontSize: 15,
+    textAlign: "center",
+    marginBottom: 20,
+    lineHeight: 22,
+  },
+
+  divider: {
+    height: 1,
+    width: "80%",
+    backgroundColor: "rgba(0,0,0,0.1)",
+    marginVertical: 20,
+  },
+
+  card: {
+    width: "90%",
+    backgroundColor: "#FF6B6B",
+    paddingVertical: 18,
+    borderRadius: 16,
+    marginVertical: 8,
+    alignItems: "center",
+  },
+
+  amount: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#FAF9F7",
+  },
+
+  label: {
+    fontSize: 14,
+    color: "#FAF9F7",
+    opacity: 0.9,
+    marginTop: 4,
+  },
+
+  microcopy: {
+    marginTop: 20,
+    fontSize: 13,
+    textAlign: "center",
+  },
+
+  error: {
+    color: "#999",
+    textAlign: "center",
+  },
+});
