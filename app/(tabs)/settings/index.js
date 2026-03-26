@@ -7,6 +7,7 @@ import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useState } from "react";
 import { getSetting, setSetting } from "@/src/db/settingsDb";
 import * as LocalAuthentication from "expo-local-authentication";
+import GoogleBackUp from "../../../src/components/settings/GoogleBackUp";
 
 const SettingsPage = () => {
   const dispatch = useDispatch();
@@ -77,6 +78,9 @@ const SettingsPage = () => {
           Require device authentication to open the app
         </BodyText>
       </Card>
+
+      <GoogleBackUp />
+      
     </View>
   );
 };
