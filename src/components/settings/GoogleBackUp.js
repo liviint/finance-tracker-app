@@ -5,7 +5,7 @@ import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-si
 import * as SecureStore from "expo-secure-store";
 
 // Use your WEB_CLIENT_ID here - Google's Native SDK uses it to identify the project
-const WEB_CLIENT_ID = "171579827542-vnlu2ildln3llcnrli2g9rbnogtecrc2.apps.googleusercontent.com";
+const WEB_CLIENT_ID = "971359215487-bf9h17j1k4l65k659945uudk6krkhdgu.apps.googleusercontent.com";
 
 const GoogleBackUp = () => {
   const [isConnected, setIsConnected] = useState(false);
