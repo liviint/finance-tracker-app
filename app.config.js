@@ -92,6 +92,6 @@ export default {
       },
     },
 
-    owner: process.env.EXPO_OWNER || "zeniamoney"
+    owner:"kevinmosigisi1",
   },
 };
