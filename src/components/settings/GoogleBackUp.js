@@ -3,13 +3,17 @@ import { StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { Card, BodyText } from "@/src/components/ThemeProvider/components";
 import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
 import * as SecureStore from "expo-secure-store";
+import { useSQLiteContext } from 'expo-sqlite';
+import { exportDatabase, importDatabase } from "../../db/googleDriveDb";
 
 // Use your WEB_CLIENT_ID here - Google's Native SDK uses it to identify the project
 const WEB_CLIENT_ID = "971359215487-bf9h17j1k4l65k659945uudk6krkhdgu.apps.googleusercontent.com";
 
 const GoogleBackUp = () => {
+  const db = useSQLiteContext(); 
   const [isConnected, setIsConnected] = useState(false);
   const [lastBackup, setLastBackup] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Initial configuration of the Native SDK
@@ -43,8 +47,8 @@ const GoogleBackUp = () => {
       if (accessToken) {
         await SecureStore.setItemAsync("gdrive_token", accessToken);
         setIsConnected(true);
-        console.log(userInfo,"user info")
-        Alert.alert("Connected", `Welcome! Google Drive is ready.`);
+        console.log(userInfo.data.user,"user info")
+        Alert.alert("Connected", `Signed in as ${userInfo?.data?.user?.email}`);
       }
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -66,10 +70,11 @@ const GoogleBackUp = () => {
     if (!accessToken) throw new Error("No access token found");
 
     // Your data
+    const dbData = await exportDatabase(db);
     const backupData = {
       timestamp: new Date().toISOString(),
       app: "ZeniaHub",
-      // data: myLocalDatabaseData, 
+      data: dbData, 
     };
 
     const fileName = "Zeniahub_Backup.json";
@@ -144,7 +149,7 @@ const GoogleBackUp = () => {
             const { accessToken } = await GoogleSignin.getTokens();
             if (!accessToken) throw new Error("No access token found");
 
-            const fileName = "Zenia_Backup.json";
+            const fileName = "Zeniahub_Backup.json";
 
             // 2. Search for the backup file
             const searchResponse = await fetch(
@@ -176,6 +181,7 @@ const GoogleBackUp = () => {
 
             // 4. Update your local storage
             // Example: await MyLocalDB.importData(restoredData);
+            await importDatabase(db,restoredData.data)
             console.log("Restored Data:", restoredData);
 
             Alert.alert("Success", "Your data has been restored successfully.");
@@ -203,7 +209,7 @@ const GoogleBackUp = () => {
 
   return (
     <Card style={styles.card}>
-      <BodyText style={styles.title}>Cloud Backup (Native)</BodyText>
+      <BodyText style={styles.title}>Cloud Backup</BodyText>
       <BodyText style={styles.helperText}>
         Securely sync your habits and journal to your private Google Drive App Data folder.
       </BodyText>
