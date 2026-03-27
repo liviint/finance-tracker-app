@@ -77,7 +77,7 @@ const GoogleBackUp = () => {
       data: dbData, 
     };
 
-    const fileName = "Zeniahub_Backup.json";
+    const fileName = "Zeniamoney_Backup.json";
     
     // 1. Search for existing file
     const searchResponse = await fetch(
@@ -149,7 +149,7 @@ const GoogleBackUp = () => {
             const { accessToken } = await GoogleSignin.getTokens();
             if (!accessToken) throw new Error("No access token found");
 
-            const fileName = "Zeniahub_Backup.json";
+            const fileName = "Zeniamoney_Backup.json";
 
             // 2. Search for the backup file
             const searchResponse = await fetch(
@@ -211,7 +211,7 @@ const GoogleBackUp = () => {
     <Card style={styles.card}>
       <BodyText style={styles.title}>Cloud Backup</BodyText>
       <BodyText style={styles.helperText}>
-        Securely sync your habits and journal to your private Google Drive App Data folder.
+        Back up your data to your private Google Drive app folder. Only ZeniaMoney-created files are accessible.
       </BodyText>
 
       {!isConnected ? (
