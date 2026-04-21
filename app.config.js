@@ -92,6 +92,6 @@ export default {
       },
     },
 
-    owner:"kevinmosigisi1",
+    owner:"zeniamoney",
   },
 };
