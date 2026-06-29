@@ -165,18 +165,26 @@ export const hasLocalData = async (db) => {
         // Example:
         // Replace with your actual tables
         const products = await db.getFirstAsync(
-        `SELECT COUNT(*) as count FROM products`
+        `SELECT COUNT(*) as count FROM finance_transactions`
         );
 
         const expenses = await db.getFirstAsync(
-        `SELECT COUNT(*) as count FROM expenses`
+        `SELECT COUNT(*) as count FROM finance_categories`
         );
 
         const sales = await db.getFirstAsync(
-        `SELECT COUNT(*) as count FROM sales`
+        `SELECT COUNT(*) as count FROM savings_goals`
         );
 
-        return products.count > 0 || expenses.count > 0 || sales.count > 0;
+        const budgets = await db.getFirstAsync(
+        `SELECT COUNT(*) as count FROM budgets`
+        );
+
+        const lists = await db.getFirstAsync(
+        `SELECT COUNT(*) as count FROM shopping_lists`
+        );
+
+        return products.count > 0 || expenses.count > 0 || sales.count > 0 || budgets.length > 0 || lists.length > 0
     } catch (error) {
         console.log("Local data check failed:", error);
         return false;
