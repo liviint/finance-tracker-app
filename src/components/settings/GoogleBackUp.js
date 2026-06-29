@@ -1,318 +1,226 @@
-import { useState, useEffect, useRef } from "react";
-import { StyleSheet, Alert, TouchableOpacity, Switch, View } from "react-native";
+import { useState, useEffect } from "react";
+import { useIsFocused } from "@react-navigation/native";
+import {
+  StyleSheet,
+  Alert,
+  TouchableOpacity,
+  Switch,
+  View,
+} from "react-native";
+import { useDispatch } from "react-redux";
 import { Card, BodyText } from "@/src/components/ThemeProvider/components";
 import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
 import * as SecureStore from "expo-secure-store";
-import { useSQLiteContext } from 'expo-sqlite';
-import { exportDatabase, importDatabase } from "../../db/googleDriveDb";
-import { getSetting, setSetting } from "../../db/settingsDb";
-import NetInfo from "@react-native-community/netinfo";
+import { useSQLiteContext } from "expo-sqlite";
+import { setGoogleConnected, requestSync } from "../../../store/features/googleDriveSyncSlice";
+import {
+  configureGoogleDrive,
+  uploadBackup,
+  restoreBackup,
+  getAccessToken,
+} from "../../../utils/googleDriveBackupService";
 
-const isOnline = async () => {
-  const state = await NetInfo.fetch();
-  return state.isConnected;
-};
-
-// Use your WEB_CLIENT_ID here - Google's Native SDK uses it to identify the project
-const WEB_CLIENT_ID = "971359215487-bf9h17j1k4l65k659945uudk6krkhdgu.apps.googleusercontent.com";
+import { getSetting, setSetting } from "../../db/query/settings";
 
 const GoogleBackUp = () => {
-  const db = useSQLiteContext(); 
+  const db = useSQLiteContext();
+  const dispatch = useDispatch()
+  const isFocused = useIsFocused();
   const [isConnected, setIsConnected] = useState(false);
   const [lastBackup, setLastBackup] = useState(null);
   const [autoBackupEnabled, setAutoBackupEnabled] = useState(true);
-  const hasRunTodayRef = useRef(false);
+  const [userEmail, setUserEmail] = useState(null);
 
+  // 1. Configure Google once
   useEffect(() => {
-    // Initial configuration of the Native SDK
-    GoogleSignin.configure({
-      scopes: ["https://www.googleapis.com/auth/drive.file"],
-      webClientId: WEB_CLIENT_ID, 
-      offlineAccess: true, // Required if you want to refresh tokens later
-    });
-
+    configureGoogleDrive();
     checkConnection();
-  }, []);
+    loadSettings();
+  }, [isFocused]);
 
   useEffect(() => {
-    const loadSettings = async () => {
-      // Load last backup
-      const last = await getSetting(db, "last_backup_date");
-      if (last) {
-        setLastBackup(new Date(last).toLocaleString());
-      }
+    
+    
+  },[])
 
-      // Load auto backup setting
-      const autoBackup = await getSetting(db, "auto_backup_enabled");
+  // 2. Load settings
+  const loadSettings = async () => {
+    const last = await getSetting(db, "last_backup_date");
+    let email = await getSetting(db, "gdrive_email")
 
-      if (autoBackup === null) {
-        // First time user → set default in DB
-        await setSetting(db, "auto_backup_enabled", "true");
-        setAutoBackupEnabled(true);
-      } else {
-        setAutoBackupEnabled(autoBackup === "true");
-      }
-    };
+    if (last) {
+      setLastBackup(new Date(last).toLocaleString());
+      setUserEmail(email)
+    }
 
-    loadSettings();
-  }, []);
+    const auto = await getSetting(db, "auto_backup_enabled");
 
+    if (auto === null) {
+      await setSetting(db, "auto_backup_enabled", "true");
+      setAutoBackupEnabled(true);
+    } else {
+      setAutoBackupEnabled(auto === "true");
+    }
+  };
+
+  // 3. Check login state
+  const checkConnection = async () => {
+    try {
+      await getAccessToken();
+      setIsConnected(true);
+    } catch {
+      setIsConnected(false);
+    }
+  };
+
+  // 4. Toggle auto backup
   const toggleAutoBackup = async () => {
     const newValue = !autoBackupEnabled;
 
     setAutoBackupEnabled(newValue);
 
-    // ✅ Persist to SQLite
-    await setSetting(db, "auto_backup_enabled", newValue ? "true" : "false");
+    await setSetting(
+      db,
+      "auto_backup_enabled",
+      newValue ? "true" : "false"
+    );
 
-    if (newValue) {
-      Alert.alert("Auto Backup Enabled", "Your data will be backed up daily.");
-    } else {
-      Alert.alert("Auto Backup Disabled", "You can still backup manually anytime.");
-    }
+    Alert.alert(
+      newValue ? "Auto Backup Enabled" : "Auto Backup Disabled",
+      newValue
+        ? "Your data will be backed up daily."
+        : "You can still backup manually anytime."
+    );
   };
 
-  const shouldBackupToday = async () => {
-    const lastBackup = await getSetting(db, "last_backup_date");
-
-    if (!lastBackup) return true;
-
-    const lastDate = new Date(lastBackup).toDateString();
-    const today = new Date().toDateString();
-
-    return lastDate !== today;
-  };
-
-
-const runDailyBackup = async () => {
-  if (hasRunTodayRef.current) return;
-
-  if (!(await isOnline())) return;
-  if (!isConnected) return;
-  if (!autoBackupEnabled) return;
-
-  try {
-    const shouldBackup = await shouldBackupToday();
-
-    if (shouldBackup) {
-      hasRunTodayRef.current = true;
-      await handleBackup();
-    }
-  } catch (error) {
-    console.error("Daily backup error:", error);
-  }
-};
-
-  const checkConnection = async () => {
-  try {
-    const { accessToken } = await GoogleSignin.getTokens();
-    if (accessToken) {
-      setIsConnected(true);
-    }
-  } catch {
-    setIsConnected(false);
-  }
-};
-
-  useEffect(() => {
-    if (isConnected && autoBackupEnabled) {
-      runDailyBackup();
-    }
-  }, [isConnected, autoBackupEnabled]);
-
+  // 5. Connect Google
   const handleConnectGoogle = async () => {
     try {
-      // Check if Play Services are available (Android only)
+      console.log("hello user info 1")
       await GoogleSignin.hasPlayServices();
-      
-      // Trigger Native Account Picker
-      const userInfo = await GoogleSignin.signIn();
-      
-      // Get the Access Token specifically for the Drive API
+      const userInfo = await GoogleSignin.signIn()
+
+      console.log("hello user info 2")
       const { accessToken } = await GoogleSignin.getTokens();
 
       if (accessToken) {
         await SecureStore.setItemAsync("gdrive_token", accessToken);
         setIsConnected(true);
-        console.log(userInfo.data.user,"user info")
-        Alert.alert("Connected", `Signed in as ${userInfo?.data?.user?.email}`);
+
+        dispatch(setGoogleConnected(true));
+        dispatch(requestSync());
+        
+        await setSetting(db,"gdrive_email",userInfo?.data?.user?.email)
+        setUserEmail(userInfo?.data?.user?.email)
+
+        Alert.alert(
+          "Connected",
+          `Signed in as ${userInfo?.data?.user?.email}`
+        );
       }
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         Alert.alert("Cancelled", "Login was cancelled");
-      } else if (error.code === statusCodes.IN_PROGRESS) {
-        console.log("Sign in is already in progress");
-      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        Alert.alert("Error", "Google Play Services not available or outdated");
       } else {
-        console.error("Native Auth Error:", error);
-        Alert.alert("Error", "Could not connect to Google. Check your SHA-1 and Package Name.");
+        console.error(error);
+        Alert.alert("Error", "Could not connect to Google");
       }
     }
   };
 
+  // 6. Manual backup
   const handleBackup = async () => {
-  try {
-    const { accessToken } = await GoogleSignin.getTokens();
-    if (!accessToken) throw new Error("No access token found");
+    try {
+      await uploadBackup(db);
 
-    // Your data
-    const dbData = await exportDatabase(db);
-    const backupData = {
-      timestamp: new Date().toISOString(),
-      app: "ZeniaHub",
-      data: dbData, 
-    };
+      const now = new Date().toISOString();
 
-    const fileName = "Zeniamoney_Backup.json";
-    
-    // 1. Search for existing file
-    const searchResponse = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q=name='${fileName}'&spaces=drive`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    const searchResult = await searchResponse.json();
-    let fileId = searchResult.files && searchResult.files.length > 0 ? searchResult.files[0].id : null;
+      await setSetting(db, "last_backup_date", now);
 
-    if (!fileId) {
-      // 2. CREATE the file metadata first (Empty file with the right name)
-      const createMetaResponse = await fetch(
-        "https://www.googleapis.com/drive/v3/files",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: fileName,
-            mimeType: "application/json",
-          }),
-        }
-      );
-      const newFile = await createMetaResponse.json();
-      fileId = newFile.id;
+      setLastBackup(new Date(now).toLocaleString());
+
+      Alert.alert("Success", "Backup completed successfully");
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Backup failed");
     }
+  };
 
-    // 3. UPLOAD/PATCH the content (Simple media upload)
-    const uploadResponse = await fetch(
-      `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(backupData),
-      }
-    );
-
-    if (uploadResponse.ok) {
-      const nowISO = new Date().toISOString();
-
-      await setSetting(db, "last_backup_date", nowISO);
-
-      setLastBackup(new Date(nowISO).toLocaleString());
-    }
-
-    else {
-      const errorData = await uploadResponse.json();
-      console.error("Drive API Error:", errorData);
-      throw new Error("Upload failed");
-    }
-  } catch (error) {
-    console.error("Backup Error:", error);
-  }
-};
+  // 7. Restore backup
   const handleRestore = async () => {
-  Alert.alert(
-    "Restore data?",
-    "This will replace your current local data with the backup from Google Drive.",
-    [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Restore",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            // 1. Get the latest access token
-            const { accessToken } = await GoogleSignin.getTokens();
-            if (!accessToken) throw new Error("No access token found");
-
-            const fileName = "Zeniamoney_Backup.json";
-
-            // 2. Search for the backup file
-            const searchResponse = await fetch(
-              `https://www.googleapis.com/drive/v3/files?q=name='${fileName}'&spaces=drive`,
-              {
-                headers: { Authorization: `Bearer ${accessToken}` },
-              }
-            );
-            const searchResult = await searchResponse.json();
-            const file = searchResult.files && searchResult.files[0];
-
-            if (!file) {
-              Alert.alert("No Backup Found", "We couldn't find a backup file in your Google Drive.");
-              return;
+    Alert.alert(
+      "Restore data?",
+      "This will replace your local data with cloud backup.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Restore",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await restoreBackup(db);
+              Alert.alert("Success", "Data restored successfully");
+            } catch (error) {
+              console.error(error);
+              Alert.alert("Error", "Restore failed");
             }
-
-            // 3. Download the file content
-            // Using alt=media tells Google to return the file content, not the metadata
-            const downloadResponse = await fetch(
-              `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,
-              {
-                headers: { Authorization: `Bearer ${accessToken}` },
-              }
-            );
-
-            if (!downloadResponse.ok) throw new Error("Failed to download backup");
-
-            const restoredData = await downloadResponse.json();
-
-            // 4. Update your local storage
-            // Example: await MyLocalDB.importData(restoredData);
-            await importDatabase(db,restoredData.data)
-            console.log("Restored Data:", restoredData);
-
-            Alert.alert("Success", "Your data has been restored successfully.");
-          } catch (error) {
-            console.error("Restore Error:", error);
-            Alert.alert("Error", "Failed to restore data. Please try again later.");
-          }
+          },
         },
-      },
-    ]
-  );
-};
+      ]
+    );
+  };
 
+  // 8. Disconnect
   const handleDisconnect = async () => {
     try {
       await GoogleSignin.signOut();
       await SecureStore.deleteItemAsync("gdrive_token");
+
       setIsConnected(false);
       setLastBackup(null);
+
       Alert.alert("Disconnected", "You have been signed out.");
     } catch (error) {
       console.error(error);
     }
   };
 
+  // 9. UI
   return (
     <Card style={styles.card}>
       <BodyText style={styles.title}>Cloud Backup</BodyText>
+
       <BodyText style={styles.helperText}>
-        Back up your data to your private Google Drive app folder. Only ZeniaMoney-created files are accessible.
+        Back up your data securely to your private Google Drive folder.
       </BodyText>
 
       {!isConnected ? (
-        <TouchableOpacity style={styles.primaryButton} onPress={handleConnectGoogle}>
-          <BodyText style={styles.buttonText}>Connect Google Drive</BodyText>
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={handleConnectGoogle}
+        >
+          <BodyText style={styles.buttonText}>
+            Connect Google Drive
+          </BodyText>
         </TouchableOpacity>
       ) : (
         <>
-          <TouchableOpacity style={styles.primaryButton} onPress={handleBackup}>
-            <BodyText style={styles.buttonText}>Backup Now</BodyText>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={handleBackup}
+          >
+            <BodyText style={styles.buttonText}>
+              Backup Now
+            </BodyText>
           </TouchableOpacity>
+
+          <View style={styles.settingRow}>
+            {userEmail && (
+              <BodyText style={styles.helperText}>
+                Signed in as: {userEmail}
+              </BodyText>
+            )}
+          </View>
 
           <View style={styles.settingRow}>
             <BodyText>Automatic Daily Backup</BodyText>
@@ -322,16 +230,28 @@ const runDailyBackup = async () => {
             />
           </View>
 
-          <TouchableOpacity style={styles.secondaryButton} onPress={handleRestore}>
-            <BodyText style={styles.secondaryButtonText}>Restore Data</BodyText>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={handleRestore}
+          >
+            <BodyText style={styles.secondaryButtonText}>
+              Restore Data
+            </BodyText>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.logoutButton} onPress={handleDisconnect}>
-            <BodyText style={styles.logoutText}>Disconnect Account</BodyText>
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={handleDisconnect}
+          >
+            <BodyText style={styles.logoutText}>
+              Disconnect Account
+            </BodyText>
           </TouchableOpacity>
 
           {lastBackup && (
-            <BodyText style={styles.helperText}>Last sync: {lastBackup}</BodyText>
+            <BodyText style={styles.helperText}>
+              Last sync: {lastBackup}
+            </BodyText>
           )}
         </>
       )}

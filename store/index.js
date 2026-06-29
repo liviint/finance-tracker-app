@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import userReducer from "./features/userSlice";
 import settingsReducer from "./features/settingsSlice";
+import googleDriveSyncReducer from "./features/googleDriveSyncSlice";
 
 const userPersistConfig = {
   key: "user",
@@ -20,6 +21,7 @@ const settingsPersistConfig = {
 const rootReducer = combineReducers({
   user: persistReducer(userPersistConfig, userReducer),
   settings: persistReducer(settingsPersistConfig, settingsReducer),
+  googleDriveSync: googleDriveSyncReducer,
 });
 
 export const store = configureStore({

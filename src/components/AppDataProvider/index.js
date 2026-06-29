@@ -1,21 +1,9 @@
 import { SQLiteProvider } from "expo-sqlite";
 import React from "react";
 import { extraMigrations } from "./migrations"
+import GoogleBackupProvider from "./GoogleBackUpProvider"
 
 const migrateDbIfNeeded = async (db) => {
-  // await db.execAsync(`DROP TABLE IF EXISTS finance_transactions;`);
-  // await db.execAsync(`DROP TABLE IF EXISTS finance_categories;`);
-  //await db.execAsync(`DROP TABLE IF EXISTS transaction_templates;`);
-  // await db.execAsync(`DROP TABLE IF EXISTS savings_goals;`);
-  // await db.execAsync(`DROP TABLE IF EXISTS budgets;`);
-  // await db.execAsync(`DROP TABLE IF EXISTS savings_transactions;`);
-  // await db.execAsync(`DROP TABLE IF EXISTS  app_settings;`);
-  // await db.execAsync(`DROP TABLE IF EXISTS  debts;`);
-  // await db.execAsync(`DROP TABLE IF EXISTS  debt_payments;`);
-  // await db.execAsync(`DROP TABLE IF EXISTS shopping_lists;`);
-  // await db.execAsync(`DROP TABLE IF EXISTS shopping_items;`);
-  // await db.execAsync(`PRAGMA user_version = 0;`);
-
 
   await db.execAsync(`PRAGMA foreign_keys = ON;`);
 
@@ -252,7 +240,9 @@ const migrateDbIfNeeded = async (db) => {
 export default function AppDataProvider({ children }) {
   return (
     <SQLiteProvider databaseName="zeniahub.db" onInit={migrateDbIfNeeded}>
+      <GoogleBackupProvider>
         {children}
+      </GoogleBackupProvider>
     </SQLiteProvider>
   );
 }
