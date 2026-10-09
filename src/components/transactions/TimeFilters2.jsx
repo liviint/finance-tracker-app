@@ -21,10 +21,7 @@ const TimeFilters = ({
     const goPrevMonth = () => {
         const d = new Date(selectedMonth);
         d.setMonth(d.getMonth() - 1);
-
-        if (d < sixMonthsAgo) return;
         setIsNextDisabled(false)
-
         onMonthChange(d);
     };
 
