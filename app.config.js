@@ -66,6 +66,8 @@ export default {
       "@react-native-firebase/crashlytics",
       "@react-native-google-signin/google-signin",
       "expo-secure-store",
+      "expo-font",
+      "expo-web-browser",
       [
         "expo-splash-screen",
         {

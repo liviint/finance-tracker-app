@@ -6,10 +6,7 @@ const TimeFilters = ({
     selectedMonth,
     onMonthChange,
 }) => {
-
-    const [isPrevDisabled, setIsPrevDisabled] = useState(selectedMonth <= sixMonthsAgo - 1)
     const [isNextDisabled, setIsNextDisabled] = useState(selectedMonth >= today)
-
 
     const monthLabel = selectedMonth?.toLocaleString("default", {
         month: "long",
@@ -25,7 +22,6 @@ const TimeFilters = ({
         const d = new Date(selectedMonth);
         d.setMonth(d.getMonth() - 1);
 
-        setIsPrevDisabled(d < sixMonthsAgo)
         if (d < sixMonthsAgo) return;
         setIsNextDisabled(false)
 
@@ -38,7 +34,6 @@ const TimeFilters = ({
 
         setIsNextDisabled(d > today)
         if (d > today) return;
-        setIsPrevDisabled(false)
 
         onMonthChange(d);
     };
@@ -46,8 +41,8 @@ const TimeFilters = ({
     return (
         <View style={styles.container}>
             <View style={styles.monthNav}>
-                <TouchableOpacity disabled={isPrevDisabled} onPress={goPrevMonth}>
-                    <BodyText style={[styles.arrow, isPrevDisabled && {opacity:0.3}]}>◀</BodyText>
+                <TouchableOpacity onPress={goPrevMonth}>
+                    <BodyText style={[styles.arrow]}>◀</BodyText>
                 </TouchableOpacity>
 
                 <BodyText style={styles.monthText}>
