@@ -141,7 +141,7 @@ export default function BudgetsListScreen() {
   return (
     <View style={globalStyles.container}>
       <BodyText style={globalStyles.title}>
-        My Monthly budegt
+        My Budget
       </BodyText>
       
       <FlatList

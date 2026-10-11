@@ -1,4 +1,5 @@
-import { normalizeStartDate , getMonthRange} from "../helpers";
+import { normalizeStartDate } from "../helpers";
+import { normalizeRange } from "../../utils/timeNavigatorHelpers";
 import uuid from "react-native-uuid";
 
 const newUuid = () => uuid.v4();
@@ -127,9 +128,8 @@ export const syncBudgetsFromApi = async (db, apiBudgets = []) => {
   }
 };
 
-export const getMonthlyBudgets = async (db, date = new Date()) => {
-  const startDate = normalizeStartDate(date);
-  const { start, end } = getMonthRange(date);
+export const getMonthlyBudgets = async (db, timeState) => {
+  const { startDate, endDate } = normalizeRange(timeState);
 
   return db.getAllAsync(
     `
@@ -156,13 +156,12 @@ export const getMonthlyBudgets = async (db, date = new Date()) => {
     GROUP BY b.uuid
     ORDER BY c.name ASC
     `,
-    [start, end, startDate]
+    [startDate, endDate, startDate]
   );
 };
 
-export const getMonthlyBudgetStats = async (db, date = new Date()) => {
-  const startDate = normalizeStartDate(date);
-  const { start, end } = getMonthRange(date);
+export const getMonthlyBudgetStats = async (db, timeState) => {
+  const { startDate, endDate } = normalizeRange(timeState);
 
   return await db.getFirstAsync(
     `
@@ -196,7 +195,7 @@ export const getMonthlyBudgetStats = async (db, date = new Date()) => {
     WHERE b.start_date = ?
       AND b.deleted_at IS NULL
     `,
-    [start, end, startDate]
+    [startDate, endDate, startDate]
   );
 };
 

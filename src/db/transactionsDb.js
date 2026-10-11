@@ -1,5 +1,4 @@
 import uuid from "react-native-uuid";
-import { getMonthRange } from "../helpers";
 import { normalizeRange } from "../../utils/timeNavigatorHelpers";
 
 const newUuid = () => uuid.v4();
@@ -266,8 +265,8 @@ export async function deleteTransaction(db, uuid) {
   );
 }
 
-export async function getTransactionStats(db, date = new Date()) {
-  const { start, end } = getMonthRange(date);
+export async function getTransactionStats(db, timeState) {
+  const { startDate, endDate } = normalizeRange(timeState);
 
   const result = await db.getFirstAsync(
     `
@@ -279,7 +278,7 @@ export async function getTransactionStats(db, date = new Date()) {
       AND date >= ?
       AND date < ?
     `,
-    [start, end]
+    [startDate, endDate]
   );
 
   const income = result?.income || 0;
@@ -293,8 +292,8 @@ export async function getTransactionStats(db, date = new Date()) {
 }
 
 
-export async function getExpenseBreakdownByCategory(db, date = new Date()) {
-  const { start, end } = getMonthRange(date);
+export async function getExpenseBreakdownByCategory(db, timeState) {
+  const { startDate, endDate } = normalizeRange(timeState);
 
   return await db.getAllAsync(
     `
@@ -312,11 +311,9 @@ export async function getExpenseBreakdownByCategory(db, date = new Date()) {
     GROUP BY t.category_uuid
     ORDER BY total DESC
     `,
-    [start, end]
+    [startDate, endDate]
   );
 }
-
-
 
 export async function getTopCategory(db) {
     return await db.getFirstAsync(`
