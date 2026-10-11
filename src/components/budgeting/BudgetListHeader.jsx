@@ -1,12 +1,16 @@
-import { View, StyleSheet } from "react-native";
+import { useState } from "react";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { BodyText, Card, SecondaryText } from "../../../src/components/ThemeProvider/components";
-import TimeNavigator from "../common/timeNavigator";
+import TimeFilters from "../transactions/TimeFilters2";
 
 const BudgetListHeader = ({
   stats = {},
-  timeState,
-  setTimeState,
+  selectedMonth,
+  onMonthChange,
 }) => {
+
+    const [isPrevDisabled, setIsPrevDisabled] = useState(selectedMonth <= sixMonthsAgo - 1)
+    const [isNextDisabled, setIsNextDisabled] = useState(selectedMonth >= today)
 
   const {
     total_budgeted = 0,
@@ -15,13 +19,47 @@ const BudgetListHeader = ({
     overspent_count = 0,
   } = stats;
 
+  const monthLabel = selectedMonth?.toLocaleString("default", {
+    month: "long",
+    year: "numeric",
+  });
+
+  const today = new Date();
+
+const sixMonthsAgo = new Date();
+sixMonthsAgo.setMonth(today.getMonth() - 6); 
+
+const goPrevMonth = () => {
+    const d = new Date(selectedMonth);
+    d.setMonth(d.getMonth() - 1);
+
+    setIsPrevDisabled(d < sixMonthsAgo)
+    if (d < sixMonthsAgo) return;
+    setIsNextDisabled(false)
+
+    onMonthChange(d);
+};
+
+const goNextMonth = () => {
+    const d = new Date(selectedMonth);
+    d.setMonth(d.getMonth() + 1);
+
+    setIsNextDisabled(d > today)
+    if (d > today) return;
+    setIsPrevDisabled(false)
+
+    onMonthChange(d);
+};
+
+
+
 
   return (
     <View style={styles.container}>
 
-      <TimeNavigator
-        state={timeState}
-        onChange={setTimeState}
+      <TimeFilters 
+        selectedMonth={selectedMonth}
+        onMonthChange={onMonthChange}
       />
 
       {overspent_count > 0 && 

@@ -13,7 +13,6 @@ import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 import { syncManager } from "../../../utils/syncManager";
 import { AddButton } from "../../../src/components/common/AddButton";
 import BudgetListHeader  from "../../../src/components/budgeting/BudgetListHeader";
-import { createRange } from "../../../utils/timeNavigatorHelpers";
 
 export default function BudgetsListScreen() {
   const router = useRouter();
@@ -24,25 +23,25 @@ export default function BudgetsListScreen() {
   const [budgets, setBudgets] = useState([]);
   const [isLoading,setIsLoading] = useState(true)
   const [stats, setStats] = useState();
-  const [timeState, setTimeState] = useState(createRange("month"));
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
 
   const loadBudgets = async () => {
     setIsLoading(true)
     await ensureRecurringBudgetsForMonth(db)
-    const data = await getMonthlyBudgets(db,timeState);
+    const data = await getMonthlyBudgets(db,selectedMonth);
     setBudgets(data);
     setIsLoading(false)
   }
   
   const fetchBudgetStats = async () => {
-    let stats = await getMonthlyBudgetStats(db,timeState)
+    let stats = await getMonthlyBudgetStats(db,selectedMonth)
     setStats(stats)
   }
 
   useEffect(() => {
     loadBudgets();
     fetchBudgetStats()
-}, [isFocused,timeState]);
+}, [isFocused,selectedMonth]);
 
   useEffect(() => {
     const unsub = syncManager.on("budgets_updated", async () => {
@@ -141,7 +140,7 @@ export default function BudgetsListScreen() {
   return (
     <View style={globalStyles.container}>
       <BodyText style={globalStyles.title}>
-        My Budget
+        Monthly Budget
       </BodyText>
       
       <FlatList
@@ -151,8 +150,8 @@ export default function BudgetsListScreen() {
         ListHeaderComponent={
           <BudgetListHeader 
             stats={stats} 
-            timeState={timeState}
-            setTimeState={setTimeState}
+            selectedMonth={selectedMonth}
+            onMonthChange={setSelectedMonth}
           />
         }
       />

@@ -146,7 +146,7 @@ export default function FinanceListPage() {
     <View style={globalStyles.container}>
       <View style={styles.headerRow}>
         <BodyText style={globalStyles.title}>
-          My transactions
+          Expenses
         </BodyText>
       </View>
       
