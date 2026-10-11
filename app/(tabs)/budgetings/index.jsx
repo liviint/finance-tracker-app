@@ -13,6 +13,7 @@ import { useThemeStyles } from "../../../src/hooks/useThemeStyles";
 import { syncManager } from "../../../utils/syncManager";
 import { AddButton } from "../../../src/components/common/AddButton";
 import BudgetListHeader  from "../../../src/components/budgeting/BudgetListHeader";
+import { createRange } from "../../../utils/timeNavigatorHelpers";
 
 export default function BudgetsListScreen() {
   const router = useRouter();
@@ -23,25 +24,25 @@ export default function BudgetsListScreen() {
   const [budgets, setBudgets] = useState([]);
   const [isLoading,setIsLoading] = useState(true)
   const [stats, setStats] = useState();
-  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [timeState, setTimeState] = useState(createRange("month"));
 
   const loadBudgets = async () => {
     setIsLoading(true)
     await ensureRecurringBudgetsForMonth(db)
-    const data = await getMonthlyBudgets(db,selectedMonth);
+    const data = await getMonthlyBudgets(db,timeState);
     setBudgets(data);
     setIsLoading(false)
   }
   
   const fetchBudgetStats = async () => {
-    let stats = await getMonthlyBudgetStats(db,selectedMonth)
+    let stats = await getMonthlyBudgetStats(db,timeState)
     setStats(stats)
   }
 
   useEffect(() => {
     loadBudgets();
     fetchBudgetStats()
-}, [isFocused,selectedMonth]);
+}, [isFocused,timeState]);
 
   useEffect(() => {
     const unsub = syncManager.on("budgets_updated", async () => {
@@ -150,8 +151,8 @@ export default function BudgetsListScreen() {
         ListHeaderComponent={
           <BudgetListHeader 
             stats={stats} 
-            selectedMonth={selectedMonth}
-            onMonthChange={setSelectedMonth}
+            timeState={timeState}
+            setTimeState={setTimeState}
           />
         }
       />

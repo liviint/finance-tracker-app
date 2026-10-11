@@ -1,5 +1,6 @@
 import uuid from "react-native-uuid";
 import { getMonthRange } from "../helpers";
+import { normalizeRange } from "../../utils/timeNavigatorHelpers";
 
 const newUuid = () => uuid.v4();
 
@@ -179,8 +180,8 @@ export const syncTransactionsFromApi = async (db, transactions = []) => {
     console.log("✅ Transactions synced from API");
 };
 
-export async function getTransactions(db, date = new Date()) {
-  const { start, end } = getMonthRange(date);
+export async function getTransactions(db, timeState) {
+  const { startDate, endDate } = normalizeRange(timeState);
 
   return await db.getAllAsync(
     `
@@ -191,10 +192,9 @@ export async function getTransactions(db, date = new Date()) {
       AND t.date < ?
     ORDER BY datetime(t.date) DESC
     `,
-    [start, end]
+    [startDate, endDate]
   );
 }
-
 
 
 export async function getTransactionByUuid(db, uuid) {

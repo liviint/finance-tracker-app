@@ -9,8 +9,9 @@ import { useSQLiteContext } from "expo-sqlite";
 import { dateFormat } from "../../../utils/dateFormat";
 import { useThemeStyles } from "../../../src/hooks/useThemeStyles"
 import { syncManager } from "../../../utils/syncManager";
-import TimeFilters from "../../../src/components/transactions/TimeFilters2";
+import TimeNavigator from "../../../src/components/common/timeNavigator";
 import ButtonLinks from "../../../src/components/common/ButtonLinks";
+import { createRange } from "../../../utils/timeNavigatorHelpers";
 
 export default function FinanceListPage() {
     const db = useSQLiteContext()
@@ -23,14 +24,14 @@ export default function FinanceListPage() {
         expenses: 0,
         balance: 0,
       });
-    const [selectedMonth, setSelectedMonth] = useState(new Date());
+    const [timeState, setTimeState] = useState(createRange("month"));
 
     let fetchTransactions = async() => {
-        let transactions = await getTransactions(db, selectedMonth)
+        let transactions = await getTransactions(db, timeState)
         setTransactions(transactions)
     }
     const fetchStats = async () => {
-      const summary = await getTransactionStats(db,selectedMonth);
+      const summary = await getTransactionStats(db, timeState);
       setStats(summary);
     };
 
@@ -39,7 +40,10 @@ export default function FinanceListPage() {
       fetchTransactions()
       fetchStats()
     }
-    },[isFocused, selectedMonth])
+    },[
+      isFocused, 
+      timeState
+    ])
 
     useEffect(() => {
       const unsub = syncManager.on("transactions_updated", async () => {
@@ -159,8 +163,8 @@ export default function FinanceListPage() {
         ListHeaderComponent={
           <ListHeader
             stats={stats}
-            selectedMonth={selectedMonth}
-            onMonthChange={setSelectedMonth}
+            timeState={timeState} 
+            setTimeState={setTimeState}
           />
         }
         contentContainerStyle={{ paddingBottom: 96 }}
@@ -178,13 +182,12 @@ export default function FinanceListPage() {
   )
 }
 
-const ListHeader = ({ stats, selectedMonth,onMonthChange}) => {
-  const router = useRouter();
+const ListHeader = ({ stats, timeState, setTimeState}) => {
   return <>
-    <TimeFilters 
-        selectedMonth={selectedMonth}
-        onMonthChange={onMonthChange}
-      />
+    <TimeNavigator
+        state={timeState}
+        onChange={setTimeState}
+    />
 
     <Card style={styles.balanceCard}>
       <SecondaryText style={styles.balanceLabel}>
