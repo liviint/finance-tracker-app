@@ -24,8 +24,6 @@ export default {
       },
 
       edgeToEdgeEnabled: true,
-      enableProguardInReleaseBuilds: true,
-      enableShrinkResourcesInReleaseBuilds: true,
       predictiveBackGestureEnabled: false,
       "intentFilters": [
           // 1. Regular Deep Link (zeniahub://)
@@ -79,6 +77,16 @@ export default {
         },
       ],
       
+      [
+        "expo-build-properties",
+        {
+          android: {
+            enableMinifyInReleaseBuilds: true,
+            enableShrinkResourcesInReleaseBuilds: true
+          }
+        }
+      ]
+
     ],
 
     experiments: {
