@@ -43,30 +43,106 @@ export const upsertBudget = async ({
   );
 };
 
-export const ensureRecurringBudgetsForMonth = async (db, date = new Date()) => {
+
+export const updateRecurringBudget = async ({
+    db,
+    budgetUUID,
+    amount,
+    categoryUUID,
+}) => {
+    if (amount <= 0) {
+        throw new Error("Budget amount must be greater than zero");
+    }
+
+    const budget = await db.getFirstAsync(
+        `
+        SELECT uuid, category_uuid, start_date, recurring
+        FROM budgets
+        WHERE uuid = ?
+        `,
+        [budgetUUID]
+    );
+
+    if (!budget) {
+        throw new Error("Budget not found");
+    }
+
+    if (!budget.recurring) {
+        throw new Error("This budget is not recurring");
+    }
+
+    await db.runAsync(
+        `
+        UPDATE budgets
+        SET
+            amount = ?,
+            category_uuid = ?,
+            updated_at = CURRENT_TIMESTAMP,
+            is_synced = 0
+        WHERE category_uuid = ?
+          AND recurring = 1
+          AND start_date >= ?
+        `,
+        [
+            amount,
+            categoryUUID || budget.category_uuid,
+            budget.category_uuid,
+            budget.start_date,
+        ]
+    );
+};
+
+
+export const ensureRecurringBudgetsForMonth = async (
+  db,
+  date = new Date()
+) => {
   const monthStart = normalizeStartDate(date, "monthly");
 
-  const existing = await db.getAllAsync(
-    `SELECT uuid FROM budgets WHERE start_date = ?`,
+  // Get the latest recurring budget for each category,
+  // including the current month if one already exists.
+  const recurringBudgets = await db.getAllAsync(
+    `
+    SELECT b.category_uuid, b.amount
+    FROM budgets b
+    INNER JOIN (
+      SELECT category_uuid, MAX(start_date) AS latest_start_date
+      FROM budgets
+      WHERE recurring = 1
+        AND start_date <= ?
+        AND deleted_at IS NULL
+      GROUP BY category_uuid
+    ) latest
+      ON latest.category_uuid = b.category_uuid
+      AND latest.latest_start_date = b.start_date
+    WHERE b.recurring = 1
+      AND b.deleted_at IS NULL
+    `,
     [monthStart]
   );
 
-  if (existing.length > 0) return;
+  for (const budget of recurringBudgets) {
+    // Check each category individually rather than returning
+    // when any budget already exists for this month.
+    const existing = await db.getFirstAsync(
+      `
+      SELECT uuid
+      FROM budgets
+      WHERE category_uuid = ?
+        AND period = 'monthly'
+        AND start_date = ?
+        AND deleted_at IS NULL
+      LIMIT 1
+      `,
+      [budget.category_uuid, monthStart]
+    );
 
-  const recurringBudgets = await db.getAllAsync(
-    `
-    SELECT category_uuid, amount
-    FROM budgets
-    WHERE recurring = 1
-    GROUP BY category_uuid
-    `
-  );
+    if (existing) continue;
 
-  for (const b of recurringBudgets) {
     await upsertBudget({
       db,
-      categoryUUID: b.category_uuid,
-      amount: b.amount,
+      categoryUUID: budget.category_uuid,
+      amount: budget.amount,
       recurring: 1,
       date,
     });

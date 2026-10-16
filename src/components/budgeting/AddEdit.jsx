@@ -21,6 +21,7 @@ import uuid from "react-native-uuid";
 import {
     upsertBudget,
     getBudgetByUUID,
+    updateRecurringBudget
 } from "../../db/budgetingDb";
 import { normalizeStartDate } from "../../helpers";
 import CategoriesPicker from "../common/CategoriesPicker";
@@ -67,38 +68,48 @@ export default function AddEditBudget() {
         loadBudget();
     }, [budgetUUID]);
 
+    
     const saveBudget = async () => {
-        console.log(form.category_uuid,"hello form.category_uuid")
         if (!form.category_uuid) {
             Alert.alert("Validation", "Please select a category");
             return;
         }
 
-        if (!form.amount || Number(form.amount) <= 0) {
+        const amount = Number(form.amount);
+
+        if (!form.amount.trim() || !Number.isFinite(amount) || amount <= 0) {
             Alert.alert("Validation", "Amount must be greater than zero");
             return;
         }
 
         try {
             const budgetUuid = form.uuid || uuid.v4();
-            const startDate = normalizeStartDate(form.date);
 
-            await upsertBudget({
-                db,
-                uuid: budgetUuid,
-                categoryUUID: form.category_uuid,
-                amount: Number(form.amount),
-                startDate,
-                recurring:form.recurring,
-            });
+            if (budgetUUID && form.recurring) {
+                await updateRecurringBudget({
+                    db,
+                    budgetUUID,
+                    amount,
+                    categoryUUID: form.category_uuid,
+                });
+            } else {
+                await upsertBudget({
+                    db,
+                    uuid: budgetUuid,
+                    categoryUUID: form.category_uuid,
+                    amount,
+                    date: form.date,
+                    recurring: form.recurring ? 1 : 0,
+                });
+            }
 
             router.back();
-            setForm(initialForm);
         } catch (err) {
-            console.error(err);
-            Alert.alert("Error", "Failed to save budget");
+            console.error("Failed to save budget:", err);
+            Alert.alert("Error", err.message || "Failed to save budget");
         }
     };
+
 
     return (
         <ScrollView style={globalStyles.container}>
