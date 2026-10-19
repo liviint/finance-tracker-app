@@ -206,7 +206,7 @@ export const syncBudgetsFromApi = async (db, apiBudgets = []) => {
 export const getMonthlyBudgets = async (db, date = new Date()) => {
   const startDate = normalizeStartDate(date);
   const { start, end } = getMonthRange(date);
-
+  console.log(date,start,end,"hello start end dates")
   return db.getAllAsync(
     `
     SELECT 

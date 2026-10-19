@@ -32,8 +32,8 @@ export function getMonthRange(date = new Date()) {
   const end = new Date(date.getFullYear(), date.getMonth() + 1, 1);
 
   return {
-    startDate: start.toISOString(),
-    endDate: end.toISOString(),
+    start: start.toISOString(),
+    end: end.toISOString(),
   };
 }
 
