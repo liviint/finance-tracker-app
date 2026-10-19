@@ -5,7 +5,7 @@ export default {
     scheme: "zeniamoney",
     name: "ZeniaMoney",
     slug: "zeniamoney",
-    version: "2.0.2",
+    version: "2.0.3",
     orientation: "portrait",
     icon: "./assets/images/logo.png",
     userInterfaceStyle: "automatic",
